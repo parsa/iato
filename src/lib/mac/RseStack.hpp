@@ -35,7 +35,7 @@ namespace iato {
 
   /// The RseStack class implements a finite stack of rse state. When a
   /// rse dependant branch is made, the rse state is placed on the stack
-  /// or reterived from it. The rse state contains mostly the cfm register
+  /// or retreived from it. The rse state contains mostly the cfm register
   /// that defines the state of the renaming circuitry. The rse stack is an
   /// essential piece of code that permits to operate with a branch predictor.
 

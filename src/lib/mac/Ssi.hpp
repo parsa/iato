@@ -48,6 +48,8 @@ namespace iato {
     bool d_cnlf;
     /// the interrupt flag
     bool d_intr;
+    /// the memory ordering flag
+    bool d_mofl;
     /// the valid speculation flag
     bool d_vspf;
     /// the predicted predicate value
@@ -122,6 +124,13 @@ namespace iato {
 
     /// @return the interrupt flag
     bool getintr (void) const;
+
+    /// set the memory ordering flag
+    /// @param mofl the ordering flag to set
+    void setmofl (const bool mofl);
+
+    /// @return the memory ordering flag
+    bool getmofl (void) const;
 
     /// set the valid speculation flag
     /// @param vspf the speculation flag to set

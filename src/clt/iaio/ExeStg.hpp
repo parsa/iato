@@ -129,7 +129,10 @@ namespace iato {
     void bind (Env* env, Stage* pstg, Stage* nstg);
 
     /// @return the bypass stage mrt
-    Mrt getmrt (void) const;
+    Mrt getbmrt (void) const;
+
+    /// @return the bypass element index
+    long getbeix (void) const;
 
   private:
     // make the copy constructor private

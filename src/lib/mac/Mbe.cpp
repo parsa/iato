@@ -25,22 +25,14 @@ namespace iato {
   // create a default mbe
 
   Mbe::Mbe (void) {
-    d_eix = -1;
-    d_ueo = false;
     reset ();
   }
 
-  // create a memory element by index and ordering flag
-
-  Mbe::Mbe (const long eix, const bool ueo) {
-    d_eix = eix;
-    d_ueo = ueo;
-    reset ();
-  }
 
   // reset this element
 
   void Mbe::reset (void) {
+    d_eix = -1;
     d_mrt.reset ();
   }
 
@@ -56,19 +48,7 @@ namespace iato {
     return d_eix;
   }
 
-  // set the element ordering flag
-
-  void Mbe::setueo (const bool ueo) {
-    d_ueo = ueo;
-  }
-
-  // get the element ordering
-
-  bool Mbe::getueo (void) const {
-    return d_ueo;
-  }
-
-  // set the element mrt
+  // set the element by mrt
 
   void Mbe::setmrt (const Mrt& mrt) {
     d_mrt = mrt;
@@ -78,6 +58,13 @@ namespace iato {
 
   Mrt Mbe::getmrt (void) const {
     return d_mrt;
+  }
+
+  // set the element by mrt and index
+
+  void Mbe::setmrt (const Mrt& mrt, const long eix) {
+    d_eix = eix;
+    d_mrt = mrt;
   }
 
   // grab the mrt

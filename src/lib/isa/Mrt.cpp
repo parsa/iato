@@ -51,6 +51,7 @@ namespace iato {
   Mrt::Mrt (const Mrt& that) {
     d_type = that.d_type;
     d_addr = that.d_addr;
+    d_mofl = that.d_mofl;
     d_sbit = that.d_sbit;
     d_nval = that.d_nval;
     d_oval = that.d_oval;
@@ -65,6 +66,7 @@ namespace iato {
   Mrt& Mrt::operator = (const Mrt& that) {
     d_type = that.d_type;
     d_addr = that.d_addr;
+    d_mofl = that.d_mofl;
     d_sbit = that.d_sbit;
     d_nval = that.d_nval;
     d_oval = that.d_oval;
@@ -80,6 +82,7 @@ namespace iato {
   void Mrt::reset (void) {
     d_type = REQ_NUL;
     d_addr = OCTA_0;
+    d_mofl = false;
     d_sbit = false;
     d_nval = false;
     d_oval = OCTA_0;
@@ -222,6 +225,12 @@ namespace iato {
       break;
     }
     return mask;
+  }
+
+  // return the memory ordering flag
+
+  bool Mrt::getmofl (void) const {
+    return isvalid () ? d_mofl : false;
   }
 
   // set the mrt nat value bit
@@ -390,26 +399,115 @@ namespace iato {
     d_hval = hval;
   }
 
-  // set the mrt value from a mrt
+  // set the mrt value from a mrt by transfering store data to load data
 
-  void Mrt::setmv (const Mrt& mrt) {
-    // check for valid mrt
-    if (mrt.isvalid () == false) return;
+  bool Mrt::setmv (const Mrt& mrt) {
+    // check for valid load mrt
+    if ((mrt.isvalid () == false) || (mrt.isstore () == false)) return d_mofl;
     // copy value
     d_nval = mrt.d_nval;
     d_oval = mrt.d_oval;
     d_lval = mrt.d_lval;
     d_hval = mrt.d_hval;
-    // fix ldd with ST8
-    if ((d_type == REQ_LDD) && (mrt.d_type == REQ_ST8)) {
-      // convert mrt value
-      union {
-	t_byte d_bval[8];
-	t_octa d_oval;
-      } uval;
-      uval.d_oval = mrt.d_oval;
-      // fix destination
-      d_lval.doubleld (uval.d_bval);
+    // fix the value by adapting the transformation buffer
+    union {
+      t_byte d_sval[t_real::TR_SISZ];
+      t_byte d_dval[t_real::TR_DOSZ];
+      t_byte d_eval[t_real::TR_DESZ];
+      t_byte d_fval[t_real::TR_SFSZ];
+      t_byte d_bval;
+      t_word d_wval;
+      t_quad d_qval;
+      t_octa d_oval;
+    } mval;
+    // the transfer size and status flag
+    long mvsz = 0;
+    // initilize data value
+    mval.d_oval = OCTA_0;
+    // preset the store
+    switch (mrt.d_type){
+    case REQ_ST1:
+      mvsz = 1;
+      mval.d_oval = mrt.d_oval;
+      break;
+    case REQ_ST2:
+      mvsz = 2;
+      mval.d_oval = mrt.d_oval;
+      break;
+    case REQ_ST4:
+      mvsz = 4;
+      mval.d_oval = mrt.d_oval;
+      break;
+    case REQ_ST8:
+      mvsz = 8;
+      mval.d_oval = mrt.d_oval;
+      break;
+    case REQ_STS: 
+      mvsz = t_real::TR_SISZ;
+      mrt.d_lval.singlest (mval.d_sval);
+      break;
+    case REQ_STD:
+      mvsz = t_real::TR_DOSZ;
+      mrt.d_lval.doublest (mval.d_dval);
+      break;
+    case REQ_STE:
+      mvsz = t_real::TR_DESZ;
+      mrt.d_lval.extendedst (mval.d_eval);
+      break;
+    case REQ_STF:
+      mvsz = t_real::TR_SFSZ;
+      mrt.d_lval.spill (mval.d_fval);
+      break;
+    case REQ_STI:
+      mvsz = 8;
+      mrt.d_lval.integerst (mval.d_dval);
+      break;
+    default:
+      assert (false);
+      break;
     }
+    // fix the load
+    switch (d_type) {
+    case REQ_LD1:
+      d_mofl = (1 <= mvsz);
+      d_oval = mval.d_bval;
+      break;
+    case REQ_LD2:
+      d_mofl = (2 <= mvsz);
+      d_oval = mval.d_wval;
+      break;
+    case REQ_LD4:
+      d_mofl = (4 <= mvsz);
+      d_oval = mval.d_qval;
+      break;
+    case REQ_LD8:
+      d_mofl = (8 <= mvsz);
+      d_oval = mval.d_oval;
+      break;
+    case REQ_LDS:
+      d_mofl = (t_real::TR_SISZ <= mvsz);
+      d_lval.singleld (mval.d_sval);
+      break;
+    case REQ_LDD:
+      d_mofl = (t_real::TR_DOSZ <= mvsz);
+      d_lval.doubleld (mval.d_dval);
+      break;
+    case REQ_LDE:
+      d_mofl = (t_real::TR_DESZ <= mvsz);
+      d_lval.extendedld (mval.d_eval);
+      break;
+    case REQ_LDF:
+      d_mofl = (t_real::TR_SFSZ <= mvsz);
+      d_lval.fill (mval.d_fval);
+      break;
+    case REQ_LDI:
+      d_mofl = (8 <= mvsz);
+      d_lval.integerld (mval.d_dval);
+      break;
+    default:
+      d_mofl = true;
+      break;
+    }
+    return d_mofl;
   }
 }

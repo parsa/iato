@@ -89,13 +89,12 @@ namespace iato {
 
   Rse::State RseStack::pop (void) {
     // prepare the oldest state
-    Rse::State state = p_rstk[0];
-    // select between empty or shift
+    Rse::State state;
+    // select between empty or last one
     if (isempty () == true) {
       state.reset ();
     } else {
-      for (long i = 0; i < d_rlen; i++) p_rstk[i] = p_rstk[i+1];
-      d_rlen--;
+      state = p_rstk[--d_rlen];
     }
     // return the oldest state
     return state;

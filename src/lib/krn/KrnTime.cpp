@@ -43,6 +43,9 @@ namespace iato {
       krn_timeval  ktv;
       t_byte       btv[sizeof(krn_timeval)];
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_timeval); i++) btv[i] = BYTE_0;
+    // fill in the structure
     ktv.d_tv_sec  = lfixocta (tv.tv_sec);
     ktv.d_tv_usec = lfixocta (tv.tv_usec);
     sys_args_setdata (tvadr, btv, sizeof (ktv), mem);
@@ -65,6 +68,9 @@ namespace iato {
       krn_tms      kbuf;
       t_byte       bbuf[sizeof(krn_tms)];
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_tms); i++) bbuf[i] = BYTE_0;
+    // fill in the structure
     kbuf.d_tms_utime  = lfixocta (buf.tms_utime);
     kbuf.d_tms_stime  = lfixocta (buf.tms_stime);
     kbuf.d_tms_cutime = lfixocta (buf.tms_cutime);

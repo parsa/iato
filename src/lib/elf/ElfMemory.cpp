@@ -99,7 +99,7 @@ namespace iato {
       throw Interrupt (FAULT_IT_DATA_ACRGT, os.str ());
     }
     d_vmem[index]->writebyte (addr, byte);
-  }
+  } 
 
   // return the number of memories
 

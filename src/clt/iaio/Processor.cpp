@@ -48,21 +48,6 @@
 namespace iato {
   using namespace std;
   
-  // this procedure create a branch predictor from a context
-  static Branch* build_bprd (Stx* stx) {
-    // get the predictor name
-    string name = stx->getstr ("BRANCH-PREDICTOR-TYPE");
-    // check for default
-    if ((name.length () == 0) || (name == "none")) return new Branch (stx);
-    // check for bimodal
-    if (name == "bimodal") return new Bimodal (stx);
-    // check for gshare
-    if (name == "gshare") return new Gshare (stx);    
-    // not found
-    string msg = "invalid branch predictor name ";
-    throw Exception ("context-error", msg + name);
-  }
-
   // this procedure creates the processor environment from a context
   static Env* build_env (Stx* stx) {
     // create the environment
@@ -89,7 +74,7 @@ namespace iato {
     env->add (new Spb (stx, RESOURCE_IPB));
     env->add (new Spb (stx, RESOURCE_OPB));
     // add complex resources
-    env->add (build_bprd   (stx));
+    env->add (Branch::mkbr (stx));
     return env;
   }
 
@@ -128,9 +113,7 @@ namespace iato {
     // build the pipeline
     ostringstream os;
     os << "PF" << index;
-    // get the pipeline latency
     long flat = stx->getlong ("LATENCY-F-UNIT");
-    assert ((flat == 1) || (flat == 4));
     // create the pipeline
     Pipeline* pipe = new Pipeline (stx, os.str ());
     // add the stages

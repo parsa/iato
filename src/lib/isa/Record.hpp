@@ -194,6 +194,12 @@ namespace iato {
     /// @param that the record to assign
     Record& operator = (const Record& that);
 
+    /// @return true if a record in in order
+    bool operator < (const Record& rcd) const;
+
+    /// reset this record
+    void reset (void);
+
     /// set the record source name
     /// @param rsrc the record source name
     void setname (const string& rsrc);

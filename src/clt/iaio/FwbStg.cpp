@@ -30,7 +30,6 @@ namespace iato {
   FwbStg::FwbStg (Stx* stx, t_unit unit): ResStg (stx, unit, RESOURCE_FWB) {
     // check the F latency
     long flat = stx->getlong ("LATENCY-F-UNIT");
-    assert ((flat == 1) || (flat == 4));
     d_lflg = flat == 1 ? false : true;
     // initialize resource pointers
     p_iib = 0;
@@ -46,7 +45,6 @@ namespace iato {
           ResStg (stx, unit, sidx, RESOURCE_FWB) {
     // check the F latency
     long flat = stx->getlong ("LATENCY-F-UNIT");
-    assert ((flat == 1) || (flat == 4));
     d_lflg = flat == 1 ? false : true;
     // initialize resource pointers
     p_iib = 0;
@@ -62,7 +60,6 @@ namespace iato {
           ResStg (stx, unit, sidx, name) {
     // check the F latency
     long flat = stx->getlong ("LATENCY-F-UNIT");
-    assert ((flat == 1) || (flat == 4));
     d_lflg = flat == 1 ? false : true;
     // initialize resource pointers
     p_iib = 0;

@@ -51,8 +51,8 @@ namespace iato {
     assert (p_exe);
     // set the M unit resources
     if (unit == MUNIT) {
+      p_mbe = new Mbe;
       p_msi = new Msi (stx);
-      p_mbe = new Mbe (d_sidx, true);
     }
     reset ();
   }
@@ -79,8 +79,8 @@ namespace iato {
     assert (p_exe);
     // set the M unit resources
     if (unit == MUNIT) {
+      p_mbe = new Mbe;
       p_msi = new Msi (stx);
-      p_mbe = new Mbe (d_sidx, true);
     }
     reset ();
   }
@@ -107,8 +107,8 @@ namespace iato {
     assert (p_exe);
     // set the M unit resources
     if (unit == MUNIT) {
+      p_mbe = new Mbe;
       p_msi = new Msi (stx);
-      p_mbe = new Mbe (d_sidx, true);
     }
     reset ();
   }
@@ -126,7 +126,7 @@ namespace iato {
 
   void ExeStg::reset (void) {
     ResStg::reset ();
-    p_bpe->reset  ();
+    if (p_bpe) p_bpe->reset  ();
     if (p_mbe) p_mbe->reset  ();
   }
 
@@ -134,7 +134,7 @@ namespace iato {
 
   void ExeStg::flush (void) {
     ResStg::flush ();
-    p_bpe->reset  ();
+    if (p_bpe) p_bpe->reset  ();
     if (p_mbe) p_mbe->reset  ();
   }
 
@@ -180,15 +180,25 @@ namespace iato {
 	// get the load mrt
 	Mrt mrt = d_resl.getmrt ();
 	// try to update it with the early bypass
-	if ((mrt.isvalid () == true) && (p_emb)) {
-	  Mrt emrt = p_emb->update (mrt, d_sidx);
-	  if (emrt.isvalid () == true)  d_resl.update (emrt);
+	if ((mrt.isvalid () == true) && (d_inst.getmofl () == false)) {
+	  if (p_emb) {
+	    Mrt emrt = p_emb->update (mrt, d_inst.getrix ());
+	    if (emrt.isvalid () == true) {
+	      d_inst.setmofl (emrt.getmofl ());
+	      d_resl.update  (emrt);
+	    }
+	  }
 	}
 	// try to update it with the late bypass
 	mrt = d_resl.getmrt ();
-	if ((mrt.isvalid () == true) && (p_lmb)) {
-	  Mrt lmrt = p_lmb->update (mrt, d_sidx);
-	  if (lmrt.isvalid () == true)  d_resl.update (lmrt);
+	if ((mrt.isvalid () == true) && (d_inst.getmofl () == false)) {
+	  if (p_lmb) {
+	    Mrt lmrt = p_lmb->update (mrt);
+	    if (lmrt.isvalid () == true) {
+	      d_inst.setmofl (lmrt.getmofl ());
+	      d_resl.update  (lmrt);
+	    }
+	  }
 	}
 	// preset the memory port request
 	if (p_msi) p_msi->preset (d_inst, d_resl);
@@ -203,7 +213,7 @@ namespace iato {
       // update the early memory bypass with a store
       if ((d_inst.getcnlf () == false) && (d_inst.getstb () == true)) {
 	Mrt mrt = d_resl.getmrt ();
-	if (p_mbe) p_mbe->setmrt (mrt);
+	if (p_mbe) p_mbe->setmrt (mrt, d_inst.getrix ());
       } else {
 	if (p_mbe) p_mbe->reset ();
       }
@@ -307,9 +317,15 @@ namespace iato {
 
   // return the stage bypass mrt
 
-  Mrt ExeStg::getmrt (void) const {
+  Mrt ExeStg::getbmrt (void) const {
     Mrt mrt;
     if (p_mbe) mrt = p_mbe->getmrt ();
     return mrt;
+  }
+
+  // return the stage bypass element index
+
+  long ExeStg::getbeix (void) const {
+    return p_mbe ? p_mbe->geteix () : -1;
   }
 }

@@ -36,6 +36,7 @@ namespace iato {
     d_iidx = -1;
     d_cnlf = false;
     d_intr = false;
+    d_mofl = false;
     d_vspf = true;
     d_ppvl = true;
     d_ppfl = false;
@@ -51,6 +52,7 @@ namespace iato {
     d_iidx = that.d_iidx;
     d_cnlf = that.d_cnlf;
     d_intr = that.d_intr;
+    d_mofl = that.d_mofl;
     d_vspf = that.d_vspf;
     d_ppvl = that.d_ppvl;
     d_ppfl = that.d_ppfl;
@@ -67,6 +69,7 @@ namespace iato {
     d_iidx = that.d_iidx;
     d_cnlf = that.d_cnlf;
     d_intr = that.d_intr;
+    d_mofl = that.d_mofl;
     d_vspf = that.d_vspf;
     d_ppvl = that.d_ppvl;
     d_ppfl = that.d_ppfl;
@@ -84,6 +87,7 @@ namespace iato {
     d_iidx = -1;
     d_cnlf = false;
     d_intr = false;
+    d_mofl = false;
     d_vspf = true;
     d_ppvl = true;
     d_ppfl = false;
@@ -101,6 +105,7 @@ namespace iato {
     d_iidx = -1;
     d_cnlf = false;
     d_intr = false;
+    d_mofl = false;
     d_vspf = true;
     d_ppvl = true;
     d_ppfl = false;
@@ -191,6 +196,18 @@ namespace iato {
 
   bool Ssi::getintr (void) const {
     return d_valid ? d_intr : false;
+  }
+
+  // set the ordering flag
+
+  void Ssi::setmofl (const bool mofl) {
+    d_mofl = d_valid ? mofl : false;
+  }
+
+  // return the ordering flag
+
+  bool Ssi::getmofl (void) const {
+    return d_valid ? d_mofl : false;
   }
 
   // set the valid speculation flag

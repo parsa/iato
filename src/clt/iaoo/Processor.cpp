@@ -30,7 +30,6 @@
 #include "DecStg.hpp"
 #include "LrnStg.hpp"
 #include "PrnStg.hpp"
-#include "ExpStg.hpp"
 #include "SlcStg.hpp"
 #include "RegStg.hpp"
 #include "ExeStg.hpp"
@@ -172,7 +171,6 @@ namespace iato {
     pipe->add (new DecStg (stx));
     pipe->add (new LrnStg (stx));
     pipe->add (new PrnStg (stx));
-    pipe->add (new ExpStg (stx));
     // add the pipelane
     pipe->add (build_lane (stx));
     // finish the pipeline

@@ -110,12 +110,13 @@ namespace iato {
     ExeStg* exe = dynamic_cast <ExeStg*> (p_pstg);
     assert (exe);
     // get the previous stage data and clean
-    d_inst  = exe->getinst ();
-    d_resl  = exe->getresl ();
-    Mrt mrt = exe->getmrt  ();
+    d_inst   = exe->getinst ();
+    d_resl   = exe->getresl ();
+    Mrt  mrt = exe->getbmrt ();
+    long eix = exe->getbeix ();
     exe->clean ();
     // set the memory bypass with the previous mrt
-    if (p_mbe) p_mbe->setmrt (mrt);
+    if (p_mbe) p_mbe->setmrt (mrt, eix);
     // check for valid instruction and clean if invalid
     if (d_inst.isvalid () == false) {
       clean ();
@@ -132,12 +133,14 @@ namespace iato {
 	if (p_tracer) {
 	  Record rcd (d_name, d_inst, !d_inst.getcnlf ());
 	  p_tracer->add (rcd);
-	  if (d_halt == true) {
-	    Record rcd (d_name);
-	    rcd.settype (Record::HALTED);
-	    p_tracer->add (rcd);
-	  }
 	}
+	return;
+      }
+      // if the instruction has generated a memory ordering violation
+      // udpate the restart engine
+      if ((d_inst.getcnlf () == false) && (d_inst.getmofl () == true)) {
+	p_pfr->setrii (d_inst.getrix ());
+	d_resl.reset ();
 	return;
       }
       // eventually fix some of the raw and waw legal violations with the

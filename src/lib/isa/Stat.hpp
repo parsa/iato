@@ -38,6 +38,8 @@ namespace iato {
 
   class Stat {
   protected:
+    /// the stat output stream
+    ofstream* p_stos;
     /// collection start time
     t_long d_stim;
     /// collection end time
@@ -89,6 +91,10 @@ namespace iato {
     /// create a default stat collection
     Stat (void);
 
+    /// create a stat collection with a file name
+    /// @param name the file name to use
+    Stat (const string& name);
+
     /// destroy this stat object
     virtual ~Stat (void);
 
@@ -100,6 +106,12 @@ namespace iato {
     /// @param iflg the instruction flag
     /// @param nflg the stop flag
     virtual void setflg (const bool bflg, const bool iflg, const bool nflg);
+
+    /// @return true if a maximum cycle count is reached
+    virtual bool ismaxcc (const t_long maxcc) const;
+
+    /// @return true if a maximum instruction count is reached
+    virtual bool ismaxic (const t_long maxic) const;
 
     /// mark a simulation cycle
     virtual void marksc (void);
@@ -167,6 +179,13 @@ namespace iato {
 
     /// print a stat report
     virtual void print (void) const;
+
+    /// set the dump output stream
+    /// @param name the output stream name
+    void setos (const string& name);
+
+    /// dump the stat info into an output stream
+    virtual void dump (void) const;
 
   private:
     // make the copy constructor private

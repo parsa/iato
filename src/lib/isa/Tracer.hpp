@@ -52,6 +52,8 @@ namespace iato {
   private:
     /// the verbose flag
     bool    d_vflg;
+    // the sort record flag
+    bool    d_sort;
     /// the record vector counter
     t_long  d_tcnt;
     /// the begin trace index

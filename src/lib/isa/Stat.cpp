@@ -21,6 +21,7 @@
 
 #include "Stat.hpp"
 #include "Utils.hpp"
+#include "Exception.hpp"
 
 namespace iato {
   // the string filling size
@@ -29,15 +30,27 @@ namespace iato {
   // create a default stat collection
 
   Stat::Stat (void) {
+    p_stos = 0;
     d_bflg = false;
     d_iflg = false;
     d_nflg = false; 
     reset ();
   }
 
+  // create a stat collection with a file name
+
+  Stat::Stat (const string& name) {
+    p_stos = 0;
+    d_bflg = false;
+    d_iflg = false;
+    d_nflg = false; 
+    reset ();
+    setos (name);
+  }
   // destroy this stat collection
 
   Stat::~Stat (void) {
+    delete p_stos;
   }
 
   // reset this stat collection
@@ -71,6 +84,20 @@ namespace iato {
     d_bflg = bflg;
     d_iflg = iflg;
     d_nflg = nflg;
+  }
+
+  // return true if a maximum cycle count is reached
+
+  bool Stat::ismaxcc (const t_long maxcc) const {
+    if ((maxcc == 0) || (d_ncyc == 0)) return false;
+    return (maxcc < d_ncyc);
+  }
+
+  // return true if a maximum instruction count is reached
+
+  bool Stat::ismaxic (const t_long maxic) const {
+    if ((maxic == 0) || (d_nins == 0)) return false;
+    return (maxic < d_nins);
   }
 
   // mark a simulation cycle
@@ -234,12 +261,24 @@ namespace iato {
 
   void Stat::printn (void) const {
     if (d_nins == 0) return;
-    cout << "number of nop instructions [M] : " << d_inst[M_NOP] << endl;
-    cout << "number of nop instructions [I] : " << d_inst[I_NOP] << endl;
-    cout << "number of nop instructions [F] : " << d_inst[F_NOP] << endl;
-    cout << "number of nop instructions [B] : " << d_inst[B_NOP] << endl;
-    cout << "number of nop instructions [X] : " << d_inst[X_NOP] << endl;
-    cout << "number of nop instructions     : " << getnnop ()    << endl;
+    double pmnp = 100.0 * (double) d_inst[M_NOP] / (double) d_nins;
+    double pinp = 100.0 * (double) d_inst[I_NOP] / (double) d_nins;
+    double pfnp = 100.0 * (double) d_inst[F_NOP] / (double) d_nins;
+    double pbnp = 100.0 * (double) d_inst[B_NOP] / (double) d_nins;
+    double pxnp = 100.0 * (double) d_inst[X_NOP] / (double) d_nins;
+    double pnop = 100.0 * (double) getnnop ()    / (double) d_nins;
+    cout << "number of nop instructions [M] : " << d_inst[M_NOP];
+    cout << "\t(" << setprecision (3) << pmnp << "%)" << endl;
+    cout << "number of nop instructions [I] : " << d_inst[I_NOP];
+    cout << "\t(" << setprecision (3) << pinp << "%)" << endl;
+    cout << "number of nop instructions [F] : " << d_inst[F_NOP];
+    cout << "\t(" << setprecision (3) << pfnp << "%)" << endl;
+    cout << "number of nop instructions [B] : " << d_inst[B_NOP];
+    cout << "\t(" << setprecision (3) << pbnp << "%)" << endl;
+    cout << "number of nop instructions [X] : " << d_inst[X_NOP];
+    cout << "\t(" << setprecision (3) << pxnp << "%)" << endl;
+    cout << "number of nop instructions     : " << getnnop ();
+    cout << "\t(" << setprecision (3) << pnop << "%)" << endl;
     cout << endl;
   } 
 
@@ -268,11 +307,13 @@ namespace iato {
     }
     // report instructions
     if (d_nins != 0) {
+      double puis = 100.0 * (double) d_nuis     / (double) d_nins;
       double pnop = 100.0 * (double) getnnop () / (double) d_nins;
-      double pprd = 100.0 * (double) d_nprd / (double) d_nins;
-      double pbpd = 100.0 * (double) d_nbpd / (double) d_nins;
+      double pprd = 100.0 * (double) d_nprd     / (double) d_nins;
+      double pbpd = 100.0 * (double) d_nbpd     / (double) d_nins;
       cout << "number of instructions         : " << d_nins << endl;
-      cout << "number of usefull instructions : " << d_nuis << endl;
+      cout << "number of usefull instructions : " << d_nuis;
+      cout << "\t(" << setprecision (3) << puis << "%)" << endl;
       cout << "nop instructions               : " << getnnop ();
       cout << "\t(" << setprecision (3) << pnop << "%)" << endl;
       cout << "predicated instructions        : " << d_nprd;
@@ -330,5 +371,84 @@ namespace iato {
     if (d_nflg == true) printn ();
     // print stat summary
     summary ();
+  }
+
+  // set the dump output stream
+
+  void Stat::setos (const string& name) {
+    if (p_stos) {
+      delete p_stos;
+      p_stos = 0;
+    }
+    if (name.size () == 0) return;
+    try {
+      p_stos = new ofstream (name.c_str ());
+      // write the header with cycle, bundles ans instructions
+      *p_stos << "# ncyc";
+      *p_stos << '\t' << "nbnd" << '\t' << "nins" << '\t' << "nuis";
+      // dump the predication infomation, total and non branch
+      *p_stos << '\t' << "nprd" << '\t' << "nbpd";
+      // dump the cancel information, total and non branch
+      *p_stos << '\t' << "ncan" << '\t' << "nbcn";
+      // dump the pipeline flush info
+      *p_stos << '\t' << "ntpf" << '\t' << "nbpf" << '\t' << "nopf";
+      // dump the branch prediction info
+      *p_stos << '\t' << "npbr" << '\t' << "npbs";
+      // dump the predicate prediction info
+      *p_stos << '\t' << "nppr" << '\t' << "npps"; 
+      // dump the ipc
+      *p_stos << '\t' << "ipc";
+      // dump the instrcution rate, useful, nop, predicated and non-br
+      *p_stos << '\t' << "puis";
+      *p_stos << '\t' << "pnop";
+      *p_stos << '\t' << "pprd";
+      *p_stos << '\t' << "pbpd";
+      // that's all folks
+      *p_stos << endl;
+    } catch (...) {
+      string msg = "cannot open stat output file ";
+      throw Exception ("stat-error", msg + name);
+    }
+  }
+
+  // print a report to an output stream
+
+  void Stat::dump (void) const {
+    // if there is no stream, simply issue a print command
+    if (!p_stos) {
+      print ();
+      return;
+    }
+    // dump the cycle, bundles ans instructions
+    *p_stos << d_ncyc;
+    *p_stos << '\t' << d_nbnd << '\t' << d_nins << '\t' << d_nuis;
+    // dump the predication infomation, total and non branch
+    *p_stos << '\t' << d_nprd << '\t' << d_nbpd;
+    // dump the cancel information, total and non branch
+    *p_stos << '\t' << d_ncan << '\t' << d_nbcn;
+    // dump the pipeline flush info
+    *p_stos << '\t' << d_ntpf << '\t' << d_nbpf << '\t' << d_nopf;
+    // dump the branch prediction info
+    *p_stos << '\t' << d_npbr << '\t' << d_npbs;
+    // dump the predicate prediction info
+    *p_stos << '\t' << d_nppr << '\t' << d_npps;
+    // dump the ipc
+    if (d_ncyc != 0) {
+      double ipc = (double) d_nins / (double) d_ncyc;
+      *p_stos << '\t' << setprecision (3) << ipc;
+    }
+    // dump the instrcution rate, useful, nop, predicated and non-br
+    if (d_nins != 0) {
+      double puis = 100.0 * (double) d_nuis     / (double) d_nins;
+      double pnop = 100.0 * (double) getnnop () / (double) d_nins;
+      double pprd = 100.0 * (double) d_nprd     / (double) d_nins;
+      double pbpd = 100.0 * (double) d_nbpd     / (double) d_nins;
+      *p_stos << '\t' << setprecision (3) << puis;
+      *p_stos << '\t' << setprecision (3) << pnop;
+      *p_stos << '\t' << setprecision (3) << pprd;
+      *p_stos << '\t' << setprecision (3) << pbpd;
+    }
+    // that's all folks
+    *p_stos << endl;
   }
 }

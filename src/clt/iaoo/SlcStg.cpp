@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------
 
 #include "Srn.hpp"
-#include "ExpStg.hpp"
+#include "PrnStg.hpp"
 #include "SlcStg.hpp"
 #include "Exception.hpp"
 
@@ -158,15 +158,15 @@ namespace iato {
   // previous stage and are assumed to be physically renamed.
 
   void SlcStg::activate (void) {
-    // get the previous stage and map it to exp
-    ExpStg* exp = dynamic_cast <ExpStg*> (p_pstg);
-    assert (exp);
+    // get the previous stage and map it to prn
+    PrnStg* prn = dynamic_cast <PrnStg*> (p_pstg);
+    assert (prn);
     // select first the ready instruction
     d_inst = p_tsta->getrdy ();
     // check if the station is full
     if (p_tsta->isfull () == false) {
       // grab the instruction from the unit queue
-      Dsi dsi = exp->pop (d_unit);
+      Dsi dsi = prn->pop (d_unit);
       if (dsi.isvalid () == true) {
 	// check if the instruction is canceled or not
 	if (check_cancel (dsi, p_urf, p_rbk) == true) {
@@ -184,6 +184,7 @@ namespace iato {
 	p_tsta->alloc (dsi);
       }
     }
+    if (d_inst.isvalid () == false) d_inst = p_tsta->getrdy ();
     // check if the previous stage is halted - if it is halted, we check
     // that the station is empty before going into halt mode
     if (p_pstg && (p_pstg->ishalted () == true)) {

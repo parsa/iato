@@ -142,6 +142,7 @@ namespace iato {
 
   Tracer::Tracer (void) {
     d_vflg = false;
+    d_sort = false;
     d_bicc = TR_BICC;
     d_eicc = TR_EICC;
     d_ptnm = "";
@@ -158,6 +159,7 @@ namespace iato {
 
   Tracer::Tracer (const bool vflg) {
     d_vflg = vflg;
+    d_sort = false;
     d_bicc = TR_BICC;
     d_eicc = TR_EICC;
     d_ptnm = "";
@@ -174,6 +176,7 @@ namespace iato {
 
   Tracer::Tracer (Ctx* ctx) {
     d_vflg = ctx->getbool  ("TRACER-VERBOSE-FLAG");
+    d_sort = ctx->getbool  ("TRACER-SORT-RECORD");
     d_bicc = ctx->getllong ("TRACER-BEGIN-INDEX");
     d_eicc = ctx->getllong ("TRACER-END-INDEX");
     d_ptnm = ctx->getstr   ("TRACER-PROGRAM-NAME"),
@@ -324,6 +327,9 @@ namespace iato {
     // check for cycle range
     if (inrange () == false) return;
     if ((!p_ctrc) || (d_vflg == false)) return;
+    // check if we sort the trace
+    if (d_sort == true) sort (p_ctrc->begin (), p_ctrc->end ());
+    // print the trace
     cout << "trace " << d_tcnt << " {"   << endl;
     long size = p_ctrc->size ();
     for (long i = 0; i < size; i++) {

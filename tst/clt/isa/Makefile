@@ -91,9 +91,7 @@ SOURCES 	= A01.s \
 		  F10.s \
 		  F11.s \
 		  X02.s \
-		  B01.s \
-	   	  B06.s \
-		  B07.s
+		  B01.s
 
 SRCEXTS		= F06.s \
 		  F12.s \

@@ -38,6 +38,10 @@
 #include "Iib.hpp"
 #endif
 
+#ifndef  IATO_EIQ_HPP
+#include "Eiq.hpp"
+#endif
+
 #ifndef  IATO_STAGE_HPP
 #include "Stage.hpp"
 #endif
@@ -53,12 +57,18 @@ namespace iato {
   private:
     /// the instruction buffer size
     long d_swsz;
-    /// the instruction buffer
-    Dsi* p_inst;
     /// the urf
     Urf* p_urf;
     /// the iib
     Iib* p_iib;
+    /// the M unit queue
+    Eiq d_mbuf;
+    /// the I unit queue
+    Eiq d_ibuf;
+    /// the F unit queue
+    Eiq d_fbuf;
+    /// the B unit queue
+    Eiq d_bbuf;
 
   public:
     /// create a new physical rename stage by context
@@ -69,9 +79,6 @@ namespace iato {
     /// @param stx the simulation context
     /// @param name the stage name
     PrnStg (Stx* stx, const string& name);
-
-    /// destroy this physical rename stage
-    ~PrnStg (void);
 
     /// reset this physical rename stage
     void reset (void);
@@ -88,17 +95,29 @@ namespace iato {
     /// report some stage information
     void report (void) const;
 
-    /// clear the physical rename resources
-    void clear (void);
-
     /// bind this stage with an execution environment
     /// @param env the execution environment
     /// @param pstg the previous stage
     /// @param nstg the next stage
     void bind (Env* env, Stage* pstg, Stage* nstg);
 
-    /// @return an instruction by index
-    Dsi getinst (const long index) const;
+    /// clear the physical rename resources
+    void clear (void);
+
+    /// @return true if all queues are empty
+    bool isempty (void) const;
+
+    /// @return true if a queue is empty by unit
+    bool isempty (const t_unit unit) const;
+ 
+    /// @return true if all queues are full
+    bool isfull (void) const;
+
+    /// @return true if a queue is full by unit
+    bool isfull (const t_unit unit) const;
+
+    /// @return an instruction in the queue by unit
+    Dsi pop (const t_unit unit);
 
   private:
     // make the copy constructor private

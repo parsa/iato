@@ -117,7 +117,7 @@ namespace iato {
 	// loop in the slots and check for branches
 	for (long j = 0; j < BN_SLSZ; j++) {
 	  // ignore instruction that are below the restarting point
-	  if (p_reng->isvalid (bip, j) == false) {
+	  if (p_reng->check (bip, j) == false) {
 	    p_bndl[i].setvsb (j, false);
 	    continue;
 	  }

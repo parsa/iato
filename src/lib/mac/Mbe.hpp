@@ -38,19 +38,12 @@ namespace iato {
   private:
     /// the element index
     long d_eix;
-    /// use element ordering
-    bool d_ueo;
     /// the element mrt
     Mrt  d_mrt;
 
   public:
     /// create a default memory element
     Mbe (void);
-
-    /// create a memory element by index and ordering flag
-    /// @param eix the element index
-    /// @param ueo the use element ordering flag
-    Mbe (const long eix, const bool ueo);
 
     /// reset this memory element
     void reset (void);
@@ -62,16 +55,14 @@ namespace iato {
     /// @return the element index
     long geteix (void) const;
 
-    /// set the element ordering flag
-    /// @param ueo the use element ordering flag
-    void setueo (const bool ueo);
-
-    /// @return the element ordering flag
-    bool getueo (void) const;
-
     /// set a memory element by mrt
     /// @param mrt the memory request type
     void setmrt (const Mrt& mrt);
+
+    /// set a memory element by mrt and index
+    /// @param mrt the memory request type
+    /// @param eix the element index
+    void setmrt (const Mrt& mrt, const long eix);
 
     /// @return the element mrt
     Mrt getmrt (void) const;

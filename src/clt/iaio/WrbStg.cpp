@@ -135,12 +135,14 @@ namespace iato {
     bool cnlf = d_inst.getcnlf () || nnlf;
     // instruction interrupt flag
     bool intr = d_inst.getintr ();
+    // memory ordering violation
+    bool mofl = d_inst.getmofl ();
     // invalid speculation flag
     bool ispf = !d_inst.getvspf ();
     // pipe flush branch taken
     bool pfbt = (d_inst.getsfl () == false) && (d_resl.isreg (IPRG) == true);
     // global pipe flush flags
-    bool pfbv = intr || ispf || pfbt;
+    bool pfbv = intr || mofl || ispf || pfbt;
     // make sure we can write the results
     // results and rse updates can only be made when the instruction is not
     // cancelled, nor interupted, nor pending in B unit
@@ -160,8 +162,8 @@ namespace iato {
       if (p_stat && !nnlf) p_stat->addinst (d_inst, cnlf);
       // notify the watchdog
       if (p_wdg) p_wdg->reset ();
-      // update the tracer
-      if (p_tracer) {
+      // update the tracer if the instruction is not nullified
+      if (p_tracer && !nnlf) {
 	Record rcd (d_name, d_inst, !cnlf);
 	p_tracer->add (rcd);
       }
@@ -169,7 +171,7 @@ namespace iato {
       // a pipeline flush is requested assuming the machine is in a good state
       if ((pend == false) && (p_rse->validate (d_inst.getsste ()) == false)) {
 	// restore the branch predictor history
-	p_bpr->sethist (d_inst.gethist ());
+	//p_bpr->sethist (d_inst.gethist ());
 	// select restart condition
 	if ((cnlf == false) && (d_resl.isreg (IPRG) == true)) {
 	  p_pfr->pflcl ();
@@ -228,10 +230,23 @@ namespace iato {
       if (d_ref == true) p_pfr->process ();
       return;
     }
+    // check for memory ordering violation
+    if (mofl == true) {
+      t_octa iip  = d_inst.getiip  ();
+      long   slot = d_inst.getslot ();
+      p_pfr->pfstd (iip, slot);
+      if (p_stat && !nnlf) p_stat->markpf  (d_inst.isbr ());
+      // notify the watchdog
+      if (p_wdg) p_wdg->reset ();
+      // clean and process pending flush
+      clean ();
+      if (d_ref == true) p_pfr->process ();
+      return;
+    }
     // check for pipe flush by speculation
     if (ispf == true) {
       // restore the branch predictor history
-      p_bpr->sethist (d_inst.gethist ());
+      //p_bpr->sethist (d_inst.gethist ());
       // select restart condition
       if (cnlf == false) {
 	// update the restart engine
@@ -265,7 +280,7 @@ namespace iato {
     // check for pipe flush by taken branch
     if ((cnlf == false) && (intr == false) && (pfbt == true)) {
       // restore the branch predictor history
-      p_bpr->sethist (d_inst.gethist ());
+      //p_bpr->sethist (d_inst.gethist ());
       // call the restart engine and request a pipeline flush
       // the next ip, assuming slot 0 is already set and the rse
       // is in a valid state

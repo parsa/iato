@@ -1090,6 +1090,7 @@ namespace iato {
       // M21 instruction group
     case M_CHK_S:
       d_rprd.setlnum         (PREG, get_pred (d_inst));
+      d_rdst[0].setlnum      (IPRG, 0);
       d_rsrc[0].setlnum      (FREG, get_src0 (d_inst));
       d_immv[0] = get_spectg (d_inst);
       d_group   = "M21";

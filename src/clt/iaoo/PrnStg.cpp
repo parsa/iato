@@ -80,7 +80,6 @@ namespace iato {
 
   PrnStg::PrnStg (Stx* stx) : Stage (stx, RESOURCE_PRN) {
     d_swsz = stx->getiwsz () * BN_SLSZ; assert (d_swsz > 0);
-    p_inst = new Dsi[d_swsz];
     p_urf  = 0;
     p_iib  = 0;
     reset ();
@@ -90,16 +89,9 @@ namespace iato {
 
   PrnStg::PrnStg (Stx* stx, const string& name) : Stage (stx, name) {
     d_swsz = stx->getiwsz () * BN_SLSZ; assert (d_swsz > 0);
-    p_inst = new Dsi[d_swsz];
     p_urf  = 0;
     p_iib  = 0;
     reset ();
-  }
-
-  // destroy this physical rename stage
-
-  PrnStg::~PrnStg (void) {
-    delete [] p_inst;
   }
 
   // reset this physical rename stage
@@ -120,8 +112,10 @@ namespace iato {
   // return true if the stage is holding
 
   bool PrnStg::isholding (void) const {
-    if (p_nstg) return p_nstg->isholding ();
-    return false;
+    // return true if one queue has reached the threshold
+    bool qthr = d_mbuf.isthr () || d_ibuf.isthr () ||
+                d_fbuf.isthr () || d_bbuf.isthr ();
+    return qthr;
   }
 
   // activate this physical rename stage - the bundle are queried from the
@@ -135,15 +129,38 @@ namespace iato {
     // loop in the logical renamed instruction buffer
     for (long i = 0; i < d_swsz; i++) {
       // get logical renamed instruction
-      p_inst[i] = lrn->getinst (i);
+      Dsi dsi = lrn->getinst (i);
+      if (dsi.isvalid () == false) continue;
       try {
 	// rename it by the urf (rat and trb)
-	assert (prninst (p_inst[i], p_urf) == true);
+	assert (prninst (dsi, p_urf) == true);
+	// expand the instruction
+	switch (dsi.getsunit ()) {
+	case MUNIT:
+	  d_mbuf.push (dsi);
+	  break;
+	case IUNIT:
+	  d_ibuf.push (dsi);
+	  break;
+	case FUNIT:
+	  d_fbuf.push (dsi);
+	  break;
+	case BUNIT:
+	  d_bbuf.push (dsi);
+	  break;	
+	default:
+	  assert (false);
+	  break;
+	}
+	// update the tracer
+	if (p_tracer) {
+	  Record rcd (d_name, dsi);
+	  p_tracer->add (rcd);
+	}
       } catch (Interrupt& vi) {
-	vi.setinst (p_inst[i]);
-	long iiib = p_inst[i].getiib ();
+	vi.setinst (dsi);
+	long iiib = dsi.getiib ();
 	p_iib->setintr (iiib, vi);
-	p_inst[i].reset ();
       }
     }
     // check if the previous stage is halted
@@ -152,12 +169,6 @@ namespace iato {
     }
     // update the tracer
     if (p_tracer) {
-      for (long i = 0; i < d_swsz; i++) {
-	if (p_inst[i].isvalid () == true) {
-	  Record rcd (d_name, p_inst[i]);
-	  p_tracer->add (rcd);
-	}
-      }
       if (d_halt == true) {
 	Record rcd (d_name);
 	rcd.settype (Record::HALTED);
@@ -174,12 +185,6 @@ namespace iato {
     cout << "\tresource type\t\t: instruction physical renaming" << endl;
     cout << "\tinstruction buffer \t: " << d_swsz     << endl;
     cout << "\tdelayable latency  \t: " << getdlat () << endl;
-  }
-
-  // clear the instruction array
-  
-  void PrnStg::clear (void) {
-    for (long i = 0; i < d_swsz; i++) p_inst[i].reset ();
   }
 
   // bind this stage from the environment
@@ -201,12 +206,98 @@ namespace iato {
     }
   }
 
-  // return an instruction by index
+  // clear the instruction array
+  
+  void PrnStg::clear (void) {
+    d_mbuf.reset ();
+    d_ibuf.reset ();
+    d_fbuf.reset ();
+    d_bbuf.reset ();
+  }
 
-  Dsi PrnStg::getinst (const long index) const {
-    assert ((index >= 0) && (index < d_swsz));
-    Dsi dsi = p_inst[index];
-    p_inst[index].reset ();
+  // return true if all queues are empty
+
+  bool PrnStg::isempty (void) const {
+    bool flag = d_mbuf.isempty () && d_ibuf.isempty () && 
+                d_fbuf.isempty () && d_bbuf.isempty ();
+    return flag;
+  }
+
+  // return true if a queue is empty by unit
+
+  bool PrnStg::isempty (const t_unit unit) const {
+    bool result = false;
+    switch (unit) {
+    case MUNIT:
+      result = d_mbuf.isempty ();
+      break;
+    case IUNIT:
+      result = d_ibuf.isempty ();
+      break;
+    case FUNIT:
+      result = d_fbuf.isempty ();
+      break;
+    case BUNIT:
+      result = d_bbuf.isempty ();
+      break;
+    default:
+      break;
+    }
+    return result;
+  }
+
+  // return true if all queues are full
+
+  bool PrnStg::isfull (void) const {
+    bool flag = d_mbuf.isfull () || d_ibuf.isfull () ||
+                d_fbuf.isfull () || d_bbuf.isfull ();
+    return flag;
+  }
+
+  // return true if a queue is full by unit
+
+  bool PrnStg::isfull (const t_unit unit) const {
+    bool result = false;
+    switch (unit) {
+    case MUNIT:
+      result = d_mbuf.isfull ();
+      break;
+    case IUNIT:
+      result = d_ibuf.isfull ();
+      break;
+    case FUNIT:
+      result = d_fbuf.isfull ();
+      break;
+    case BUNIT:
+      result = d_bbuf.isfull ();
+      break;
+    default:
+      break;
+    }
+    return result;
+  }
+
+  // pop an instruction by unit
+
+  Dsi PrnStg::pop (const t_unit unit) {
+    Dsi dsi;
+    switch (unit) {
+    case MUNIT:
+      dsi = d_mbuf.pop ();
+      break;
+    case IUNIT:
+      dsi = d_ibuf.pop ();
+      break;
+    case FUNIT:
+      dsi = d_fbuf.pop ();
+      break;
+    case BUNIT:
+      dsi = d_bbuf.pop ();
+      break;
+    default:
+      assert (false);
+      break;
+    }
     return dsi;
   }
 }

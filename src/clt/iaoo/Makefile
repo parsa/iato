@@ -28,7 +28,6 @@ SOURCES 	= Stx.cpp       \
 		  DecStg.cpp    \
 		  LrnStg.cpp    \
 		  PrnStg.cpp    \
-		  ExpStg.cpp    \
 		  SlcStg.cpp    \
 		  RegStg.cpp    \
 		  ExeStg.cpp    \

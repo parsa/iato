@@ -62,6 +62,8 @@ namespace iato {
     long d_cycle;
     /// the maximum cycle count
     long d_maxcc;
+    /// the maximum instruction count
+    long d_maxic;
     /// the check flag
     bool d_cflag;
     /// the stat flag

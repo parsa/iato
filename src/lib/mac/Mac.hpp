@@ -128,7 +128,7 @@ namespace iato {
   /// I unit latency
   const long IT_ILAT = 1;
   /// F unit latency
-  const long IT_FLAT = 4;
+  const long IT_FLAT = 3;
   /// B unit latency
   const long IT_BLAT = 1;
 
@@ -177,7 +177,7 @@ namespace iato {
   /// I unit latency
   const long MK_ILAT = 1;
   /// F unit latency
-  const long MK_FLAT = 4;
+  const long MK_FLAT = 3;
   /// B unit latency
   const long MK_BLAT = 1;
 

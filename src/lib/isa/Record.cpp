@@ -391,6 +391,25 @@ namespace iato {
     return *this;
   }
 
+  // return true if a record is in order
+
+  bool Record::operator < (const Record& rcd) const {
+    // we only compare instrction record
+    if ((d_type != RINSTR) || (rcd.d_type != RINSTR)) return false;
+    // check for the address
+    if (d_info.d_inst.d_ip < rcd.d_info.d_inst.d_ip) return true;
+    if (d_info.d_inst.d_ip > rcd.d_info.d_inst.d_ip) return false;
+    // both address are equal _ check the slot
+    if (d_info.d_inst.d_slot < rcd.d_info.d_inst.d_slot) return true;
+    return false;
+  }
+
+  // reset this record
+
+  void Record::reset (void) {
+    d_type = IGNORE;
+  }
+
   // set the record source name
 
   void Record::setname (const string& rsrc) {

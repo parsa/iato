@@ -33,9 +33,7 @@ SOURCES 	= p_0001.c \
 		  p_0013.c \
 		  p_0014.c \
 		  p_0015.c \
-		  p_0016.c \
-		  p_0017.c \
-		  p_0018.c
+		  p_0016.c
 
 OBJECTS 	= $(SOURCES:.c=.o)
 TARGETS		= $(basename $(OBJECTS))

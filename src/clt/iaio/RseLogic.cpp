@@ -25,12 +25,14 @@ namespace iato {
   // create a default rse logic
 
   RseLogic::RseLogic (void) {
+    p_rstk = new RseStack;
     reset ();
   }
 
   // create a rse logic with a context
 
   RseLogic::RseLogic (Mtx* mtx) : Rse (mtx) {
+    p_rstk = new RseStack (mtx);
     reset ();
   }
 
@@ -38,6 +40,7 @@ namespace iato {
 
   void RseLogic::reset (void) {
     Rse::reset ();
+    p_rstk->reset ();
     d_spste = d_state;
   }
 
@@ -45,6 +48,7 @@ namespace iato {
 
   void RseLogic::flush (void) {
     Rse::flush ();
+    p_rstk->reset ();
     d_spste = d_state;
   }
 

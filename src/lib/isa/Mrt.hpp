@@ -66,6 +66,8 @@ namespace iato {
     t_mrtt d_type;
     /// the request address
     t_octa d_addr;
+    /// the ordering flag
+    bool   d_mofl;
     /// the speculative bit
     bool   d_sbit;
     /// the nat value bit
@@ -135,6 +137,9 @@ namespace iato {
 
     /// @return the mrt mask
     t_octa getmask (void) const;
+
+    /// @return the mrt ordering flag
+    bool getmofl (void) const;
 
     /// set the nat value bit
     /// @param nval the nat value to set
@@ -237,9 +242,9 @@ namespace iato {
     void setst (t_mrtt type, const t_octa addr, const t_real& lval,
 		const t_real& hval);
 
-    /// set the mrt value from a mrt
+    /// set the mrt value from a mrt and return a ordering status
     /// @param mrt the mrt used for setting
-    void setmv (const Mrt& mrt);
+    bool setmv (const Mrt& mrt);
   };
 }
 

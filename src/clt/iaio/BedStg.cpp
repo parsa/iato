@@ -191,8 +191,10 @@ namespace iato {
     // is valid, the index is not updated as the instruction are cleared
     // in the fetch engine
     if ((d_inst.isvalid ()     == true) && (d_inst.getcnlf () == false) &&
-	(d_resl.isreg   (IPRG) == true) && (d_inst.getvspf () == false)) {
-      p_pfr->setrii (d_inst.getrix ());
+	(d_resl.isreg   (IPRG) == true)) {
+      if ((d_inst.getsfl () == false) || (d_inst.getvspf () == false)) {
+	p_pfr->setrii (d_inst.getrix ());
+      }
     }
     // check if the previous stage is halted
     if (p_pstg) d_halt = p_pstg->ishalted ();

@@ -71,12 +71,12 @@ namespace iato {
 
     /// update an mrt with the bypass data
     /// @param mrt the mrt to update
-    Mrt update (Mrt& mrt) const;
+    Mrt update (const Mrt& mrt) const;
 
     /// update an mrt with the bypass data
     /// @param mrt the mrt to update
     /// @param mix the maximum index
-    Mrt update (Mrt& mrt, const long mix) const;
+    Mrt update (const Mrt& mrt, const long mix) const;
 
   private:
     // make the copy constructor private

@@ -38,6 +38,8 @@ namespace iato {
       t_byte      btr[sizeof(krn_termios)];
       krn_termios ktr;
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_termios); i++) btr[i] = BYTE_0;
     map_termios (ktr, ut);
     // copy result into memory
     t_octa kptr = sys_args_getoval (2, rse, rbk);

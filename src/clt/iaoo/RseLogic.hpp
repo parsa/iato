@@ -40,9 +40,9 @@ namespace iato {
 
   class RseLogic : public Rse {
   private:
-    // the speculative state
+    /// the speculative state
     State d_spste;
-    // the rse stack
+    /// the rse stack
     RseStack* p_rstk;
 
   public:

@@ -59,19 +59,23 @@ namespace iato {
     /// the tracer threshold
     long   d_tthrs;
     /// the checker mode flag
-    bool d_cflag;
+    bool   d_cflag;
     /// the stat mode flag
-    bool d_sflag;
+    bool   d_sflag;
     /// the cycle stat count
-    long d_sccnt;
+    long   d_sccnt;
+    /// the stat file name
+    string d_sname;
     /// maximum number of cycles
     t_long d_maxcc;
+    /// maximum number of instructions
+    t_long d_maxic;    
     /// the begin tracing cycle count
     t_long d_btrcc;
     /// the end tracing cycle count
     t_long d_etrcc;
     /// the report flag
-    bool d_rflag;
+    bool   d_rflag;
     /// instruction window size
     long d_winsz;
     /// number of M units
@@ -160,7 +164,12 @@ namespace iato {
     long getmaxcc (void) const {
       return d_maxcc;
     }
- 
+
+    /// @return the number of maximum instructions
+    long getmaxic (void) const {
+      return d_maxic;
+    }
+
     /// @return the begin tracing cycle count
     t_long getbtrcc (void) const {
       return d_btrcc;
@@ -184,6 +193,11 @@ namespace iato {
     /// @return the stat cycle count
     long getsccnt (void) const {
       return d_sccnt;
+    }
+
+    /// @return the stat file name
+    string getsname (void) const {
+      return d_sname;
     }
 
     /// @return the instruction window size

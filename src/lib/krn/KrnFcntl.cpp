@@ -334,6 +334,8 @@ namespace iato {
       t_byte    bst[sizeof(krn_sstat)];
       krn_sstat kst;
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_sstat); i++) bst[i] = BYTE_0;
     // map to the kernel result structure
     map_stat (kst, mst);
     // get result address structure
@@ -362,9 +364,11 @@ namespace iato {
     }
     // the kernel result structue
     union {
-      t_byte   bst[sizeof(krn_sstat)];
+      t_byte    bst[sizeof(krn_sstat)];
       krn_sstat kst;
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_sstat); i++) bst[i] = BYTE_0;
     // change to the kernel result structue
     map_stat (kst, mst);
     // get result address structure
@@ -397,6 +401,8 @@ namespace iato {
       t_byte    bst[sizeof(krn_sstat)];
       krn_sstat kst;
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_sstat); i++) bst[i] = BYTE_0;
     // map to the kernel result structure
     map_stat (kst, mst);
     // get result address structure

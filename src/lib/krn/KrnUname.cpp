@@ -41,6 +41,8 @@ namespace iato {
       t_byte      kbk[sizeof(krn_utsname)];
       krn_utsname utk;
     };
+    // zero the whole structure
+    for (long i = 0; i < (long) sizeof(krn_utsname); i++) kbk[i] = BYTE_0;
     // get result address structure
     t_octa uptr = sys_args_getoval (0, rse, rbk);
     // map result to structure

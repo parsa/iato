@@ -25,8 +25,8 @@
 #include "Mtx.hpp"
 #endif
 
-#ifndef  IATO_RSE_HPP
-#include "Rse.hpp"
+#ifndef  IATO_RSESTACK_HPP
+#include "RseStack.hpp"
 #endif
 
 namespace iato {
@@ -36,8 +36,10 @@ namespace iato {
 
   class RseLogic : public Rse {
   private:
-    // the speculative state
+    /// the speculative state
     State d_spste;
+    /// the rse stack
+    RseStack* p_rstk;
 
   public:
     /// create a default rse logic

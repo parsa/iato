@@ -61,12 +61,16 @@ namespace iato {
     long d_cycle;
     /// the maximum cycle count
     long d_maxcc;
+    /// the maximum instruction count
+    long d_maxic;
     /// the check flag
     bool d_cflag;
     /// the stat flag
     bool d_sflag;
     /// the stat cycle count
     long d_sccnt;
+    /// the stat file name
+    string d_sname;
     /// the system interface
     System*    p_psys;
     /// the processor core

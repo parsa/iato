@@ -64,7 +64,7 @@ namespace iato {
 
   // update an mrt with the bypass data
 
-  Mrt Mbn::update (Mrt& mrt) const {
+  Mrt Mbn::update (const Mrt& mrt) const {
     Mrt result;
     // check for valid mrt
     if (mrt.isvalid () == false) return result;
@@ -92,7 +92,7 @@ namespace iato {
 
   // update an mrt with the bypass data and index
 
-  Mrt Mbn::update (Mrt& mrt, const long mix) const {
+  Mrt Mbn::update (const Mrt& mrt, const long mix) const {
     Mrt result;
     // check for valid mrt
     if (mrt.isvalid () == false) return result;
@@ -105,8 +105,8 @@ namespace iato {
     long size = d_vmbe.size ();
     for (long i = 0; i < size; i++) {
       // get the ordering flag and check for index
-      bool ueo = d_vmbe[i]->getueo ();
-      if ((ueo == true) && (d_vmbe[i]->geteix () >= mix)) continue;
+      long eix = d_vmbe[i]->geteix ();
+      if ((eix == -1) || (eix >= mix)) continue;
       // the index is valid, get the bypass mrt
       Mrt bmrt = d_vmbe[i]->getmrt ();
       if (bmrt.isvalid () == false) continue;

@@ -32,6 +32,7 @@ namespace iato {
     d_tflag = stx->getbool ("TRACER-FLAG");
     d_vflag = stx->getbool ("TRACER-VERBOSE-FLAG");
     d_maxcc = stx->getlong ("MAXIMUM-CYCLE-COUNT");
+    d_maxic = stx->getlong ("MAXIMUM-INSTRUCTION-COUNT");
     d_cflag = stx->getbool ("CHECKER-FLAG");
     d_sflag = stx->getbool ("STAT-FLAG");
     d_sccnt = stx->getlong ("STAT-CYCLE-COUNT");
@@ -44,7 +45,8 @@ namespace iato {
     // install a tracer if needed
     p_ptrc = d_tflag ? new Tracer (stx) : 0;
     // install a stat collection if needed
-    p_pstc = d_sflag ? new Stat : 0;
+    string sname = stx->getstr  ("STAT-FILE-NAME");
+    p_pstc = d_sflag ? new Stat (sname) : 0;
   }
 
   // create a new simulator with a context, a program name and arguments
@@ -56,6 +58,7 @@ namespace iato {
     d_tflag = stx->getbool ("TRACER-FLAG");
     d_vflag = stx->getbool ("TRACER-VERBOSE-FLAG");
     d_maxcc = stx->getlong ("MAXIMUM-CYCLE-COUNT");
+    d_maxic = stx->getlong ("MAXIMUM-INSTRUCTION-COUNT");
     d_cflag = stx->getbool ("CHECKER-FLAG");
     d_sflag = stx->getbool ("STAT-FLAG");
     d_sccnt = stx->getlong ("STAT-CYCLE-COUNT");
@@ -68,7 +71,8 @@ namespace iato {
     // install a checker if needed
     p_pchk = d_cflag ? p_psys->getchecker () : 0;
     // install a stat collection if needed
-    p_pstc = d_sflag ? new Stat : 0;
+    string sname = stx->getstr  ("STAT-FILE-NAME");
+    p_pstc = d_sflag ? new Stat (sname) : 0;
   }
 
   // destroy this simulator
@@ -136,7 +140,10 @@ namespace iato {
     while (p_proc->ishalted () == false) {
       // check for next cycle
       d_cycle++;
-      if ((d_maxcc != 0) && (d_cycle > d_maxcc)) break;
+      // check for max cycle
+      if ((p_pstc) && (p_pstc->ismaxcc (d_maxcc) == true)) break;
+      // check for max instrctions
+      if ((p_pstc) && (p_pstc->ismaxic (d_maxic) == true)) break;
       // initiate a new stat cycle
       if (p_pstc) p_pstc->marksc ();
       // initiate new tracer cycle
@@ -153,7 +160,7 @@ namespace iato {
       if (p_ptrc) p_ptrc->print ();
       // eventually print some stat
       if ((d_sccnt != 0) && (d_cycle > 0) && ((d_cycle % d_sccnt) == 0)) {
-	if (p_pstc) p_pstc->print ();
+	if (p_pstc) p_pstc->dump ();
       }
     }
   }

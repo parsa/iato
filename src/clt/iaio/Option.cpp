@@ -46,7 +46,9 @@ namespace iato {
     cerr << "  -c                     enable checker mode           " << endl;
     cerr << "  -s                     enable stat report            " << endl;
     cerr << "  -s:c #                 enable cycle stat report      " << endl;
-    cerr << "  -m   #                 maximum cycle count           " << endl;
+    cerr << "  -s:f name              set stat file name            " << endl;
+    cerr << "  -m:c #                 maximum cycle count           " << endl;
+    cerr << "  -m:i #                 maximum instruction count     " << endl;
     cerr << "  -p:s name:type=value   set a context parameter       " << endl;
     cerr << "  -p:d                   dump the context to the output" << endl;
     cerr << endl;
@@ -80,10 +82,12 @@ namespace iato {
     d_bunit = MK_BUSZ;
     d_grnum = GR_LRSZ;
     d_maxcc = 0;
+    d_maxic = 0;
     d_btrcc = TR_BICC;
     d_etrcc = TR_EICC;
     d_trcty = "";
     d_trsrc = "";
+    d_sname = "";
     d_bprd  = BP_TYPE;
     // check for arguments
     string data;
@@ -160,6 +164,29 @@ namespace iato {
 	case 'c':
 	  d_cflag = true;
 	  break;
+	case 'm':
+	  if ((arg[2] == ':') && (arg[3] == 'c') && (arg[4] == '\0')) {
+	    if (++count == argc) usage ();
+	    d_maxcc = tolong (argv[count]);
+	    if (d_maxcc < 0) {
+	      cerr << "error: illegal max cycle count, # = ";
+	      cerr << d_maxcc << endl;
+	      exit (1);
+	    }
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'i') && (arg[4] == '\0')) {
+	    if (++count == argc) usage ();
+	    d_maxic = tolong (argv[count]);
+	    if (d_maxic < 0) {
+	      cerr << "error: illegal max instruction count, # = ";
+	      cerr << d_maxic << endl;
+	      exit (1);
+	    }
+	    break;
+	  }
+	  usage ();
+	  break;
 	case 's':
 	  if (arg[2] == '\0') {
 	    d_sflag = true;
@@ -173,6 +200,13 @@ namespace iato {
 	      exit (1);
 	    }
 	    d_sflag = true;
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'f') && (arg[4] == '\0')) {
+	    if (++count == argc) usage ();
+	    d_sflag = true;
+	    d_sname = argv[count];
+	    if (d_sccnt == 0) d_sccnt = 10000;
 	    break;
 	  }
 	  usage ();
@@ -242,15 +276,6 @@ namespace iato {
 	  d_grnum = tolong (argv[count]);
 	  if (d_grnum <= 0) {
 	    cerr << "error: illegal number of gr, G# = " << d_grnum;
-	    cerr << endl;
-	    exit (1);
-	  }
-	  break;
-	case 'm':
-	  if (++count == argc) usage ();
-	  d_maxcc = tolong (argv[count]);
-	  if (d_maxcc < 0) {
-	    cerr << "error: illegal maximum cycle, # = " << d_maxcc;
 	    cerr << endl;
 	    exit (1);
 	  }

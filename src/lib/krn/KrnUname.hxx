@@ -34,7 +34,7 @@ namespace iato {
   // supported release for this implementation
   const t_byte* KRN_UTSNAME_RELEASE = (const t_byte*) "2.4.0";
   // this version implementation
-  const t_byte* KRN_UTSNAME_VERSION = (const t_byte*) "iato, caps/inria, 2002";
+  const t_byte* KRN_UTSNAME_VERSION = (const t_byte*) "iato, caps/inria, 2004";
   // this machine implementation
   const t_byte* KRN_UTSNAME_MACHINE = (const t_byte*) "ia64";
 

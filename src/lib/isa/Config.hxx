@@ -92,7 +92,7 @@ namespace iato {
   /// the iato major number
   const t_byte RMAJOR = 0x01;
   /// the iato minor number
-  const t_byte RMINOR = 0x05; 
+  const t_byte RMINOR = 0x06; 
 }
 
 // ---------------------------------------------------------------------------
@@ -102,6 +102,7 @@ namespace iato {
 #ifdef   OS_LINUX
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <string>
 #include <algorithm>
@@ -120,6 +121,7 @@ namespace iato {
 #ifdef   OS_SOLARIS
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <string>
 #include <algorithm>
