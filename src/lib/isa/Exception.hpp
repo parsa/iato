@@ -39,6 +39,8 @@ namespace iato {
     string d_type;
     /// the exception reason
     string d_reason;
+    /// the exception cycle
+    t_long d_cycle;
 
   public:
     /// create a default exception
@@ -69,6 +71,13 @@ namespace iato {
     
     /// @return the exception reason
     virtual string getreason (void) const;
+
+    /// set the exception cycle
+    /// @param cycle the exception cycle to set
+    virtual void setcycle (const t_long cycle);
+
+    /// @return the exception cycle
+    virtual t_long getcycle (void) const;
 
     /// print the exception message
     virtual void print (void) const;

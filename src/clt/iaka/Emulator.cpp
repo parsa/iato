@@ -200,7 +200,11 @@ namespace iato {
       loop ();
     } catch (const KrnExit& xit) {
       status = xit.getstatus ();
-    } 
+    } catch (const Exception& ve) {
+      Exception ce = ve;
+      ce.setcycle (d_cycle);
+      throw ce;
+    }
     // eventually, print the tracer
     if (p_tracer) p_tracer->print ();
     // mark the the stat collection if needed

@@ -66,6 +66,7 @@ SOURCES 	= Mtx.cpp         \
 		  Pbmodal.cpp     \
 		  Restart.cpp     \
 		  Station.cpp     \
+		  Watchdog.cpp    \
 		  Disperse.cpp    \
 		  RseStack.cpp    \
 		  Runnable.cpp    \

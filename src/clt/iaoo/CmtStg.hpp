@@ -74,6 +74,10 @@
 #include "Restart.hpp"
 #endif
 
+#ifndef  IATO_WATCHDOG_HPP
+#include "Watchdog.hpp"
+#endif
+
 #ifndef  IATO_REGISTER_HPP
 #include "Register.hpp"
 #endif
@@ -122,6 +126,8 @@ namespace iato {
     Restart*   p_pfr;
     /// the register bank
     Register*  p_rbk;
+    /// the watchdog system
+    Watchdog*  p_wdg;
     /// the branch predictor
     Branch*    p_bpr;
     /// the predicate predictor

@@ -183,11 +183,16 @@ namespace iato {
   // create a new processor
 
   Processor::Processor (Stx* stx) {
-    // create the environment and pipeline
+    // create the environment
     p_env  = build_env  (stx);
+    // create the pipeline
     p_pipe = build_pipe (stx);
+    // create the watchdog
+    p_wdog = new Watchdog (stx);
     // add the pipeline to the environment
-    p_env->add (p_pipe);    
+    p_env->add (p_pipe);  
+    // add the watchdog to the environment
+    p_env->add (p_wdog);  
   }
 
   // destroy this processor
@@ -216,11 +221,14 @@ namespace iato {
 
   void Processor::flush (void) {
     p_pipe->flush ();
+    p_wdog->reset ();
   }
 
   // run this processor
 
   void Processor::run (void) {
+    // notify the watchdog
+    p_wdog->notify ();
     // run the pipeline
     p_pipe->run ();
   }

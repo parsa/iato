@@ -180,20 +180,19 @@ namespace iato {
 	// get the load mrt
 	Mrt mrt = d_resl.getmrt ();
 	// try to update it with the early bypass
-
 	if ((mrt.isvalid () == true) && (p_emb)) {
 	  Mrt emrt = p_emb->update (mrt, d_sidx);
 	  if (emrt.isvalid () == true)  d_resl.update (emrt);
 	}
-	// try to update it with the early bypass
+	// try to update it with the late bypass
 	mrt = d_resl.getmrt ();
 	if ((mrt.isvalid () == true) && (p_lmb)) {
 	  Mrt lmrt = p_lmb->update (mrt, d_sidx);
 	  if (lmrt.isvalid () == true)  d_resl.update (lmrt);
 	}
+	// preset the memory port request
+	if (p_msi) p_msi->preset (d_inst, d_resl);
       }
-      // preset the memory port request
-      if (p_msi) p_msi->preset (d_inst, d_resl);
       // update the bpe (for early bypass) if not cancel
       if (d_inst.getcnlf () == false) {
 	// bypass update

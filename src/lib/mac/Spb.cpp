@@ -30,6 +30,9 @@ namespace iato {
 
   Spb::Spb (Mtx* mtx) : Resource (RESOURCE_SPB) {
     d_mbsz = mtx->getlong ("NUMBER-M-UNITS"); assert (d_mbsz > 0);
+    d_ldsn = mtx->getlong ("LD-SLOT-M-UNIT"); assert (d_ldsn > 0);
+    d_stsn = mtx->getlong ("ST-SLOT-M-UNIT"); assert (d_stsn > 0);
+    assert (d_ldsn + d_stsn <= d_mbsz);
     d_ibsz = mtx->getlong ("NUMBER-I-UNITS"); assert (d_ibsz > 0);
     d_fbsz = mtx->getlong ("NUMBER-F-UNITS"); assert (d_fbsz > 0);
     d_bbsz = mtx->getlong ("NUMBER-B-UNITS"); assert (d_bbsz > 0);
@@ -47,6 +50,9 @@ namespace iato {
 
   Spb::Spb (Mtx* mtx, const string& name) : Resource (name) {
     d_mbsz = mtx->getlong ("NUMBER-M-UNITS"); assert (d_mbsz > 0);
+    d_ldsn = mtx->getlong ("LD-SLOT-M-UNIT"); assert (d_ldsn > 0);
+    d_stsn = mtx->getlong ("ST-SLOT-M-UNIT"); assert (d_stsn > 0);
+    assert (d_ldsn + d_stsn <= d_mbsz);
     d_ibsz = mtx->getlong ("NUMBER-I-UNITS"); assert (d_ibsz > 0);
     d_fbsz = mtx->getlong ("NUMBER-F-UNITS"); assert (d_fbsz > 0);
     d_bbsz = mtx->getlong ("NUMBER-B-UNITS"); assert (d_bbsz > 0);
@@ -176,7 +182,7 @@ namespace iato {
   
   // find a free slot by unit
 
-  long Spb::find (const t_unit unit) const {
+  long Spb::find (const t_unit unit, const bool stb, const bool ldb) const {
     // initialize size and buffer pointer
     long   size = 0;
     Slot** sbuf = 0;
@@ -201,10 +207,16 @@ namespace iato {
       assert (false);
       break;
     }
-    // find free slot
+    // find free slot - with M unit we check for store and load slots
+    // in this approach, we force the store to be in the lower slots
     for (long i = 0; i < size; i++) {
       if (!sbuf[i]) continue;
-      if (sbuf[i]->isfree () == true) return i;
+      if (sbuf[i]->isfree () == true) {
+	// check for store
+	if ((unit == MUNIT) && (stb == true) && (i >= d_stsn)) return -1;
+	if ((unit == MUNIT) && (ldb == true) && (i <  d_stsn)) continue;
+	return i;
+      }
     }
     return -1;
   }

@@ -30,6 +30,13 @@ namespace iato {
   using namespace std;
 
   // -------------------------------------------------------------------------
+  // - special resource parameters                                           -
+  // -------------------------------------------------------------------------
+
+  /// watchdog time reload
+  const long   WD_TIME = 100;
+
+  // -------------------------------------------------------------------------
   // - generic resource parameters                                           -
   // -------------------------------------------------------------------------
 
@@ -125,6 +132,11 @@ namespace iato {
   /// B unit latency
   const long IT_BLAT = 1;
 
+  /// number of load slots
+  const long IT_LDSN = 1;
+  /// number of store slots
+  const long IT_STSN = 1;
+
   /// number of cache level
   const long IT_CLVL = 3;
 
@@ -168,6 +180,11 @@ namespace iato {
   const long MK_FLAT = 4;
   /// B unit latency
   const long MK_BLAT = 1;
+
+  /// number of load slots
+  const long MK_LDSN = 2;
+  /// number of store slots
+  const long MK_STSN = 2;
 
   /// number of cache level
   const long MK_CLVL = 3;

@@ -29,6 +29,9 @@
 namespace iato {
   using namespace std;
 
+  /// resource watchdog name
+  const string RESOURCE_WDG = "WDG";
+
   /// resource external interrupt buffer name
   const string RESOURCE_EIB = "EIB";
   /// resource instruction interrupt buffer name

@@ -4,21 +4,21 @@ Project contacts: [Amaury Darsch](http://www.irisa.fr/caps/people/darsch/index_e
 ## Introduction
 **IATO**, the **IAOO Toolkit** is a flexible environment that permits to analyze, emulate or simulate the IA64 Instruction Set Architecture (ISA) binary executables. **IATO** is a flexible and portable framework that is built around a set of C++ libraries and clients (i.e application programs). The fundamental clients are the IA64 emulator and simulator. Other clients provides supports for program analysis and statistical computation.
 ### Latest news
-This is revision 1.4 of the **IAOO Toolkit**. This release incorporates severalfixes within the in-order simulator. This version is backward compatible with the release 1.5.
+This is revision 1.5 of the **IAOO Toolkit**. This release incorporates severalfixes within the in-order simulator. This version is backward compatible with the release 1.5.
 ### Distribution
 **IATO** is supported on various UNIX platforms, including the Linux IA32, IA64 and Solaris. **IATO** is distributed as a compressed tar file. **IATO** has been successfully tested with the GCC 3 compiler. **IATO** is completely written in C++ and uses the STL. The following table provides the pointer to the distribution and the associated documentation.
 
 File | Description | Last update
 --- | --- | ---
-[iato-src-1.4.tar.gz](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-src-1.4.tar.gz) | IATO destribution revision 1.4 | 09/15/2004
-[iato-ref-1.4.pdf](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-ref-1.4.pdf) | IATO reference manual revision 1.4 | 09/15/2004
-[iato-api-1.4.pdf](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-api-1.4.pdf) | IATO application programming manual revision 1.4 | 09/15/2004
+[iato-src-1.5.tar.gz](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-src-1.5.tar.gz) | IATO destribution revision 1.5 | 09/15/2004
+[iato-ref-1.5.pdf](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-ref-1.5.pdf) | IATO reference manual revision 1.5 | 09/15/2004
+[iato-api-1.5.pdf](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-api-1.5.pdf) | IATO application programming manual revision 1.5 | 09/15/2004
 
 Pre-compiled IA64 binaries are also available for your convenience. With them, it it possible to stimulate directly the IAOO toolkit. The binary files include the distribution test cases an some SPEC2000 benchmarks.
 
 File | Description
 --- | ---
-[iato-tst-1.4.tar.gz](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-tst-1.4.tar.gz) | IATO test programs revision 1.4
+[iato-tst-1.5.tar.gz](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-tst-1.5.tar.gz) | IATO test programs revision 1.5
 [iato-spec-2000.tar.gz](http://www.irisa.fr/caps/projects/ArchiCompil/iato/ftp/iato-spec-2000.tar.gz) | SPEC 2000 benchmarks compiled statically for the IA64 (~ 24Mb)
 
 ## IATO clients

@@ -28,6 +28,7 @@ namespace iato {
   Exception::Exception (void) {
     d_type   = "unknown";
     d_reason = "unknown";
+    d_cycle  = 0;
   }
 
   // create an exception by type
@@ -35,6 +36,7 @@ namespace iato {
   Exception::Exception (const string& type) {
     d_type   = type;
     d_reason = "unknown";
+    d_cycle  = 0;
   }
 
   // create an exception by type and reason
@@ -42,6 +44,7 @@ namespace iato {
   Exception::Exception (const string& type, const string& reason) {
     d_type   = type;
     d_reason = reason;
+    d_cycle  = 0;
   }
 
   // copy construct this exception
@@ -49,6 +52,7 @@ namespace iato {
   Exception::Exception (const Exception& that) {
     d_type   = that.d_type;
     d_reason = that.d_reason;
+    d_cycle  = that.d_cycle;
   }
 
   // destroy this exception
@@ -61,6 +65,7 @@ namespace iato {
   Exception& Exception::operator = (const Exception& that) {
     d_type   = that.d_type;
     d_reason = that.d_reason;
+    d_cycle  = that.d_cycle;
     return *this;
   }
 
@@ -76,11 +81,26 @@ namespace iato {
     return d_reason;
   }
 
+  // set the exception cycle
+
+  void Exception::setcycle (const t_long cycle) {
+    d_cycle = cycle;
+  }
+
+  // return the exception cycle
+
+  t_long Exception::getcycle (void) const {
+    return d_cycle;
+  }
+
   // print the exception message
 
   void Exception::print (void) const {
     cerr << "error  : " << d_type   << endl;
     cerr << "reason : " << d_reason << endl;
+    if (d_cycle != 0) {
+      cerr << "cycle  : " << d_cycle  << endl;
+    }
   }
 
   // print the exception and abort

@@ -45,6 +45,9 @@ namespace iato {
     // update base system
     Etx::update (arch);
 
+    // set special resource parameters
+    d_lmap["WATCHDOG-TIME"]              = WD_TIME;
+
     // set default architecture info
     d_lmap["BDB-SIZE"]                   = DB_SIZE;
     d_lmap["RST-SIZE"]                   = RS_TBSZ;
@@ -90,6 +93,9 @@ namespace iato {
       d_lmap["LATENCY-I-UNIT"]           = MK_ILAT;
       d_lmap["LATENCY-F-UNIT"]           = MK_FLAT;
       d_lmap["LATENCY-B-UNIT"]           = MK_BLAT;
+      // memory slots info
+      d_lmap["LD-SLOT-M-UNIT"]           = MK_LDSN;
+      d_lmap["ST-SLOT-M-UNIT"]           = MK_STSN;
       // cache info
       d_lmap["CACHE-DEPTH"]              = MK_CLVL;
       d_lmap["CACHE-SIZE-IL1"]           = MK_IL1S;
@@ -108,6 +114,9 @@ namespace iato {
       d_lmap["LATENCY-I-UNIT"]           = IT_ILAT;
       d_lmap["LATENCY-F-UNIT"]           = IT_FLAT;
       d_lmap["LATENCY-B-UNIT"]           = IT_BLAT;
+      // memory slots info
+      d_lmap["LD-SLOT-M-UNIT"]           = IT_LDSN;
+      d_lmap["ST-SLOT-M-UNIT"]           = IT_STSN;
       // cache info
       d_lmap["CACHE-DEPTH"]              = IT_CLVL;
       d_lmap["CACHE-SIZE-IL1"]           = IT_IL1S;

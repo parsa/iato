@@ -40,14 +40,14 @@ distri:
 	${MAKE} -C cnf distri
 	${MAKE} -C src distri
 	${MAKE} -C tst distri
-	mv  bld iato-src-1.4
-	tar cvf iato-src-1.4.tar iato-src-1.4
-	gzip iato-src-1.4.tar	
-	@/bin/rm -rf iato-src-1.4
+	mv  bld iato-src-1.5
+	tar cvf iato-src-1.5.tar iato-src-1.5
+	gzip iato-src-1.5.tar	
+	@/bin/rm -rf iato-src-1.5
 
 clean:
 	${MAKE} -C cnf clean
 	${MAKE} -C src clean
 	${MAKE} -C tst clean
 	@/bin/rm -f *.o *.d *.a core *~
-	@/bin/rm -rf bld iato-src-1.4 iato-src-1.4.tar iato-src-1.4.tar.gz
+	@/bin/rm -rf bld iato-src-1.5 iato-src-1.5.tar iato-src-1.5.tar.gz

@@ -62,6 +62,34 @@ namespace iato {
     if (mbe) d_vmbe.push_back (mbe);
   }
 
+  // update an mrt with the bypass data
+
+  Mrt Mbn::update (Mrt& mrt) const {
+    Mrt result;
+    // check for valid mrt
+    if (mrt.isvalid () == false) return result;
+    // check for load to update
+    if (mrt.isload () == false) return result;
+    // get the load mrt mask and address
+    t_octa lmsk = mrt.getmask ();
+    t_octa ladr = mrt.getaddr () & lmsk;
+    // get the network size and iterate
+    long size = d_vmbe.size ();
+    for (long i = 0; i < size; i++) {
+      // the index is valid, get the bypass mrt
+      Mrt bmrt = d_vmbe[i]->getmrt ();
+      if (bmrt.isvalid () == false) continue;
+      // get the bypass mrt address and check
+      t_octa addr = bmrt.getaddr () & lmsk;
+      if (addr == ladr) {
+	result = mrt;
+	result.setmv (bmrt);
+	return result;
+      }
+    }
+    return result;
+  }
+
   // update an mrt with the bypass data and index
 
   Mrt Mbn::update (Mrt& mrt, const long mix) const {

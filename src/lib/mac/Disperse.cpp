@@ -192,7 +192,7 @@ namespace iato {
       // get the instruction slot unit
       t_unit unit = ssi.getsunit ();
       // find the first available slot
-      long slot = p_ipb->find (unit);
+      long slot = p_ipb->find (unit, ssi.getstb (), ssi.getldb ());
       // if invalid, then terminate the expansion
       if (slot == -1) return;
       // set the instruction order index

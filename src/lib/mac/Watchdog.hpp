@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// - Mbn.hpp                                                                 -
-// - iato:mac library - memory bypass network class definition               -
+// - Watchdog.hpp                                                            -
+// - iato:mac library - watchdog class definition                            -
 // ---------------------------------------------------------------------------
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
@@ -18,15 +18,11 @@
 // - See the GNU General Public License version 2 for more details           -
 // ---------------------------------------------------------------------------
 
-#ifndef  IATO_MBN_HPP
-#define  IATO_MBN_HPP
+#ifndef  IATO_WATCHDOG_HPP
+#define  IATO_WATCHDOG_HPP
 
 #ifndef  IATO_MTX_HPP
 #include "Mtx.hpp"
-#endif
-
-#ifndef  IATO_MBE_HPP
-#include "Mbe.hpp"
 #endif
 
 #ifndef  IATO_RESOURCE_HPP
@@ -36,53 +32,41 @@
 namespace iato {
   using namespace std;
 
-  /// The Mbn class is the memory bypass network. It is a collection of 
-  /// memory bypass elements. Each element is allocated by a stage that 
-  /// needs store forwarding. The bypass network can be used directly to 
-  /// evaluate a load value.
+  /// The Watchdog class is a simple class used to detect infinite loop.
+  /// The watch dog operate with a counter which is decreased at each cycle.
+  /// When a particular stage judge pertinent to say that it is alive
+  /// it notify the watchdog which reload its counter. The watchdog is
+  /// initialized with a 100 default cycle counter.
 
-  class Mbn : public Resource {
+  class Watchdog : public Resource {
   private:
-    /// the vector of mbe
-    vector<Mbe*> d_vmbe;
+    /// the watchdog time
+    long d_time;
+    /// the watchdog counter
+    long d_wcnt;
 
   public:
-    /// create an empty network
-    Mbn (void);
+    /// create a new watchdog
+    Watchdog (void);
 
-    /// create an empty network by context
+    /// create a new watchdog with a context
     /// @param mtx the architectural context
-    Mbn (Mtx* mtx);
+    Watchdog (Mtx* mtx);
 
-    /// create an empty network by context and name
-    /// @param mtx the architectural context
-    /// @param name the resource name
-    Mbn (Mtx* mtx, const string& name);
-
-    /// reset this network
+    /// reset this watchdog
     void reset (void);
 
     /// report this resource
     void report (void) const;
 
-    /// add a memory element
-    /// @param mbe the element to add
-    void add (Mbe* mbe);
-
-    /// update an mrt with the bypass data
-    /// @param mrt the mrt to update
-    Mrt update (Mrt& mrt) const;
-
-    /// update an mrt with the bypass data
-    /// @param mrt the mrt to update
-    /// @param mix the maximum index
-    Mrt update (Mrt& mrt, const long mix) const;
+    /// notify this watchdog
+    void notify (void);
 
   private:
     // make the copy constructor private
-    Mbn (const Mbn&);
+    Watchdog (const Watchdog&);
     // make the assignment operator private
-    Mbn& operator = (const Mbn&);
+    Watchdog& operator = (const Watchdog&);
   };
 }
 

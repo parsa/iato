@@ -34,6 +34,7 @@ namespace iato {
     p_bpr = 0;
     p_pfr = 0;
     p_rbk = 0;
+    p_wdg = 0;
     p_psb = 0;
     // set the msi for M units
     if (unit == MUNIT) p_msi = new Msi (stx);
@@ -51,6 +52,7 @@ namespace iato {
     p_bpr = 0;
     p_pfr = 0;
     p_rbk = 0;
+    p_wdg = 0;
     p_psb = 0;
     // set the msi for M units
     if (unit == MUNIT) p_msi = new Msi (stx);
@@ -73,6 +75,7 @@ namespace iato {
     p_bpr = 0;
     p_pfr = 0;
     p_rbk = 0;
+    p_wdg = 0;
     p_psb = 0;
     // set the msi for M units
     if (unit == MUNIT) p_msi = new Msi (stx);
@@ -95,6 +98,7 @@ namespace iato {
   void WrbStg::reset (void) {
     Stage::reset ();
     clean ();
+    if (p_wdg) p_wdg->reset ();
   }
 
   // flush this write-back stage
@@ -102,6 +106,7 @@ namespace iato {
   void WrbStg::flush (void) {
     Stage::flush ();
     clean ();
+    if (p_wdg) p_wdg->reset ();
   }
 
   // activate this write-back stage
@@ -153,6 +158,8 @@ namespace iato {
       p_iib->clear (iidx);
       // update the stat collection
       if (p_stat && !nnlf) p_stat->addinst (d_inst, cnlf);
+      // notify the watchdog
+      if (p_wdg) p_wdg->reset ();
       // update the tracer
       if (p_tracer) {
 	Record rcd (d_name, d_inst, !cnlf);
@@ -190,6 +197,8 @@ namespace iato {
       // update the stat collection
       if (p_stat && !nnlf) p_stat->addinst (d_inst);
       if (p_stat && !nnlf) p_stat->markpf  (false);
+      // notify the watchdog
+      if (p_wdg) p_wdg->reset ();
       // update the tracer
       if (p_tracer) {
 	Record rcd (d_name, d_inst, !cnlf);
@@ -207,6 +216,8 @@ namespace iato {
       p_iib->clear (iidx);
       // update the stat collection
       if (p_stat && !nnlf) p_stat->addinst (d_inst, true);
+      // notify the watchdog
+      if (p_wdg) p_wdg->reset ();
       // update the tracer
       if (p_tracer) {
 	Record rcd (d_name, d_inst, !cnlf);
@@ -239,6 +250,8 @@ namespace iato {
       // update the stat collection
       if (p_stat && !nnlf) p_stat->addinst (d_inst, cnlf);
       if (p_stat && !nnlf) p_stat->markpf  (d_inst.isbr ());
+      // notify the watchdog
+      if (p_wdg) p_wdg->reset ();
       // update the tracer
       if (p_tracer) {
 	Record rcd (d_name, d_inst, !cnlf);
@@ -260,6 +273,8 @@ namespace iato {
       // update the stat collection
       if (p_stat && !nnlf) p_stat->addinst (d_inst, cnlf);
       if (p_stat && !nnlf) p_stat->markpf  (d_inst.isbr ());
+      // notify the watchdog
+      if (p_wdg) p_wdg->reset ();
       // update the tracer
       if (p_tracer) {
 	Record rcd (d_name, d_inst, !cnlf);
@@ -324,6 +339,12 @@ namespace iato {
     p_rbk = dynamic_cast <Register*> (env->get (RESOURCE_RBK));
     if (!p_rbk) {
       string msg = "cannot bind register bank within stage ";
+      throw Exception ("bind-error", msg + d_name);
+    }
+    // bind the watchdog system
+    p_wdg = dynamic_cast <Watchdog*> (env->get (RESOURCE_WDG));
+    if (!p_wdg) {
+      string msg = "cannot bind watchdog within stage ";
       throw Exception ("bind-error", msg + d_name);
     }
     // bind the scoreboard

@@ -43,6 +43,7 @@ namespace iato {
     p_dtl  = 0;
     p_pfr  = 0;
     p_rbk  = 0;
+    p_wdg  = 0;
     p_bpr  = 0;
     p_ppr  = 0;
     reset ();
@@ -65,6 +66,7 @@ namespace iato {
     p_dtl  = 0;
     p_pfr  = 0;
     p_rbk  = 0;
+    p_wdg  = 0;
     p_bpr  = 0;
     p_ppr  = 0;
     reset ();
@@ -81,6 +83,7 @@ namespace iato {
   void CmtStg::reset (void) {
     Stage::reset ();
     p_mli->reset ();
+    if (p_wdg) p_wdg->reset ();
   }
 
   // activate this commit stage. The instruction are selected from the 
@@ -110,6 +113,8 @@ namespace iato {
 	  assert (inst.isvalid () == true);
 	  // mark the stat engine
 	  if (p_stat) p_stat->markpf (inst.isbr ());
+	  // restart the watchdog
+	  if (p_wdg) p_wdg->reset ();
 	  // update the restart engine
 	  p_pfr->pfstd (vi.getip (), vi.getslot ());
 	  return;
@@ -119,6 +124,8 @@ namespace iato {
 	// update the stat collection
 	if (p_stat) p_stat->addinst (inst);
 	if (p_stat) p_stat->markpf  (false);
+	// restart the watchdog
+	if (p_wdg) p_wdg->reset ();
 	// update the tracer with commit info
 	if ((p_tracer) && (inst.isvalid () == true)) {
 	  Record rcd (d_name, inst);
@@ -138,6 +145,8 @@ namespace iato {
 	  // get the instruction ip and slot
 	  t_octa ip   = p_rob->getiip  ();
 	  long   slot = p_rob->getslot ();
+	  // restart the watchdog
+	  if (p_wdg) p_wdg->reset ();
 	  // set the restart engine
 	  p_pfr->pfsrl (ip, slot);
 	  return;
@@ -150,6 +159,8 @@ namespace iato {
 	  t_unit unit = p_rob->getunit ();
 	  // update the stat collection
 	  if (p_stat) p_stat->addnop (unit);
+	  // restart the watchdog
+	  if (p_wdg) p_wdg->reset ();
 	  // pop this entry
 	  p_rob->npop ();
 	  // update the ip
@@ -192,6 +203,8 @@ namespace iato {
 	      // update statistics
 	      if (p_stat) p_stat->markpp (false);
 	      if (p_stat) p_stat->markpf (dsi.isbr ());
+	      // restart the watchdog
+	      if (p_wdg) p_wdg->reset ();
 	      // update the predicate predictor
 	      p_ppr->markpp (dsi, !dsi.getppvl ());
 	      // update restart engine
@@ -258,6 +271,8 @@ namespace iato {
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
+	    // restart the watchdog
+	    if (p_wdg) p_wdg->reset ();
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -279,6 +294,8 @@ namespace iato {
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
+	    // restart the watchdog
+	    if (p_wdg) p_wdg->reset ();
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -298,6 +315,8 @@ namespace iato {
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
+	    // restart the watchdog
+	    if (p_wdg) p_wdg->reset ();
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -315,6 +334,8 @@ namespace iato {
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
+	    // restart the watchdog
+	    if (p_wdg) p_wdg->reset ();
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -324,6 +345,8 @@ namespace iato {
 	  }
 	  // update the stat collection
 	  if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
+	  // restart the watchdog
+	  if (p_wdg) p_wdg->reset ();
 	  // update the tracer with commit info
 	  if ((p_tracer) && (dsi.isvalid () == true)) {
 	    Record rcd (d_name, dsi, !cnlf);
@@ -411,6 +434,12 @@ namespace iato {
     p_rbk = dynamic_cast <Register*> (env->get (RESOURCE_RBK));
     if (!p_rbk) {
       string msg = "cannot bind register bank within stage ";
+      throw Exception ("bind-error", msg + d_name);
+    }
+    // bind the watchdog system
+    p_wdg = dynamic_cast <Watchdog*> (env->get (RESOURCE_WDG));
+    if (!p_wdg) {
+      string msg = "cannot bind watchdog within stage ";
       throw Exception ("bind-error", msg + d_name);
     }
     // bind the iib

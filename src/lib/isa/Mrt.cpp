@@ -22,7 +22,7 @@
 #include "Mrt.hpp"
 
 namespace iato {
-
+  
   // create a default mrt
   
   Mrt::Mrt (void) {
@@ -400,5 +400,16 @@ namespace iato {
     d_oval = mrt.d_oval;
     d_lval = mrt.d_lval;
     d_hval = mrt.d_hval;
+    // fix ldd with ST8
+    if ((d_type == REQ_LDD) && (mrt.d_type == REQ_ST8)) {
+      // convert mrt value
+      union {
+	t_byte d_bval[8];
+	t_octa d_oval;
+      } uval;
+      uval.d_oval = mrt.d_oval;
+      // fix destination
+      d_lval.doubleld (uval.d_bval);
+    }
   }
 }

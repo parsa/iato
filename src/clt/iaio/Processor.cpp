@@ -201,9 +201,12 @@ namespace iato {
   // create a new processor
 
   Processor::Processor (Stx* stx) {
-    // create the environment and pipeline
+    // create the environment
     p_env  = build_env  (stx);
+    // create the pipeline
     p_pipe = build_pipe (stx, p_env);
+    // create the watchdog
+    p_wdog = new Watchdog (stx);
   }
 
   // destroy this processor
@@ -216,7 +219,7 @@ namespace iato {
 
   void Processor::reset (void) {
     // reset all resources
-    p_env->reset  ();
+    p_env->reset ();
     // get the bank and initialize
     Register* rbk = dynamic_cast <Register*> (p_env->get (RESOURCE_RBK));
     if (rbk) {
@@ -232,11 +235,14 @@ namespace iato {
 
   void Processor::flush (void) {
     p_pipe->flush ();
+    p_wdog->reset ();
   }
 
   // run this processor
 
   void Processor::run (void) {
+    // notify the watchdog
+    p_wdog->notify ();
     // run the pipeline
     p_pipe->run ();
   }
@@ -284,6 +290,8 @@ namespace iato {
     d_entry = sys->getentry ();
     d_stkva = sys->getstkva ();
     d_bspva = sys->getbspva ();
+    // bind the watchdog
+    p_env->add (p_wdog);
     // bind the memory architecture
     Hma* hma = sys->gethma ();
     if (hma) p_env->add (hma->getmta ());
@@ -315,7 +323,7 @@ namespace iato {
     if (hdl) hdl->bind (opb, psb);
   }
 
-  // return trhe processor register bank
+  // return the processor register bank
 
   Register* Processor::getrbk (void) const {
     Register* rbk = dynamic_cast <Register*> (p_env->get (RESOURCE_RBK));

@@ -118,6 +118,10 @@ namespace iato {
       if (p_ptrc) p_ptrc->print ();
       // extract status
       status = xit.getstatus ();
+    } catch (const Exception& ve) {
+      Exception ce = ve;
+      ce.setcycle (d_cycle);
+      throw ce;
     }
     // mark the the stat collection if needed
     if (p_pstc) p_pstc->markes ();
@@ -135,6 +139,7 @@ namespace iato {
     while (p_proc->ishalted () == false) {
       // check for next cycle
       d_cycle++;
+      // check for max cycle
       if ((d_maxcc != 0) && (d_cycle > d_maxcc)) break;
       // initiate a new stat cycle
       if (p_pstc) p_pstc->marksc ();

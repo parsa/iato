@@ -37,6 +37,10 @@
 #include "Register.hpp"
 #endif
 
+#ifndef  IATO_WATCHDOG_HPP
+#include "Watchdog.hpp"
+#endif
+
 #ifndef  IATO_PIPELINE_HPP
 #include "Pipeline.hpp"
 #endif
@@ -63,6 +67,8 @@ namespace iato {
     Env* p_env;
     /// the processor pipeline
     Pipeline* p_pipe;
+    /// the processor watchdog
+    Watchdog* p_wdog;
     /// initial entry point
     t_octa d_entry;
     /// the top of stack

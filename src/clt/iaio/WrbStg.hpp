@@ -49,6 +49,10 @@
 #include "Resteer.hpp"
 #endif
 
+#ifndef  IATO_WATCHDOG_HPP
+#include "Watchdog.hpp"
+#endif
+
 #ifndef  IATO_REGISTER_HPP
 #include "Register.hpp"
 #endif
@@ -81,6 +85,8 @@ namespace iato {
     Resteer*  p_pfr;
     /// the register bank
     Register* p_rbk;
+    /// the watchdog system
+    Watchdog* p_wdg;
     /// the scoreboard
     Scoreboard* p_psb;
 

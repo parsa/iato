@@ -53,6 +53,10 @@ namespace iato {
   protected:
     /// the M buffer size
     long d_mbsz;
+    /// the number of load slots
+    long d_ldsn;
+    /// the number of store slots
+    long d_stsn;
     /// the M slot buffer
     Slot** p_mbuf;
     /// the I buffer size
@@ -100,9 +104,11 @@ namespace iato {
     /// @return true if all slots are free
     bool isfree (void) const;
 
-    /// find a free slot by unit
+    /// find a free slot by unit and store/load bits
     /// @param unit the unit slot to find
-    long find (const t_unit unit) const;
+    /// @param stb  the store bit
+    /// @param ldb  the load bit
+    long find (const t_unit unit, const bool stb, const bool ldb) const;
 
     /// set the slot instruction by unit, index and instruction
     /// @param unit the unit slot to use
