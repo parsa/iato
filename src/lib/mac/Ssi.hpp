@@ -22,8 +22,8 @@
 #ifndef  IATO_SSI_HPP
 #define  IATO_SSI_HPP
 
-#ifndef  IATO_CFM_HPP
-#include "Cfm.hpp"
+#ifndef  IATO_RSE_HPP
+#include "Rse.hpp"
 #endif
 
 #ifndef  IATO_INSTR_HPP
@@ -44,16 +44,20 @@ namespace iato {
     long d_ridx;
     /// the iib index
     long d_iidx;
-    /// the mob index
-    long d_midx;
-    /// the instruction cfm
-    Cfm  d_icfm;
-    /// the speculative cfm
-    Cfm  d_scfm;
     /// the cancellation flag
     bool d_cnlf;
+    /// the interrupt flag
+    bool d_intr;
+    /// the valid speculation flag
+    bool d_vspf;
+    /// the predicted predicate value
+    bool d_ppvl;
     /// the predicate prediction flag
     bool d_ppfl;
+    /// the instruction rse state
+    Rse::State  d_iste;
+    /// the speculative rse state
+    Rse::State  d_sste;
 
   public:
     /// create a default ssi
@@ -78,6 +82,12 @@ namespace iato {
     /// reset this ssi
     void reset (void);
 
+    /// @return true if this instruction needs pre-serialization
+    bool ispresr (void) const;
+
+    /// @return true if this instruction needs post-serialization
+    bool ispostsr (void) const;
+
     /// set the reorder index
     /// @param index the reorder index
     void setrix (const long index);
@@ -92,13 +102,6 @@ namespace iato {
     /// @return the iib index
     long getiib (void) const;
 
-    /// set the mob index
-    /// @param index the mob index
-    void setmob (const long index);
-    
-    /// @return the mob index
-    long getmob (void) const;
-
     /// set the instruction cancellation flag
     /// @param cnlf the cancel flag to set
     void setcnlf (const bool cnlf);
@@ -111,26 +114,53 @@ namespace iato {
     /// @return the cancellation flag
     bool getcnlf (void) const;
 
-    /// set the instruction cfm
-    /// @param cfm the cfm to set
-    void seticfm (const Cfm& cfm);
+    /// set the interrupt flag flag
+    /// @param intr the interrupt flag to set
+    void setintr (const bool intr);
 
-    /// @return the instruction cfm
-    Cfm geticfm (void) const;
+    /// @return the interrupt flag
+    bool getintr (void) const;
 
-    /// set the speculative cfm
-    /// @param cfm the cfm to set
-    void setscfm (const Cfm& cfm);
+    /// set the valid speculation flag
+    /// @param vspf the speculation flag to set
+    void setvspf (const bool vspf);
 
-    /// @return the speculative cfm
-    Cfm getscfm (void) const;
+    /// @return the valid speculation flag
+    bool getvspf (void) const;
 
+    /// set the predicated predicate value
+    /// @param ppvl the predicted value to set
+    void setppvl (const bool ppvl);
+
+    /// @return the predicted predicate value
+    bool getppvl (void) const;
+ 
     /// set the predicate prediction flag
     /// @param ppfl the prediction flag to set
     void setppfl (const bool ppfl);
 
     /// @return the predicate prediction flag
     bool getppfl (void) const;
+
+    /// set the instruction rse state
+    /// @param state the state to set
+    void setiste (const Rse::State& state);
+
+    /// @return the instruction rse state
+    Rse::State getiste (void) const;
+
+    /// @return the instruction cfm
+    Cfm geticfm (void) const;
+
+    /// set the speculative rse state
+    /// @param state the state to set
+    void setsste (const Rse::State& state);
+
+    /// @return the speculative rse state
+    Rse::State getsste (void) const;
+
+    /// @return the speculative cfm
+    Cfm getscfm (void) const;
   };
 }
 

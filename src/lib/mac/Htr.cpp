@@ -80,6 +80,12 @@ namespace iato {
     return d_size;
   }
 
+  // set the htr by value
+
+  void Htr::sethist (const t_octa hist) {
+    d_hist = hist & d_mask;
+  }
+
   // return the htr value
 
   t_octa Htr::gethist (void) const {

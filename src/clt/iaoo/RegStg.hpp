@@ -38,10 +38,6 @@
 #include "Register.hpp"
 #endif
 
-#ifndef  IATO_PREDICATE_HPP
-#include "Predicate.hpp"
-#endif
-
 namespace iato {
   using namespace std;
 
@@ -51,16 +47,12 @@ namespace iato {
   
   class RegStg : public DlyStg {
   private:
-    /// the global predicate prediction flag
-    bool d_gpp;
     /// the universal file
     Urf* p_urf;
     /// the bypass network
     Bpn* p_bpn;
     /// the register bank
     Register* p_rbk;
-    // the predicate predictor
-    Predicate* p_pps;
 
   public:
     /// create a new evaluation stage by context and unit

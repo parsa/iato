@@ -31,7 +31,6 @@ namespace iato {
   CmtStg::CmtStg (Stx* stx) : Stage (stx, RESOURCE_CMT) {
     d_iwsz = stx->getiwsz (); assert (d_iwsz > 0);
     d_swsz = d_iwsz * BN_SLSZ;
-    d_pfmd = stx->getbool ("PARTIAL-FLUSH-MODE");
     p_rse  = 0;
     p_rob  = 0;
     p_irb  = 0;
@@ -54,7 +53,6 @@ namespace iato {
   CmtStg::CmtStg (Stx* stx, const string& name) : Stage (stx,name) {
     d_iwsz = stx->getiwsz (); assert (d_iwsz > 0);
     d_swsz = d_iwsz * BN_SLSZ;
-    d_pfmd = stx->getbool ("PARTIAL-FLUSH-MODE");
     p_rse  = 0;
     p_rob  = 0;
     p_irb  = 0;
@@ -116,21 +114,22 @@ namespace iato {
 	  p_pfr->pfstd (vi.getip (), vi.getslot ());
 	  return;
 	}
-	// here we route the interrupt
-	p_irt->route (vi);
-	// update the ip
+	// get the instruction
 	Instr inst = vi.getinst ();
-	updip (inst);
-	// update the restart engine
-	p_pfr->pfnxt (vi.getip (), vi.getslot ());
 	// update the stat collection
 	if (p_stat) p_stat->addinst (inst);
-	if (p_stat) p_stat->markpf  (inst.isbr ());
+	if (p_stat) p_stat->markpf  (false);
 	// update the tracer with commit info
 	if ((p_tracer) && (inst.isvalid () == true)) {
 	  Record rcd (d_name, inst);
 	  p_tracer->add (rcd);
 	}
+	// here we route the interrupt
+	p_irt->route (vi);
+	// update the ip
+	updip (inst);
+	// update the restart engine
+	p_pfr->pfnxt (vi.getip (), vi.getslot ());
       } else {
 	// check if the current rob entry is a serialization
 	if (p_rob->issrlz () == true) {
@@ -148,6 +147,9 @@ namespace iato {
 	  // get the instruction ip and slot
 	  t_octa ip   = p_rob->getiip  ();
 	  long   slot = p_rob->getslot ();
+	  t_unit unit = p_rob->getunit ();
+	  // update the stat collection
+	  if (p_stat) p_stat->addnop (unit);
 	  // pop this entry
 	  p_rob->npop ();
 	  // update the ip
@@ -172,30 +174,6 @@ namespace iato {
 	bool bbss = p_rob->getbbss ();
 	// get the cancel flag
 	bool cnlf = p_rob->iscancel ();
-	// get the speculation bit
-	bool sbit = p_rob->getsbit ();
-	// check for predicate speculation using partial mode
-	if ((d_pfmd == true) && (sbit == true)) {
-	  // get the irb index
-	  long iidx = p_rob->getiidx (); 
-	  assert (iidx != -1);
-	  // grab the instruction
-	  Dsi dsi = p_irb->getinst (iidx); 
-	  assert (dsi.isvalid () == true);
-	  // check for valid predicate prediction
-	  if (dsi.getppfl () == true) {
-	    if (p_dtl->chkspp (dsi) == false) {
-	      // update statistics
-	      if (p_stat) p_stat->markpp (false);
-	      if (p_stat) p_stat->markpf (dsi.isbr ());
-	      // update the predicate predictor
-	      p_ppr->markpp (dsi, !cnlf);
-	      // partial pipe flush the engine
-	      p_pfr->pflsh ();
-	      return;
-	    }
-	  }
-	}
 	// grab the latest irb index
 	long iidx = p_rob->pop ();
 	if (iidx != -1) {
@@ -205,22 +183,24 @@ namespace iato {
 	  Result resl = p_irb->getresl (iidx);
 	  // check for valid predicate prediction
 	  if (dsi.getppfl () == true) {
-	    if (p_dtl->chkspp (dsi) == true) {	      
+	    if (p_dtl->chkspp (dsi) == true) {
 	      // update statistics
 	      if (p_stat) p_stat->markpp (true);
+	      // update the predicate predictor
+	      p_ppr->markpp (dsi, dsi.getppvl ());
 	    } else {
 	      // update statistics
 	      if (p_stat) p_stat->markpp (false);
 	      if (p_stat) p_stat->markpf (dsi.isbr ());
 	      // update the predicate predictor
-	      p_ppr->markpp (dsi, !cnlf);
+	      p_ppr->markpp (dsi, !dsi.getppvl ());
 	      // update restart engine
 	      p_pfr->pfstd (ip, slot);
 	      return;
 	    }
 	  } else {
-	    if ((dsi.ispred () == true)  &&
-		(dsi.isbr   () == false) && p_stat) p_stat->markrp ();
+	    // update the predicate predictor
+	    p_ppr->markpp (dsi, !cnlf);
 	  }
 	  // check for cancellation status
 	  if (cnlf == false) {
@@ -247,8 +227,6 @@ namespace iato {
 	  updip (dsi, resl, cnlf);
 	  // update the branch prediction system
 	  p_bpr->markbr (dsi, resl, !cnlf);
-	  // update the predicate predictor
-	  p_ppr->markpp (dsi, !cnlf);
 	  // clear the station entry
 	  p_gcs->clear (dsi);
 	  // clean the irb
@@ -258,7 +236,7 @@ namespace iato {
 	  // clear the iib
 	  if (iiib != -1) p_iib->clear (iiib);
 	  // update the stat machinery with branch prediction
-	  // branch are predicted if the instruction is a branch
+	  // branches are predicted if the instruction is a branch
 	  // with the speculative flag set. The prediction failed
 	  // if the bbss flag is false
 	  if ((dsi.isbr () == true) && (dsi.getsfl () == true)) {
@@ -266,6 +244,8 @@ namespace iato {
 	  }
 	  // check for valid ip speculation
 	  if (bbss == false) {
+	    // restore the branch predictor history
+	    p_bpr->sethist (dsi.gethist ());
 	    // if the ip condition is defined by the result
 	    // the machine is in a good state and can be restarted
 	    // right away with local condition, else we use the next
@@ -290,6 +270,8 @@ namespace iato {
 	  // invalidate the remaining instructions in the bundle since
 	  // this case the BBB bundle where the taken branch is the next bundle
 	  if ((dsi.getsfl () == false) && (resl.isreg (IPRG) == true)) {
+	    // restore the branch predictor history
+	    p_bpr->sethist (dsi.gethist ());
 	    // call the restart engine and request a pipeline flush
 	    // the next ip, assuming slot 0 is already set and the rse
 	    // is in a valid state
@@ -309,6 +291,8 @@ namespace iato {
 	  // flushed and restarted at the next instruction
 	  if (resl.isreg (PRRG) || resl.isreg (PROT) ||
 	      resl.isreg (UMRG) || resl.isreg (PSRG)) {
+	    // restore the branch predictor history
+	    p_bpr->sethist (dsi.gethist ());
 	    // flush and restart at next instruction
 	    p_pfr->pfnxt (ip, slot);
 	    // update the stat collection
@@ -322,7 +306,9 @@ namespace iato {
 	    return;
 	  }
 	  // check for valid rse speculation
-	  if ((cnlf == false) && (p_rse->validate (dsi.getscfm ()) == false)) {
+	  if (p_rse->validate (dsi.getsste ()) == false) {
+	    // restore the branch predictor history
+	    p_bpr->sethist (dsi.gethist ());
 	    // flush and restart at current condition
 	    // since the instruction has update the ip
 	    p_pfr->pflcl ();

@@ -33,7 +33,7 @@ namespace iato {
   /// parallel. At each cycle, all parallel stages are run in parallel. Each
   /// micro pipeline do not need to have the same depth. by default, the
   /// pipelane operates in non-blocking mode. This means that if a stage
-  /// is holding, onnly thoise previous stage in the same micro-pipeline
+  /// is holding, only those previous stage in the same micro-pipeline
   /// will be stalled. If the pipelane operates in blocking mode, a holding
   /// stage causes all other stages to block. Such mode is used with an
   /// in-order machine.
@@ -56,6 +56,11 @@ namespace iato {
     /// @param mtx the architectural context
     Pipelane (Mtx* mtx);
 
+    /// create a pipelane with a context and a mode
+    /// @param mtx the architectural context
+    /// @param mode the blocking mode
+    Pipelane (Mtx* mtx, const bool mode);
+
     /// create a new pipelane with a context and name
     /// @param mtx the architectural context
     /// @param name the pipelane name
@@ -69,9 +74,6 @@ namespace iato {
 
     /// flush this pipelane
     void flush (void);
-
-    /// partially flush this pipelane
-    void pflsh (void);
 
     /// return true if one stage is holding
     bool isholding (void) const;
@@ -92,10 +94,10 @@ namespace iato {
 
     /// set the blocking mode
     /// @param mode the mode to set
-    void setblock (const bool mode);
+    void setmode (const bool mode);
 
     /// @return the blocking mode
-    bool getblock (void) const;
+    bool getmode (void) const;
 
     /// clear this pipelane
     virtual void clear (void);

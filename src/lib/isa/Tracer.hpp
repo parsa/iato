@@ -58,8 +58,6 @@ namespace iato {
     t_long  d_bicc;
     /// the end trace index
     t_long  d_eicc;
-    /// max record per trace
-    long    d_rmax;
     /// the program traced name
     string  d_ptnm;
     /// the current trace

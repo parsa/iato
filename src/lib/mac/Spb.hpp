@@ -1,11 +1,10 @@
 // ---------------------------------------------------------------------------
-// - Ipb.hpp                                                                 -
-// - iato:mac library - issue port buffer class definition                   -
+// - Spb.hpp                                                                 -
+// - iato:mac library - slot port buffer class definition                    -
 // ---------------------------------------------------------------------------
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
 // - authors                                      Amaury Darsch    2002:2004 -
-// -                                              Pierre Villalon  2002:2003 -
 // -                                              Andre  Seznec    2002:2004 -
 // ---------------------------------------------------------------------------
 // - This program  is  free software;  you can redistribute it and/or modify -
@@ -19,8 +18,8 @@
 // - See the GNU General Public License version 2 for more details           -
 // ---------------------------------------------------------------------------
 
-#ifndef  IATO_IPB_HPP
-#define  IATO_IPB_HPP
+#ifndef  IATO_SPB_HPP
+#define  IATO_SPB_HPP
 
 #ifndef  IATO_MTX_HPP
 #include "Mtx.hpp"
@@ -34,17 +33,24 @@
 #include "Resource.hpp"
 #endif
 
+#ifndef  IATO_INTERRUPT_HPP
+#include "Interrupt.hpp"
+#endif
+
 namespace iato {
   using namespace std;
 
-  /// The Ipb class is the issue port buffer. It is a set of ports that are
+  /// The Spb class is the slot port buffer. It is a set of ports that are
   /// grouped into a family set. At construction, the context determines
   /// how many slots can be held in the buffer. Each micro-pipeline is
-  /// responsible to add the required slot. The Ipb is used by an in-order
-  /// simulation engine.
+  /// responsible to add the required slot. The Spb is used by an in-order
+  /// simulation engine an issue buffer or as an output buffer after the
+  /// renaming stage. The port buffer also provides a special slot for 
+  /// global interrupt within a group. The interrupt and the offending
+  /// instruction order index is stored as well.
 
-  class Ipb : public Resource {
-  private:
+  class Spb : public Resource {
+  protected:
     /// the M buffer size
     long d_mbsz;
     /// the M slot buffer
@@ -61,19 +67,23 @@ namespace iato {
     long   d_bbsz;
     /// the B slot buffer
     Slot** p_bbuf;
+    /// the global interrupt
+    Interrupt d_intr;
+    /// the instruction index
+    long d_iioi;
 
   public:
     /// create a new buffer with a context
     /// @param mtx the architectural context
-    Ipb (Mtx* mtx);
+    Spb (Mtx* mtx);
 
     /// create a new buffer with a context and a name
     /// @param mtx the architectural context
     /// @param name the buffer name
-    Ipb (Mtx* mtx, const string& name);
+    Spb (Mtx* mtx, const string& name);
 
     /// destroy this buffer
-    ~Ipb (void);
+    ~Spb (void);
 
     /// reset this buffer
     void reset (void);
@@ -87,8 +97,12 @@ namespace iato {
     /// add a slot in the buffer
     void add (Slot* slot);
 
+    /// @return true if all slots are free
+    bool isfree (void) const;
+
     /// find a free slot by unit
-    long find (t_unit unit) const;
+    /// @param unit the unit slot to find
+    long find (const t_unit unit) const;
 
     /// set the slot instruction by unit, index and instruction
     /// @param unit the unit slot to use
@@ -99,11 +113,19 @@ namespace iato {
     /// @return an instruction by unit and slot
     Ssi getinst (t_unit unit, const long slot) const;
 
+    /// @return true if the port buffer has been interupted
+    bool isintr (void) const;
+
+    /// set the buffer interrupt and index
+    /// @param vi   the offending interrupt
+    /// @param iioi the offending index
+    void setintr (const Interrupt& vi, const long iioi);
+
   private:
     // make the copy constructor private
-    Ipb (const Ipb&);
+    Spb (const Spb&);
     // make the assignment operator private
-    Ipb& operator = (const Ipb&);
+    Spb& operator = (const Spb&);
   };
 }
 

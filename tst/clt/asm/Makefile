@@ -32,6 +32,8 @@ SOURCES 	= T01.s \
 		  T11.s \
 		  T12.s \
 		  T13.s \
+		  T14.s \
+		  T15.s \
 		  F10.s
 
 OBJECTS 	= $(SOURCES:.s=.o)

@@ -80,29 +80,24 @@ namespace iato {
 
   void RseStack::push (const Rse::State& state) {
     // shift first the stack if full
-    if (isfull () == true) shift ();
+    if (isfull () == true) return;
     // add the element
     p_rstk[d_rlen++] = state;
   }
 
-  // pop the latest state
+  // pop the oldest state
 
   Rse::State RseStack::pop (void) {
-    // return a default state if empty
-    Rse::State state;
-    if (isempty () == true) return state;
-    state = p_rstk[--d_rlen];
+    // prepare the oldest state
+    Rse::State state = p_rstk[0];
+    // select between empty or shift
+    if (isempty () == true) {
+      state.reset ();
+    } else {
+      for (long i = 0; i < d_rlen; i++) p_rstk[i] = p_rstk[i+1];
+      d_rlen--;
+    }
+    // return the oldest state
     return state;
-  }
-
-  // shift the stack by one element
-
-  void RseStack::shift (void) {
-    // do nothing if empty
-    if (isempty () == true) return;
-    // shift all elements
-    for (long i = 0; i < d_rlen; i++) p_rstk[i] = p_rstk[i+1];
-    // adjust number of elements
-    d_rlen--;
   }
 }

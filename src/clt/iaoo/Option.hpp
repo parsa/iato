@@ -63,6 +63,8 @@ namespace iato {
     bool d_cflag;
     /// the stat mode flag
     bool d_sflag;
+    /// the cycle stat count
+    long d_sccnt;
     /// maximum number of cycles
     t_long d_maxcc;
     /// the begin tracing cycle count
@@ -89,8 +91,6 @@ namespace iato {
     string d_bprd;
     /// the predicate predictor
     string d_pprd;
-    /// enable partial flushing
-    bool   d_pfls;
 
   public:
     /// create a new option from the argument list
@@ -186,6 +186,11 @@ namespace iato {
       return d_sflag;
     }
 
+    /// @return the stat cycle count
+    long getsccnt (void) const {
+      return d_sccnt;
+    }
+
     /// @return the ignore nop flag
     bool getinops (void) const {
       return d_inops;
@@ -229,11 +234,6 @@ namespace iato {
     /// @return the predicate predictor name
     string getapprd (void) const {
       return d_pprd;
-    }
-
-    /// @return the partial flushing flag
-    bool getapfls (void) const {
-      return d_pfls;
     }
   };
 }

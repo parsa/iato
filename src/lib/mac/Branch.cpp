@@ -20,6 +20,7 @@
 // ---------------------------------------------------------------------------
 
 #include "Prn.hpp"
+#include "Gskew.hpp"
 #include "Gshare.hpp"
 #include "Bimodal.hpp"
 #include "Exception.hpp"
@@ -40,7 +41,9 @@ namespace iato {
     // check for bimodal
     if (name == "bimodal") return new Bimodal (mtx);
     // check for gshare
-    if (name == "gshare") return new Gshare (mtx);    
+    if (name == "gshare") return new Gshare (mtx);
+    // check for gskew
+    if (name == "gskew") return new Gskew (mtx);    
     // not found
     string msg = "invalid branch predictor name ";
     throw Exception ("context-error", msg + name);
@@ -73,6 +76,7 @@ namespace iato {
   // reset this branch prediction
 
   void Branch::reset (void) {
+    d_hist = OCTA_0;
   }
 
   // report some resource information
@@ -86,14 +90,26 @@ namespace iato {
 
   // return true if the branch is predicted taken
 
-  bool Branch::istaken (const t_octa addr, const long slot) const {
+  bool Branch::istaken (const t_octa addr) const {
     return false;
   }
 
   // return true if the branch can be predicted
 
-  bool Branch::ispredict (const t_octa addr, const long slot) const {
+  bool Branch::ispredict (const t_octa addr) const {
     return false;
+  }
+
+  // set the predictor history
+
+  void Branch::sethist (const t_octa hist) {
+    d_hist = hist;
+  }
+
+  // return the predictor history
+
+  t_octa Branch::gethist (void) const {
+    return d_hist;
   }
 
   // compute the next ip from the current ip and the window size
@@ -102,20 +118,20 @@ namespace iato {
     return cip + abs (ws);
   }
 
-  // predict the next ip by ip and slot
+  // predict the next ip by ip
 
-  t_octa Branch::predict (const t_octa cip, const long slt) {
+  t_octa Branch::predict (const t_octa cip) {
     ostringstream os;
     os << "cannot predict next ip at 0x";
     os << hex << setw (16) << setfill ('0') << cip;
-    os << " slot " << slt;
     throw Exception ("branch-error", os.str ());
   }
 
   // update the branch system with an ip and next ip
 
-  void Branch::update (const t_octa cip, const long slt,
-		       const bool btk, const t_octa nip) {
+  void Branch::update (const t_octa cip, const bool btk, const t_octa nip, 
+		       const t_octa hst) {
+    d_hist = hst;
   }
 
   // update the branch system with an instruction, result and taken flag
@@ -125,12 +141,13 @@ namespace iato {
     if (inst.isvalid () == false) return;
     // check for branches
     if (inst.isbr () == false) return;
-    // get the instruction ip and slot
+    // get the instruction ip
     t_octa cip = inst.getiip  ();
-    long   slt = inst.getslot ();
     // get the result ip
     t_octa rip = resl.isvalid () ? resl.getrip () : inst.getsip ();
+    // get the history
+    t_octa hst = inst.gethist ();
     // update the branch system, note that the cancel flag is inverted
-    update (cip, slt, btk, rip);
+    update (cip, btk, rip, hst);
   }
 }

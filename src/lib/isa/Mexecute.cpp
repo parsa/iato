@@ -155,7 +155,7 @@ namespace iato {
   static Result exec_ld8_s (const Instr& inst, const Operand& oprd) {
     // build result
     Result result = inst.getresl ();
-    t_octa addr = oprd.getoval (1);
+    t_octa addr   = oprd.getoval (1);
     // if nat bit is true the target register has its nat bit set
     if (oprd.getbval (1) == true) {
       result.setbval (0, true);
@@ -484,88 +484,356 @@ namespace iato {
 
   // M_LD1_UPD_R
   static Result exec_ld1_upd_r (const Instr& inst, const Operand& oprd) {
-    // if nat bit is true, there is a register nat consumption fault
-    if (oprd.getbval (1) == true) 
-      throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // build result
     Result result = inst.getresl ();
-    // compute nat bit
-    bool natr1 = false;
-    bool natr2 = oprd.getbval (0);
     // compute result
+    bool   natr = false;
     t_octa addr = oprd.getoval (1);
     t_octa rval = addr + oprd.getoval (0); 
     // set result 
-    result.setbval (0, natr1);
-    result.setbval (1, natr2);
+    result.setbval (0, natr);
     result.setaddr (0, Result::REG_LD1, addr);
-    result.setoval (1, rval);
-    return result;
-  }
-  
-  // M_LD2_UPD_R
-  static Result exec_ld2_upd_r (const Instr& inst, const Operand& oprd) {
-    // if nat bit is true, there is a register nat consumption fault
-    if (oprd.getbval (1) == true) 
-      throw Interrupt (FAULT_IT_RNAT_CONS, inst);
-    // build result
-    Result result = inst.getresl ();
-    // compute nat bit
-    bool natr1 = false;
-    bool natr2 = oprd.getbval (0);
-    // compute result
-    t_octa addr = oprd.getoval (1);
-    t_octa rval = addr + oprd.getoval (0); 
-    // set result 
-    result.setbval (0, natr1);
-    result.setbval (1, natr2);
-    result.setaddr (0, Result::REG_LD2, addr);
-    result.setoval (1, rval);
-    return result;
-  }
-     
-  // M_LD4_UPD_R
-  static Result exec_ld4_upd_r (const Instr& inst, const Operand& oprd) {
-    // if nat bit is true, there is a register nat consumption fault
-    if (oprd.getbval (1) == true) 
-      throw Interrupt (FAULT_IT_RNAT_CONS, inst);
-    // build result
-    Result result = inst.getresl ();
-    // compute nat bit
-    bool natr1 = false;
-    bool natr2 = oprd.getbval (0);
-    // compute result
-    t_octa addr = oprd.getoval (1);
-    t_octa rval = addr + oprd.getoval (0); 
-    // set result 
-    result.setbval (0, natr1);
-    result.setbval (1, natr2);
-    result.setaddr (0, Result::REG_LD4, addr);
-    result.setoval (1, rval);
-    return result;
-  }
-     
-  // M_LD8_UPD_R
-  static Result exec_ld8_upd_r (const Instr& inst, const Operand& oprd) {
-    // if nat bit is true, there is a register nat consumption fault
-    if (oprd.getbval (1) == true) 
-      throw Interrupt (FAULT_IT_RNAT_CONS, inst);
-    // build result
-    Result result = inst.getresl ();
-    // compute nat bit
-    bool natr1 = false;
-    bool natr2 = oprd.getbval (0);
-    // compute result
-    t_octa addr = oprd.getoval (1);
-    t_octa rval = addr + oprd.getoval (0); 
-    // set result 
-    result.setbval (0, natr1);
-    result.setbval (1, natr2);
-    result.setaddr (0, Result::REG_LD8, addr);
+    result.setbval (1, natr);
     result.setoval (1, rval);
     return result;
   }
 
+  // M_LD2_UPD_R
+  static Result exec_ld2_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD2, addr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD4_UPD_R
+  static Result exec_ld4_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD4, addr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD8_UPD_R
+  static Result exec_ld8_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD8, addr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD1_S_UPD_R
+  static Result exec_ld1_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD1, addr);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD2_S_UPD_R
+  static Result exec_ld2_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD2, addr);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD4_S_UPD_R
+  static Result exec_ld4_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD4, addr);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD8_S_UPD_R
+  static Result exec_ld8_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD8, addr);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD1_A_UPD_R
+  static Result exec_ld1_a_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD1, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD2_A_UPD_R
+  static Result exec_ld2_a_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD2, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD4_A_UPD_R
+  static Result exec_ld4_a_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD4, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD8_A_UPD_R
+  static Result exec_ld8_a_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // if one nat bit is true, there is a register nat consumption fault
+    if ((nat0 | nat1) == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = false;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    result.setaddr (0, Result::REG_LD8, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD1_SA_UPD_R
+  static Result exec_ld1_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD1, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD2_SA_UPD_R
+  static Result exec_ld2_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD2, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD4_SA_UPD_R
+  static Result exec_ld4_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD4, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LD8_SA_UPD_R
+  static Result exec_ld8_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result 
+    result.setbval (0, natr);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD8, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+  
   // M_LD8_FILL_UPD_R
   static Result exec_ld8_fill_upd_r (const Instr& inst, const Operand& oprd) {
     // if nat bit is true, there is a register nat consumption fault
@@ -685,8 +953,10 @@ namespace iato {
     result.setbval (0, natr);
     result.setbval (1, natr);
     result.setoval (1, rval);
-    if (natr == false) result.setaddr (0, Result::REG_LD1, addr);
-    result.setspec (0, true);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD1, addr);
+      result.setspec (0, true);
+    }
     return result;
   }
 
@@ -703,8 +973,10 @@ namespace iato {
     result.setbval (0, natr);
     result.setbval (1, natr);
     result.setoval (1, rval);
-    if (natr == false) result.setaddr (0, Result::REG_LD2, addr);
-    result.setspec (0, true);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD2, addr);
+      result.setspec (0, true);
+    }
     return result;
   }
 
@@ -721,8 +993,10 @@ namespace iato {
     result.setbval (0, natr);
     result.setbval (1, natr);
     result.setoval (1, rval);
-    if (natr == false) result.setaddr (0, Result::REG_LD4, addr);
-    result.setspec (0, true);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD4, addr);
+      result.setspec (0, true);
+    }
     return result;
   }
 
@@ -739,8 +1013,10 @@ namespace iato {
     result.setbval (0, natr);
     result.setbval (1, natr);
     result.setoval (1, rval);
-    if (natr == false) result.setaddr (0, Result::REG_LD8, addr);
-    result.setspec (0, true);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD8, addr);
+      result.setspec (0, true);
+    }
     return result;
   }
 
@@ -825,6 +1101,90 @@ namespace iato {
     result.setaddr (0, Result::REG_LD8, addr);
     result.setoval (1, rval);
     result.setaset (0, true);
+    return result;
+  }
+
+  // M_LD1_SA_UPD_I
+  static Result exec_ld1_sa_upd_i (const Instr& inst, const Operand& oprd) {
+    // build result
+    Result result = inst.getresl ();
+    // compute nat bit
+    bool natr = oprd.getbval (1);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + inst.getimmv (0); 
+    // set result, this dependes on the nat bit
+    result.setbval (0, natr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD1, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    return result;
+  }
+
+  // M_LD2_SA_UPD_I
+  static Result exec_ld2_sa_upd_i (const Instr& inst, const Operand& oprd) {
+    // build result
+    Result result = inst.getresl ();
+    // compute nat bit
+    bool natr = oprd.getbval (1);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + inst.getimmv (0); 
+    // set result, this dependes on the nat bit
+    result.setbval (0, natr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD2, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    return result;
+  }
+
+  // M_LD4_SA_UPD_I
+  static Result exec_ld4_sa_upd_i (const Instr& inst, const Operand& oprd) {
+    // build result
+    Result result = inst.getresl ();
+    // compute nat bit
+    bool natr = oprd.getbval (1);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + inst.getimmv (0); 
+    // set result, this dependes on the nat bit
+    result.setbval (0, natr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD4, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
+    return result;
+  }
+
+  // M_LD8_SA_UPD_I
+  static Result exec_ld8_sa_upd_i (const Instr& inst, const Operand& oprd) {
+    // build result
+    Result result = inst.getresl ();
+    // compute nat bit
+    bool natr = oprd.getbval (1);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + inst.getimmv (0);
+    // set result, this dependes on the nat bit
+    result.setbval (0, natr);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD8, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    }
     return result;
   }
 
@@ -1154,9 +1514,9 @@ namespace iato {
   // M_LDFS
   static Result exec_ldfs (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
     t_octa addr = oprd.getoval (1);
     result.setaddr (0, Result::REG_LDS, addr);
@@ -1166,9 +1526,9 @@ namespace iato {
   // M_LDFD
   static Result exec_ldfd (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
     t_octa addr = oprd.getoval (1);
     result.setaddr (0, Result::REG_LDD, addr);
@@ -1178,9 +1538,9 @@ namespace iato {
   // M_LDF8
   static Result exec_ldf8 (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
     t_octa addr = oprd.getoval (1);
     result.setaddr (0, Result::REG_LDI, addr);
@@ -1190,24 +1550,321 @@ namespace iato {
   // M_LDFE
   static Result exec_ldfe (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
     t_octa addr = oprd.getoval (1);
     result.setaddr (0, Result::REG_LDE, addr);
     return result;
   }
 
+  // M_LDFS_S
+  static Result exec_ldfs_s (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDS, addr);
+    result.setspec (0, true);
+    return result;
+  }
+
+  // M_LDFD_S
+  static Result exec_ldfd_s (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDD, addr);
+    return result;
+  }
+
+  // M_LDF8_S
+  static Result exec_ldf8_s (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDI, addr);
+    return result;
+  }
+
+  // M_LDFE_S
+  static Result exec_ldfe_s (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDE, addr);
+    return result;
+  }
+
+  // M_LDFS_A
+  static Result exec_ldfs_a (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDS, addr);
+    result.setaset (0, true);
+    return result;
+  }
+
+  // M_LDFD_A
+  static Result exec_ldfd_a (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDD, addr);
+    result.setaset (0, true);
+    return result;
+  }
+
+  // M_LDF8_A
+  static Result exec_ldf8_a (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDI, addr);
+    result.setaset (0, true);
+    return result;
+  }
+
+  // M_LDFE_A
+  static Result exec_ldfe_a (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDE, addr);
+    result.setaset (0, true);
+    return result;
+  }
+
+  // M_LDFS_SA
+  static Result exec_ldfs_sa (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDS, addr);
+    result.setaset (0, true);
+    result.setspec (0, true);
+    return result;
+  }
+
+  // M_LDFD_SA
+  static Result exec_ldfd_sa (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDD, addr);
+    result.setaset (0, true);
+    result.setspec (0, true);
+    return result;
+  }
+
+  // M_LDF8_SA
+  static Result exec_ldf8_sa (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDI, addr);
+    result.setaset (0, true);
+    result.setspec (0, true);
+    return result;
+  }
+
+  // M_LDFE_SA
+  static Result exec_ldfe_sa (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true,  the target register is set to a nat value
+    if (nat == true) {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+      return result;
+    }
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDE, addr);
+    result.setaset (0, true);
+    result.setspec (0, true);
+    return result;
+  }
+
   // M_LDF_FILL
   static Result exec_ldf_fill (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
     t_octa addr = oprd.getoval (1);
     result.setaddr (0, Result::REG_LDF, addr);
+    return result;
+  }
+
+  // M_LDFS_C_CLR
+  static Result exec_ldfs_c_clr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDS, addr);
+    result.setachk (0, true);
+    result.setaclr (0, true);
+    return result;
+  }
+
+  // M_LDFD_C_CLR
+  static Result exec_ldfd_c_clr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDD, addr);
+    result.setachk (0, true);
+    result.setaclr (0, true);
+    return result;
+  }
+
+  // M_LDF8_C_CLR
+  static Result exec_ldf8_c_clr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDI, addr);
+    result.setachk (0, true);
+    result.setaclr (0, true);
+    return result;
+  }
+
+  // M_LDFE_C_CLR
+  static Result exec_ldfe_c_clr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDE, addr);
+    result.setachk (0, true);
+    result.setaclr (0, true);
+    return result;
+  }
+
+  // M_LDFS_C_NC
+  static Result exec_ldfs_c_nc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDS, addr);
+    result.setachk (0, true);
+    return result;
+  }
+
+  // M_LDFD_C_NC
+  static Result exec_ldfd_c_nc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDD, addr);
+    result.setachk (0, true);
+    return result;
+  }
+
+  // M_LDF8_C_NC
+  static Result exec_ldf8_c_nc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDI, addr);
+    result.setachk (0, true);
+    return result;
+  }
+
+  // M_LDFE_C_NC
+  static Result exec_ldfe_c_nc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true)  throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    t_octa addr = oprd.getoval (1);
+    result.setaddr (0, Result::REG_LDE, addr);
+    result.setachk (0, true);
     return result;
   }
 
@@ -1218,16 +1875,16 @@ namespace iato {
   // M_LDFS_UPD_R
   static Result exec_ldfs_upd_r (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
-    bool nat2 = oprd.getbval (0);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
+    bool   natr = oprd.getbval (0);
     t_octa addr = oprd.getoval (1);
     t_octa rval = addr + oprd.getoval (0); 
     // set result
     result.setaddr (0, Result::REG_LDS, addr);
-    result.setbval (1, nat2);
+    result.setbval (1, natr);
     result.setoval (1, rval);
     return result;
   }
@@ -1235,16 +1892,16 @@ namespace iato {
   // M_LDFD_UPD_R
   static Result exec_ldfd_upd_r (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
-    bool nat2 = oprd.getbval (0);
+    if (nat  == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
+    bool   natr = oprd.getbval (0);
     t_octa addr = oprd.getoval (1);
     t_octa rval = addr + oprd.getoval (0); 
     // set result
     result.setaddr (0, Result::REG_LDD, addr);
-    result.setbval (1, nat2);
+    result.setbval (1, natr);
     result.setoval (1, rval);
     return result;
   }
@@ -1252,16 +1909,16 @@ namespace iato {
   // M_LDF8_UPD_R
   static Result exec_ldf8_upd_r (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
-    bool nat2 = oprd.getbval (0);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
+    bool   natr = oprd.getbval (0);
     t_octa addr = oprd.getoval (1);
     t_octa rval = addr + oprd.getoval (0); 
     // set result
     result.setaddr (0, Result::REG_LDI, addr);
-    result.setbval (1, nat2);
+    result.setbval (1, natr);
     result.setoval (1, rval);
     return result;
   }
@@ -1269,16 +1926,284 @@ namespace iato {
   // M_LDFE_UPD_R
   static Result exec_ldfe_upd_r (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
-    bool nat2 = oprd.getbval (0);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
+    bool   natr = oprd.getbval (0);
     t_octa addr = oprd.getoval (1);
     t_octa rval = addr + oprd.getoval (0); 
     // set result
     result.setaddr (0, Result::REG_LDE, addr);
-    result.setbval (1, nat2);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFS_S_UPD_R
+  static Result exec_ldfs_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LDS, addr);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFD_S_UPD_R
+  static Result exec_ldfd_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LDD, addr);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDF8_S_UPD_R
+  static Result exec_ldf8_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD8, addr);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFE_S_UPD_R
+  static Result exec_ldfe_s_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LDE, addr);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFS_A_UPD_R
+  static Result exec_ldfs_a_upd_r (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    bool   natr = oprd.getbval (0);
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    result.setaddr (0, Result::REG_LDS, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFD_A_UPD_R
+  static Result exec_ldfd_a_upd_r (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    bool   natr = oprd.getbval (0);
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    result.setaddr (0, Result::REG_LDD, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDF8_A_UPD_R
+  static Result exec_ldf8_a_upd_r (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    bool   natr = oprd.getbval (0);
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    result.setaddr (0, Result::REG_LD8, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFE_A_UPD_R
+  static Result exec_ldfe_a_upd_r (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool   nat    = oprd.getbval (1);
+    // if address nat bit is true, there is a register nat consumption fault
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    // compute result
+    bool   natr = oprd.getbval (0);
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    result.setaddr (0, Result::REG_LDE, addr);
+    result.setaset (0, true);
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFS_SA_UPD_R
+  static Result exec_ldfs_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LDS, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFD_SA_UPD_R
+  static Result exec_ldfd_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LDD, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDF8_SA_UPD_R
+  static Result exec_ldf8_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LD8, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
+    result.setoval (1, rval);
+    return result;
+  }
+
+  // M_LDFE_SA_UPD_R
+  static Result exec_ldfe_sa_upd_r (const Instr& inst, const Operand& oprd) {
+    // compute nat bit
+    bool nat0 = oprd.getbval (0);
+    bool nat1 = oprd.getbval (1);
+    // build result
+    Result result = inst.getresl ();
+    // compute result
+    bool   natr = nat0 | nat1;
+    t_octa addr = oprd.getoval (1);
+    t_octa rval = addr + oprd.getoval (0); 
+    // set result
+    if (natr == false) {
+      result.setaddr (0, Result::REG_LDE, addr);
+      result.setaset (0, true);
+      result.setspec (0, true);
+    } else {
+      t_real rval; rval.setnat ();
+      result.setrval (0, rval);
+    }
+    result.setbval (1, natr);
     result.setoval (1, rval);
     return result;
   }
@@ -1286,19 +2211,20 @@ namespace iato {
   // M_LDF_FILL_UPD_R
   static Result exec_ldf_fill_upd_r (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    bool nat1 = oprd.getbval (1);
-    bool nat2 = oprd.getbval (0);
+    bool   nat    = oprd.getbval (1);
     // if address nat bit is true, there is a register nat consumption fault
-    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
+    bool   natr = oprd.getbval (0);
     t_octa addr = oprd.getoval (1);
     t_octa rval = addr + oprd.getoval (0); 
     // set result
     result.setaddr (0, Result::REG_LDF, addr);
-    result.setbval (1, nat2);
+    result.setbval (1, natr);
     result.setoval (1, rval);
     return result;
   }
+
   // ------------------------------------------------------------------------
   // - M08 instruction group                                                -
   // ------------------------------------------------------------------------
@@ -1880,6 +2806,31 @@ namespace iato {
   }
 
   // ------------------------------------------------------------------------
+  // - M21 instruction group                                                -
+  // ------------------------------------------------------------------------
+
+  // CHK_S
+  static Result exec_chk_s (const Instr& inst, const Operand& oprd) {
+    // check for nat value
+    t_real rval = oprd.getrval (0);
+    bool   natr = rval.isnat ();
+    // get result
+    Result result = inst.getresl ();
+    // do nothing if the nat bit is not set
+    if (natr == false) {
+      result.setvalid (true);
+      return result;
+    }
+    // compute new ip with displacement
+    t_long ip = inst.getiip  ();
+    t_long rd = inst.getimmv (0);
+    t_octa rp = ip + rd;
+    // set result
+    result.setoval (0, rp);
+    return result;
+  }
+
+  // ------------------------------------------------------------------------
   // - M22 instruction group                                                -
   // ------------------------------------------------------------------------
 
@@ -1899,6 +2850,38 @@ namespace iato {
 
   // CHK_A_NC_I
   static Result exec_chk_a_nc_i (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    // compute new ip with displacement
+    t_long ip = inst.getiip  ();
+    t_long rd = inst.getimmv (0);
+    t_octa rp = ip + rd;
+    // set result
+    result.setoval (1, Result::REG_CHK, 0);
+    result.setaclr (1, false);
+    result.setoval (0, rp);
+    return result;
+  }
+
+  // ------------------------------------------------------------------------
+  // - M23 instruction group                                                -
+  // ------------------------------------------------------------------------
+
+  // CHK_A_CLR_F
+  static Result exec_chk_a_clr_f (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    // compute new ip with displacement
+    t_long ip = inst.getiip  ();
+    t_long rd = inst.getimmv (0);
+    t_octa rp = ip + rd;
+    // set result
+    result.setoval (1, Result::REG_CHK, 0);
+    result.setaclr (1, true);
+    result.setoval (0, rp);
+    return result;
+  }
+
+  // CHK_A_NC_F
+  static Result exec_chk_a_nc_f (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
     // compute new ip with displacement
     t_long ip = inst.getiip  ();
@@ -1999,11 +2982,13 @@ namespace iato {
   // ALLOC
   static Result exec_alloc (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    // get the old cfm and update with the alloc value
+    // get the alloc values
+    t_byte sof = inst.getimmv(0);
+    t_byte sol = inst.getimmv(1);
+    t_byte sor = inst.getimmv(2);
+    // get the cfm and update with the alloc value
     Cfm cfm = oprd.getoval (1);
-    cfm.setfld (Cfm::SOF, inst.getimmv(0));
-    cfm.setfld (Cfm::SOL, inst.getimmv(1));
-    cfm.setfld (Cfm::SOR, inst.getimmv(2));
+    cfm.alloc (sof, sol, sor);
     // get the register value to save
     t_octa rval = oprd.getoval (0);
     // update result
@@ -2148,6 +3133,42 @@ namespace iato {
     case M_LD8_UPD_R:
       result = exec_ld8_upd_r (inst, oprd);
       break;
+    case M_LD1_S_UPD_R:
+      result = exec_ld1_s_upd_r (inst, oprd);
+      break;
+    case M_LD2_S_UPD_R:
+      result = exec_ld2_s_upd_r (inst, oprd);
+      break;
+    case M_LD4_S_UPD_R:
+      result = exec_ld4_s_upd_r (inst, oprd);
+      break;
+    case M_LD8_S_UPD_R:
+      result = exec_ld8_s_upd_r (inst, oprd);
+      break;
+    case M_LD1_A_UPD_R:
+      result = exec_ld1_a_upd_r (inst, oprd);
+      break;
+    case M_LD2_A_UPD_R:
+      result = exec_ld2_a_upd_r (inst, oprd);
+      break;
+    case M_LD4_A_UPD_R:
+      result = exec_ld4_a_upd_r (inst, oprd);
+      break;
+    case M_LD8_A_UPD_R:
+      result = exec_ld8_a_upd_r (inst, oprd);
+      break;
+    case M_LD1_SA_UPD_R:
+      result = exec_ld1_sa_upd_r (inst, oprd);
+      break;
+    case M_LD2_SA_UPD_R:
+      result = exec_ld2_sa_upd_r (inst, oprd);
+      break;
+    case M_LD4_SA_UPD_R:
+      result = exec_ld4_sa_upd_r (inst, oprd);
+      break;
+    case M_LD8_SA_UPD_R:
+      result = exec_ld8_sa_upd_r (inst, oprd);
+      break;
     case M_LD8_FILL_UPD_R:
       result = exec_ld8_fill_upd_r (inst, oprd);
       break;
@@ -2188,6 +3209,18 @@ namespace iato {
       break;
     case M_LD8_A_UPD_I:
       result = exec_ld8_a_upd_i (inst, oprd);
+      break;
+    case M_LD1_SA_UPD_I:
+      result = exec_ld1_sa_upd_i (inst, oprd);
+      break;
+    case M_LD2_SA_UPD_I:
+      result = exec_ld2_sa_upd_i (inst, oprd);
+      break;
+    case M_LD4_SA_UPD_I:
+      result = exec_ld4_sa_upd_i (inst, oprd);
+      break;
+    case M_LD8_SA_UPD_I:
+      result = exec_ld8_sa_upd_i (inst, oprd);
       break;
     case M_LD1_C_CLR_UPD_I:
       result = exec_ld1_c_clr_upd_i (inst, oprd);
@@ -2263,6 +3296,66 @@ namespace iato {
     case M_LDF_FILL:
       result = exec_ldf_fill (inst, oprd);
       break;
+    case M_LDFS_S:
+      result = exec_ldfs_s (inst, oprd);
+      break;	
+    case M_LDFD_S:
+      result = exec_ldfd_s (inst, oprd);
+      break;	
+    case M_LDF8_S:
+      result = exec_ldf8_s (inst, oprd);
+      break;	
+    case M_LDFE_S:
+      result = exec_ldfe_s (inst, oprd);
+      break;	
+    case M_LDFS_A:
+      result = exec_ldfs_a (inst, oprd);
+      break;	
+    case M_LDFD_A:
+      result = exec_ldfd_a (inst, oprd);
+      break;	
+    case M_LDF8_A:
+      result = exec_ldf8_a (inst, oprd);
+      break;	
+    case M_LDFE_A:
+      result = exec_ldfe_a (inst, oprd);
+      break;	
+    case M_LDFS_SA:
+      result = exec_ldfs_sa (inst, oprd);
+      break;	
+    case M_LDFD_SA:
+      result = exec_ldfd_sa (inst, oprd);
+      break;	
+    case M_LDF8_SA:
+      result = exec_ldf8_sa (inst, oprd);
+      break;	
+    case M_LDFE_SA:
+      result = exec_ldfe_sa (inst, oprd);
+      break;
+    case M_LDFS_C_CLR:
+      result = exec_ldfs_c_clr (inst, oprd);
+      break;	
+    case M_LDFD_C_CLR:
+      result = exec_ldfd_c_clr (inst, oprd);
+      break;	
+    case M_LDF8_C_CLR:
+      result = exec_ldf8_c_clr (inst, oprd);
+      break;	
+    case M_LDFE_C_CLR:
+      result = exec_ldfe_c_clr (inst, oprd);
+      break;
+    case M_LDFS_C_NC:
+      result = exec_ldfs_c_nc (inst, oprd);
+      break;	
+    case M_LDFD_C_NC:
+      result = exec_ldfd_c_nc (inst, oprd);
+      break;	
+    case M_LDF8_C_NC:
+      result = exec_ldf8_c_nc (inst, oprd);
+      break;	
+    case M_LDFE_C_NC:
+      result = exec_ldfe_c_nc (inst, oprd);
+      break;
 
     // M07 instruction group
     case M_LDFS_UPD_R:
@@ -2276,6 +3369,42 @@ namespace iato {
       break;
     case M_LDF8_UPD_R:
       result = exec_ldf8_upd_r (inst, oprd);
+      break;
+    case M_LDFS_S_UPD_R:
+      result = exec_ldfs_s_upd_r (inst, oprd);
+      break;
+    case M_LDFD_S_UPD_R:
+      result = exec_ldfd_s_upd_r (inst, oprd);
+      break;
+    case M_LDFE_S_UPD_R:
+      result = exec_ldfe_s_upd_r (inst, oprd);
+      break;
+    case M_LDF8_S_UPD_R:
+      result = exec_ldf8_s_upd_r (inst, oprd);
+      break;
+    case M_LDFS_A_UPD_R:
+      result = exec_ldfs_a_upd_r (inst, oprd);
+      break;
+    case M_LDFD_A_UPD_R:
+      result = exec_ldfd_a_upd_r (inst, oprd);
+      break;
+    case M_LDFE_A_UPD_R:
+      result = exec_ldfe_a_upd_r (inst, oprd);
+      break;
+    case M_LDF8_A_UPD_R:
+      result = exec_ldf8_a_upd_r (inst, oprd);
+      break;
+    case M_LDFS_SA_UPD_R:
+      result = exec_ldfs_sa_upd_r (inst, oprd);
+      break;
+    case M_LDFD_SA_UPD_R:
+      result = exec_ldfd_sa_upd_r (inst, oprd);
+      break;
+    case M_LDFE_SA_UPD_R:
+      result = exec_ldfe_sa_upd_r (inst, oprd);
+      break;
+    case M_LDF8_SA_UPD_R:
+      result = exec_ldf8_sa_upd_r (inst, oprd);
       break;
     case M_LDF_FILL_UPD_R:
       result = exec_ldf_fill_upd_r (inst, oprd);
@@ -2426,12 +3555,25 @@ namespace iato {
       result = exec_chk_s_m (inst, oprd);
       break;
 
+      // M21 instruction group
+    case M_CHK_S:
+      result = exec_chk_s (inst, oprd);
+      break;
+
       // M22 instruction group
     case M_CHK_A_CLR_I:
       result = exec_chk_a_clr_i (inst, oprd);
       break;
     case M_CHK_A_NC_I:
       result = exec_chk_a_nc_i (inst, oprd);
+      break;
+
+      // M23 instruction group
+    case M_CHK_A_CLR_F:
+      result = exec_chk_a_clr_f (inst, oprd);
+      break;
+    case M_CHK_A_NC_F:
+      result = exec_chk_a_nc_f (inst, oprd);
       break;
 
       // M24 instruction group

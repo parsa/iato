@@ -88,9 +88,6 @@ namespace iato {
     /// flush all resource
     void flush (void);
 
-    /// partially flush all resources
-    void pflsh (void);
-
     /// bind the pipeline with this resteer engine
     /// @param pipe the pipeline to bind
     /// @param env  the resource environment

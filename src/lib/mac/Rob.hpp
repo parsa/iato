@@ -72,9 +72,6 @@ namespace iato {
     /// reset this rob
     void reset (void);
 
-    /// partial flush this rob
-    void pflsh (void);
-
     /// report this resource
     void report (void) const;
 
@@ -112,10 +109,11 @@ namespace iato {
     /// allocate a serialize rob entry with an ip and a slot
     /// @param ip    the ip to restart
     /// @param slot the slot to restart
+    /// @param unit the instruction unit
     /// @param srlz the serialize bit
     /// @param nopb the nop bit
-    void alloc (const t_octa ip, const long slot, const bool srlz,
-		const bool nopb);
+    void alloc (const t_octa ip, const long slot, t_unit unit,
+		const bool srlz, const bool nopb);
 
     /// allocate a new rob entry
     /// @param inst the instruction
@@ -140,6 +138,9 @@ namespace iato {
 
     /// @return the latest instruction slot
     long getslot (void) const;
+
+    /// @return the latest instruction unit
+    t_unit getunit (void) const;
 
     /// @return the latest irb index
     long getiidx (void) const;

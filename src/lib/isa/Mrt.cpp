@@ -37,11 +37,22 @@ namespace iato {
     d_addr = addr;
   }
 
+  // create a mrt by type, address and sbit
+
+  Mrt::Mrt (t_mrtt type, const t_octa addr, const bool sbit) {
+    reset ();
+    d_type = type;
+    d_addr = addr;
+    d_sbit = sbit;
+  }
+
   // copy construct this mrt
 
   Mrt::Mrt (const Mrt& that) {
     d_type = that.d_type;
     d_addr = that.d_addr;
+    d_sbit = that.d_sbit;
+    d_nval = that.d_nval;
     d_oval = that.d_oval;
     d_lval = that.d_lval;
     d_hval = that.d_hval;
@@ -54,6 +65,8 @@ namespace iato {
   Mrt& Mrt::operator = (const Mrt& that) {
     d_type = that.d_type;
     d_addr = that.d_addr;
+    d_sbit = that.d_sbit;
+    d_nval = that.d_nval;
     d_oval = that.d_oval;
     d_lval = that.d_lval;
     d_hval = that.d_hval;
@@ -67,6 +80,8 @@ namespace iato {
   void Mrt::reset (void) {
     d_type = REQ_NUL;
     d_addr = OCTA_0;
+    d_sbit = false;
+    d_nval = false;
     d_oval = OCTA_0;
     d_lval = 0.0L;
     d_hval = 0.0L;
@@ -78,6 +93,20 @@ namespace iato {
 
   bool Mrt::isvalid (void) const {
     return (d_type != REQ_NUL);
+  }
+
+  // return true if the speculative bit is set
+
+  bool Mrt::issbit (void) const {
+    if (isvalid () == false) return false;
+    return d_sbit;
+  }
+
+  // return true if the nat value bit is set
+
+  bool Mrt::isnval (void) const {
+    if (isvalid () == false) return false;
+    return d_nval;
   }
 
   // return true if the mrt is a load
@@ -146,6 +175,59 @@ namespace iato {
   t_octa Mrt::getaddr (void) const {
     assert (isvalid () == true);
     return d_addr;
+  }
+
+  // return the load/store address mask
+
+  t_octa Mrt::getmask (void) const {
+    t_octa mask = OCTA_0;
+    switch (d_type) {
+    case REQ_LD1:
+    case REQ_ST1:
+      mask = 0xFFFFFFFFFFFFFFFFULL;
+      break;
+    case REQ_LD2:
+    case REQ_ST2:
+      mask = 0xFFFFFFFFFFFFFFFEULL;
+      break;
+    case REQ_LD4:
+    case REQ_ST4:
+    case REQ_LDS:
+    case REQ_STS:
+      mask = 0xFFFFFFFFFFFFFFFCULL;
+      break;
+    case REQ_LD8:
+    case REQ_ST8:
+    case REQ_LDD:
+    case REQ_LDI:
+    case REQ_STD:
+    case REQ_STI:
+    case REQ_LPS:
+      mask = 0xFFFFFFFFFFFFFFF8ULL;
+      break;
+    case REQ_LDE:
+    case REQ_STE:
+      mask = 0xFFFFFFFFFFFFFFFAULL;
+      break;
+    case REQ_LDF:
+    case REQ_STF:
+    case REQ_LPD:
+    case REQ_LPI:
+      mask = 0xFFFFFFFFFFFFFFF0ULL;
+      break;
+    case REQ_NUL:
+      break;
+    default:
+      assert (false);
+      break;
+    }
+    return mask;
+  }
+
+  // set the mrt nat value bit
+
+  void Mrt::setnval (const bool nval) {
+    d_nval = nval;
   }
 
   // set the mrt byte value
@@ -258,20 +340,23 @@ namespace iato {
 
   // set the load information by type, address and rid
 
-  void Mrt::setld (t_mrtt type, const t_octa addr, const Rid& rid) {
+  void Mrt::setld (t_mrtt type, const t_octa addr, const bool sbit,
+		   const Rid& rid) {
     reset ();
     d_type = type;
     d_addr = addr;
+    d_sbit = sbit;
     d_lrid = rid; 
   }
 
   // set the load information by type, address and rid pair
 
-  void Mrt::setld (t_mrtt type, const t_octa addr, const Rid& lrid,
-		   const Rid& hrid) {
+  void Mrt::setld (t_mrtt type, const t_octa addr, const bool sbit, 
+		   const Rid& lrid, const Rid& hrid) {
     reset ();
     d_type = type;
     d_addr = addr;
+    d_sbit = sbit;
     d_lrid = lrid; 
     d_hrid = hrid; 
   }
@@ -303,5 +388,17 @@ namespace iato {
     d_addr = addr;
     d_lval = lval;
     d_hval = hval;
+  }
+
+  // set the mrt value from a mrt
+
+  void Mrt::setmv (const Mrt& mrt) {
+    // check for valid mrt
+    if (mrt.isvalid () == false) return;
+    // copy value
+    d_nval = mrt.d_nval;
+    d_oval = mrt.d_oval;
+    d_lval = mrt.d_lval;
+    d_hval = mrt.d_hval;
   }
 }

@@ -43,7 +43,7 @@ namespace iato {
   
   Hma::Hma (Mtx* mtx, Memory* mem) : Runnable (RESOURCE_HMA) {
     // initialize mta
-    p_mta = new Mta;
+    p_mta = new Mta (mtx);
     p_mem = mem;
     d_mbb = mtx->getbool ("MEMORY-BYPASS-MODEL");
     // bind the mta

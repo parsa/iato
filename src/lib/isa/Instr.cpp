@@ -87,6 +87,7 @@ namespace iato {
     d_iip     = that.d_iip;
     d_sip     = that.d_sip;
     d_sfl     = that.d_sfl;
+    d_hist    = that.d_hist;
     d_rprd    = that.d_rprd;
     d_bunit   = that.d_bunit;
     d_funit   = that.d_funit;
@@ -126,6 +127,7 @@ namespace iato {
     d_iip     = that.d_iip;
     d_sip     = that.d_sip;
     d_sfl     = that.d_sfl;
+    d_hist    = that.d_hist;
     d_rprd    = that.d_rprd;
     d_bunit   = that.d_bunit;
     d_funit   = that.d_funit;
@@ -165,6 +167,7 @@ namespace iato {
     d_iip     = OCTA_0;
     d_sip     = OCTA_0;
     d_sfl     = false;
+    d_hist    = OCTA_0;
     d_bunit   = AUNIT;
     d_funit   = AUNIT;
     d_slot    = 0;
@@ -196,12 +199,129 @@ namespace iato {
     for (long i = 0; i < IA_MRPM; i++) d_rrpm[i].reset ();
   }
 
+  
+  // return the instruction valid bit
+
+  bool Instr::isvalid (void) const {
+    return d_valid;
+  }
+
+  // set the instruction ip
+
+  void Instr::setiip (const t_octa ip) {
+    d_iip = ip;
+    d_sip = ip + BN_BYSZ;
+  }
+
+  // return the instruction ip
+    
+  t_octa Instr::getiip (void) const {
+    return d_iip;
+  }
+
+  // set the instruction speculative ip
+
+  void Instr::setsip (const t_octa sip) {
+    d_sip = sip;
+    d_sfl = true;
+  }
+
+  // return the instruction speculative ip
+
+  t_octa Instr::getsip (void) const {
+    return d_sip;
+  }
+
+  // return the instruction speculative flag
+
+  bool Instr::getsfl (void) const {
+    return d_sfl;
+  }
+
+  // set the predictor history
+
+  void Instr::sethist (const t_octa hist) {
+    d_hist = hist;
+  }
+  
+  // return the predictor history
+
+  t_octa Instr::gethist (void) const {
+    return d_hist;
+  }
+
+  // return the instruction slot
+    
+  long Instr::getslot (void) const {
+    return d_slot;
+  }
+
+  // return the instruction stop bit
+  
+  bool Instr::getstop (void) const {
+    return d_stop;
+  }
+
+  // return the instruction group
+  
+  string Instr::getgroup (void) const {
+    return d_group;
+  }
+
+  // return the instruction data
+
+  t_octa Instr::getdata (void) const {
+    return d_inst;
+  }
+
+  // return the instruction extension data
+
+  t_octa Instr::getextd (void) const {
+    return d_extd;
+  }
+    
+  // return the instruction opcode
+  
+  t_iopc Instr::getiopc (void) const {
+    return d_opcd;
+  }
+
+  // return the instruction bundle unit
+
+  t_unit Instr::getbunit (void) const {
+    return d_bunit;
+  }
+
+  // return the instruction functional unit
+  
+  t_unit Instr::getfunit (void) const {
+    return d_funit;
+  }
+
   // return the instruction slot unit
 
   t_unit Instr::getsunit (void) const {
     assert (d_valid == true);
     if (d_bunit == XUNIT) return d_funit;
     return d_bunit;
+  }
+  
+  // return true if the instruction is a load
+  
+  bool Instr::getldb (void) const {
+    return d_ildb;
+  }
+
+  // return true if the instruction is a store
+
+  bool Instr::getstb (void) const {
+    return d_istb;
+  }
+
+  // return true if the instruction is a branch
+  
+  bool Instr::isbr (void) const {
+    return d_brch;
   }
 
   // return true if the instruction is a nop
@@ -216,7 +336,91 @@ namespace iato {
     }
     return false;
   }
+
+  // return the instruction floating point status completer
   
+  t_fpcomp Instr::getfpcomp (void) const {
+    return d_fpcomp;
+  }
+
+  // return the instruction immediate value
+    
+  t_octa Instr::getimmv (const long index) const {
+    assert ((index >= 0) && (index < IA_MSRC));
+    return d_immv[index];
+  }
+  
+  // return true if the predicate matches the rid
+  
+  bool Instr::ispnum (const Rid& rid) const {
+    return d_rprd.isequal (rid);
+  }
+
+  // return the predicate register number
+
+  Rid Instr::getpnum (void) const {
+    return d_rprd;
+  }
+
+  // set the predicate register number
+
+  void Instr::setpnum (const Rid& pnum) {
+    d_rprd = pnum;
+  }
+
+  // return true if one source matches the rid
+  
+  bool Instr::issnum (const Rid& rid) const {
+    for (long i = 0; i < IA_MSRC; i++) {
+      if (d_rsrc[i].isequal (rid) == true) return true;
+    }
+    return false;
+  }
+
+  // get the source register number by index
+
+  Rid Instr::getsnum (const long index) const {
+    assert ((index >= 0) && (index < IA_MSRC));
+    return d_rsrc[index];
+  }
+
+  // set the source register number
+
+  void Instr::setsnum (const long index, const Rid& snum) {
+    assert ((index >= 0) && (index < IA_MSRC));
+    d_rsrc[index] = snum;
+  }
+
+  // return true if one destination matches the rid
+  
+  bool Instr::isdnum (const Rid& rid) const {
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_rdst[i].isequal (rid) == true) return true;
+    }
+    return false;
+  }
+
+  // get the destination register number by index
+
+  Rid Instr::getdnum (const long index) const {
+    assert ((index >= 0) && (index < IA_MDST));
+    return d_rdst[index];
+  }
+
+  // set the destination register number
+
+  void Instr::setdnum (const long index, const Rid& dnum) {
+    assert ((index >= 0) && (index < IA_MDST));
+    d_rdst[index] = dnum;
+  }
+
+  // return the rid pair map by index
+
+  Rpm Instr::getrrpm (const long index) const {
+    assert ((index >= 0) && (index < IA_MRPM));
+    return d_rrpm[index];
+  }
+
   // return the instruction operand
 
   Operand Instr::getoper (void) const {

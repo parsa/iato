@@ -56,13 +56,6 @@ namespace iato {
     for (long i = 0; i < size; i++) d_pipe[i]->flush ();
   }
 
-  // partially flush this pipeline
-
-  void Pipeline::pflsh (void) {
-    long size = d_pipe.size ();
-    for (long i = 0; i < size; i++) d_pipe[i]->pflsh ();
-  }
-
   // return true if one stage is holding 
 
   bool Pipeline::isholding (const long index) const {
@@ -88,6 +81,15 @@ namespace iato {
     long size = d_pipe.size ();
     if ((index < 0) || (index >= size)) return;
     d_pipe[index]->run ();
+  }
+
+  // activate one pipeline stage by index - if the index is out of bound
+  // do nothing.
+
+  void Pipeline::activate (const long index) {
+    long size = d_pipe.size ();
+    if ((index < 0) || (index >= size)) return;
+    d_pipe[index]->activate ();
   }
 
   // report all pipeline stages

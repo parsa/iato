@@ -25,6 +25,18 @@
 
 namespace iato {
 
+  // this procedure checks if an instruction ends an instruction group
+  static bool is_ig_end (const Ssi& ssi) {
+    // check for valid - if not, end here
+    if (ssi.isvalid () == false) return true;
+    // check if we have a stop bit
+    if (ssi.getstop () == true) return true;
+    // check if we have a break in the B unit
+    if (ssi.getiopc () == B_BREAK) return true;
+    // no end condition
+    return false;
+  }
+
   // this procedure checks that a bundle has a at least one branch type
   // in the template, as to define an implicit stop bit
   static bool is_br_tmpl (const t_byte tmpl) {
@@ -79,7 +91,6 @@ namespace iato {
   Disperse::Disperse (void) : Resource (RESOURCE_BDS) {
     p_ipb = 0;
     p_iib = 0;
-    p_mob = 0;
     p_psb = 0;
     reset ();
   }
@@ -89,7 +100,6 @@ namespace iato {
   Disperse::Disperse (const string& name) : Resource (name) {
     p_ipb = 0;
     p_iib = 0;
-    p_mob = 0;
     p_psb = 0;
     reset ();
   }
@@ -99,7 +109,6 @@ namespace iato {
   Disperse::Disperse (Mtx* mtx) : Resource (RESOURCE_BDS) {
     p_ipb = 0;
     p_iib = 0;
-    p_mob = 0;
     p_psb = 0;
     reset ();
   }
@@ -109,7 +118,6 @@ namespace iato {
   Disperse::Disperse (Mtx* mtx, const string& name) : Resource (name) {
     p_ipb = 0;
     p_iib = 0;
-    p_mob = 0;
     p_psb = 0;
     reset ();
   }
@@ -119,7 +127,6 @@ namespace iato {
   void Disperse::reset (void) {
     if (p_ipb) p_ipb->reset ();
     if (p_iib) p_iib->reset ();
-    if (p_mob) p_mob->reset ();
     if (p_psb) p_psb->reset ();
   }
 
@@ -166,18 +173,19 @@ namespace iato {
 
   // disperse a bundle into an issue port buffer
 
-  void Disperse::expand (Bundle& bndl) {
+  void Disperse::expand (Bundle& bndl, const long boix) {
     // check for valid buffer and bundle
     if (bndl.isvalid () == false) return;
     // loop in the bundle and disperse
     for (long i = 0; i < BN_SLSZ; i++) {
+      // compute instruction order index
+      long iioi = boix * BN_SLSZ + i;
       // get the instruction
       Ssi ssi;
       try {
 	ssi = bndl.getinstr (i);
       } catch (const Interrupt& vi) {
-	// mark interrupt in the scoreboard
-	p_psb->alloc (vi);
+	p_ipb->setintr (vi, iioi);
 	return;
       }
       if (ssi.isvalid () == false) continue;
@@ -187,35 +195,26 @@ namespace iato {
       long slot = p_ipb->find (unit);
       // if invalid, then terminate the expansion
       if (slot == -1) return;
+      // set the instruction order index
+      ssi.setrix (iioi); 
       // allocate the interrupt buffer entry
       long iidx = p_iib->alloc (); assert (iidx != -1);
       ssi.setiib (iidx);
-      // allocate memory ordering buffer entry
-      bool ildb = ssi.getldb ();
-      bool istb = ssi.getstb ();
-      if ((ildb == true) || (istb == true)) {
-	long imob = p_mob->alloc (ildb, istb); assert (imob != -1);
-	ssi.setmob (imob);
-      }
-      // allocate scoreboard entry
-      long ridx = p_psb->alloc (ssi); assert (ridx != -1);
-      ssi.setrix (ridx);
       // the slot is valid, so assign the instruction
-      p_ipb->setinst (unit, slot, ssi);      
+      p_ipb->setinst (unit, slot, ssi);
       // clear the instruction in the bundle
       slot = ssi.getslot ();
       bndl.setvsb (slot, false);
-      // check if we have a stop bit but not at slot 2
-      if (ssi.getstop () == true) return;
+      // check if we have a stop bit
+      if (is_ig_end (ssi) == true) return;
     }
   }
 
   // bind the disperse resource
   
-  void Disperse::bind (Ipb* ipb, Iib* iib, Mob* mob, Scoreboard* psb) {
+  void Disperse::bind (Spb* ipb, Iib* iib, Scoreboard* psb) {
     p_ipb = ipb;
     p_iib = iib;
-    p_mob = mob;
     p_psb = psb;
   } 
 }

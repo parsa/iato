@@ -98,8 +98,6 @@ namespace iato {
     long d_iwsz;
     /// the slot window size
     long d_swsz;
-    /// the partial flush mode
-    bool d_pfmd;
     /// the rse
     Rse* p_rse;
     /// the rob

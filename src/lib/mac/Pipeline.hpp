@@ -63,9 +63,6 @@ namespace iato {
     /// flush this pipeline
     void flush (void);
 
-    /// partially flush this pipeline
-    void pflsh (void);
-
     /// return true if one stage is holding
     bool isholding (const long index) const;
 
@@ -75,6 +72,10 @@ namespace iato {
     /// run one pipeline stage by index
     /// @param index the stage index to run
     void run (const long index);
+
+    /// activate one pipeline stage by index
+    /// @param index the stage index to activate
+    void activate (const long index);
 
     /// report on all pipeline stages
     void report (void) const;

@@ -319,6 +319,27 @@ namespace iato {
     return result;
   }
 
+  // set the result nat value by rid
+
+  void Result::setnval (const Rid& rid, const bool value) {
+    // check for valid rid
+    if (rid.isvalid () == false) return;
+    // loop to match rid
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_drid[i] == rid) {
+	if (rid.gettype () == GREG) {
+	  setbval (i, true);
+	  return;
+	}
+	if (rid.gettype () == FREG) {
+	  t_real rval = 0.0L; rval.setnat ();
+	  setrval (i, rval);
+	  return;
+	}   
+      }
+    }
+  }
+
   // set the result value by index
 
   void Result::setbval (const long index, const bool value) {
@@ -338,6 +359,30 @@ namespace iato {
     for (long i = 0; i < IA_MDST; i++) {
       if (d_drid[i] == rid) {
 	setbval (i, value);
+	return;
+      }
+    }
+  }
+
+  // update the result value by index but do not touch the rop
+
+  void Result::updbval (const long index, const bool value) {
+    assert ((index >= 0) && (index < IA_MDST));
+    assert (d_drid[index].isvalid () == true);
+    assert (d_valid == true);
+    assert (d_drop[index] != ROP_NOP);
+    d_bval[index] = value;
+  }
+
+  // update the result value by rid but do not touch the rop
+
+  void Result::updbval (const Rid& rid, const bool value) {
+    // check for valid rid
+    if (rid.isvalid () == false) return;
+    // loop to match rid
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_drid[i] == rid) {
+	updbval (i, value);
 	return;
       }
     }
@@ -377,6 +422,30 @@ namespace iato {
     }
   }
 
+  // update the result value by index but do not touch the rop
+
+  void Result::updoval (const long index, const t_octa value) {
+    assert ((index >= 0) && (index < IA_MDST));
+    assert (d_drid[index].isvalid () == true);
+    assert (d_valid == true);
+    assert (d_drop[index] != ROP_NOP);
+    d_oval[index] = value;
+  }
+
+  // update the result value by rid but do not touch the rop
+
+  void Result::updoval (const Rid& rid, const t_octa value) {
+    // check for valid rid
+    if (rid.isvalid () == false) return;
+    // loop to match rid
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_drid[i] == rid) {
+	updoval (i, value);
+	return;
+      }
+    }
+  }
+
   // set the result value by index
   
   void Result::setrval (const long index, const t_real& value) {
@@ -396,6 +465,30 @@ namespace iato {
     for (long i = 0; i < IA_MDST; i++) {
       if (d_drid[i] == rid) {
 	setrval (i, value);
+	return;
+      }
+    }
+  }
+
+  // update the result value by index but do not touch the rop
+
+  void Result::updrval (const long index, const t_real& value) {
+    assert ((index >= 0) && (index < IA_MDST));
+    assert (d_drid[index].isvalid () == true);
+    assert (d_valid == true);
+    assert (d_drop[index] != ROP_NOP);
+    d_rval[index] = value;
+  }
+
+  // update the result value by rid but do not touch the rop
+
+  void Result::updrval (const Rid& rid, const t_real& value) {
+    // check for valid rid
+    if (rid.isvalid () == false) return;
+    // loop to match rid
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_drid[i] == rid) {
+	updrval (i, value);
 	return;
       }
     }
@@ -426,6 +519,31 @@ namespace iato {
     }
   }
   
+  // set the result value by rid and uvr but do not touch the rop
+
+  void Result::upduval (const Rid& rid, const Uvr& uvr) {
+    // check for valid rid
+    if (rid.isvalid () == false) return;
+    // check for valid uvr
+    switch (uvr.gettype ()) {
+    case Uvr::OBV:
+      updoval (rid, uvr.getoval ());
+      break;
+    case Uvr::ONV:
+      updoval (rid, uvr.getoval ());
+      updbval (rid, uvr.getbval ());
+      break;
+    case Uvr::BBV:
+      updbval (rid, uvr.getbval ());
+      break;
+    case Uvr::RBV:
+      updrval (rid, uvr.getoval ());
+      break;
+    default:
+      break;
+    }
+  }
+   
   // return the result mrt by index
 
   Mrt Result::getmrt (void) const {
@@ -435,51 +553,51 @@ namespace iato {
       switch (d_drop[i]) {
       case REG_LD1:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LD1, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LD1, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LD2:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LD2, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LD2, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LD4:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LD4, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LD4, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LD8:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LD8, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LD8, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LDS:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LDS, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LDS, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LDD:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LDD, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LDD, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LDE:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LDE, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LDE, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LDF:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LDF, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LDF, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case REG_LDI:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LDI, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LDI, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case RPL_LDS:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LPS, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LPS, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case RPL_LDD:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LPD, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LPD, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case RPL_LDI:
 	assert (mrt.isvalid () == false);
-	mrt.setld (Mrt::REQ_LPI, d_addr[i], d_drid[i]);
+	mrt.setld (Mrt::REQ_LPI, d_addr[i], d_spec[i], d_drid[i]);
 	break;
       case RPH_LDS:
       case RPH_LDD:
@@ -546,20 +664,33 @@ namespace iato {
     case Mrt::REQ_LD2:
     case Mrt::REQ_LD4:
     case Mrt::REQ_LD8:
-      setoval (mrt.getlrid (), mrt.getoval ());
+      if (mrt.isnval () == true) {
+	setnval (mrt.getlrid (), true);
+      } else {
+	setoval (mrt.getlrid (), mrt.getoval ());
+      }
       break;
     case Mrt::REQ_LDS:
     case Mrt::REQ_LDD:
     case Mrt::REQ_LDE:
     case Mrt::REQ_LDF:
     case Mrt::REQ_LDI:
-      setrval (mrt.getlrid (), mrt.getlval ());
+      if (mrt.isnval () == true) {
+	setnval (mrt.getlrid (), true);
+      } else {
+	setrval (mrt.getlrid (), mrt.getlval ());
+      }
       break;
     case Mrt::REQ_LPS:
     case Mrt::REQ_LPD:
     case Mrt::REQ_LPI:
-      setrval (mrt.getlrid (), mrt.getlval ());
-      setrval (mrt.gethrid (), mrt.gethval ());
+      if (mrt.isnval () == true) {
+	setnval (mrt.getlrid (), true);
+	setnval (mrt.gethrid (), true);
+      } else {
+	setrval (mrt.getlrid (), mrt.getlval ());
+	setrval (mrt.gethrid (), mrt.gethval ());
+      }
       break;
     default:
       break;

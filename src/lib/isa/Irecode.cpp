@@ -282,7 +282,7 @@ namespace iato {
   string Instr::irecode_11 (void) const {
     string result = to_pred (d_rprd.getlnum ());
     t_long cnt = d_immv[0] + d_immv[1];
-    if (cnt == 64) result += irecode_11_pseudo ();
+    if (cnt == 64) result += ipseudo_11 ();
     else {
     switch (d_opcd) {
     case I_EXTR:
@@ -303,7 +303,7 @@ namespace iato {
   }
 
   // recode a I11 pseudo instruction
-  string Instr::irecode_11_pseudo (void) const {
+  string Instr::ipseudo_11 (void) const {
     assert (d_immv[0] + d_immv[1] == 64);
     string result = "";
     switch (d_opcd) {

@@ -48,6 +48,8 @@ namespace iato {
     t_long d_nbnd;
     /// total number of instructions
     t_long d_nins;
+    /// total number of usefull instructions
+    t_long d_nuis;
     /// total number of predicated instruction
     t_long d_nprd;
     /// number of predicated non branch instruction
@@ -68,8 +70,6 @@ namespace iato {
     t_long d_npbr;
     /// number of successfull branch prediction
     t_long d_npbs;
-    /// number of rejected predicted predicates
-    t_long d_nrpr;
     /// number of predicted predicates
     t_long d_nppr;
     /// number of successfull predicate prediction
@@ -104,6 +104,10 @@ namespace iato {
     /// mark a simulation cycle
     virtual void marksc (void);
 
+    /// mark a simulation cycle by count
+    /// @param count the number of cycle count to add
+    virtual void marksc (const long count);
+
     /// mark the end of the simulation
     virtual void markes (void);
 
@@ -114,9 +118,6 @@ namespace iato {
     /// mark the branch prediction stat
     /// @parm bflg the successfull branch prediction
     virtual void markbp (const bool bflg);
-
-    /// mark the rejected predicate prediction stat
-    virtual void markrp (void);
 
     /// mark the predicate prediction stat
     /// @parm pflg the successfull predicate prediction
@@ -133,8 +134,17 @@ namespace iato {
     /// add an instruction for stat collection
     /// @param inst the instruction to add
     /// @param cnlf the cancel flag
+    virtual void addinst (const Instr& inst, const bool cnlf);
+
+    /// add an instruction for stat collection
+    /// @param inst the instruction to add
+    /// @param cnlf the cancel flag
     /// @param rsch the reschedule flag
     virtual void addinst (const Instr& inst, const bool cnlf, const bool rsch);
+
+    /// add a nop instruction by unit
+    /// @param unit the nop unit to add
+    virtual void addnop (t_unit unit);
 
     /// @return the number of nop instructions
     virtual t_long getnnop (void) const;

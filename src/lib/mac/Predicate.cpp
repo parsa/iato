@@ -21,12 +21,11 @@
 
 #include "Mac.hpp"
 #include "Prn.hpp"
-#include "Ghpp.hpp"
-#include "Phpp.hpp"
-#include "Ppag.hpp"
+#include "Mspp.hpp"
 #include "Hypp.hpp"
 #include "Pshare.hpp"
 #include "Pimodal.hpp"
+#include "Pbmodal.hpp"
 #include "Exception.hpp"
 
 namespace iato {
@@ -37,14 +36,12 @@ namespace iato {
     if ((name.length () == 0) || (name == "none")) return new Predicate;
     // check for pimodal
     if (name == "pimodal") return new Pimodal;
+    // check for pimodal
+    if (name == "pbmodal") return new Pbmodal;
     // check for pshare
     if (name == "pshare") return new Pshare;
-    // check for ghpp
-    if (name == "ghpp") return new Ghpp;
-    // check for phpp
-    if (name == "phpp") return new Phpp;
-    // check for ppag
-    if (name == "ppag") return new Ppag;
+    // check for mspp
+    if (name == "mspp") return new Mspp;
     // check for hypp
     if (name == "hypp") return new Hypp;
     // not found
@@ -58,14 +55,12 @@ namespace iato {
     if ((name.length () == 0) || (name == "none")) return new Predicate (mtx);
     // check for pimodal
     if (name == "pimodal") return new Pimodal (mtx);
+    // check for pbmodal
+    if (name == "pbmodal") return new Pbmodal (mtx);
     // check for pshare
     if (name == "pshare") return new Pshare (mtx);
-    // check for ghpp
-    if (name == "ghpp") return new Ghpp (mtx);
-    // check for phpp
-    if (name == "phpp") return new Phpp (mtx);
-    // check for ppag
-    if (name == "ppag") return new Ppag (mtx);
+    // check for mspp
+    if (name == "mspp") return new Mspp (mtx);
     // check for hypp
     if (name == "hypp") return new Hypp (mtx);
     // not found
@@ -140,7 +135,7 @@ namespace iato {
 
   bool Predicate::isvalid (const t_octa ip, const long slot, 
 			   const long pred) const {
-    return (pred == 0) ? true : false;
+    return false;
   }
 
   // return true if the instruction predicate can be predicted
@@ -151,7 +146,7 @@ namespace iato {
     long slot = inst.getslot ();
     Rid  prid = inst.getpnum (); assert (prid.isvalid () == true);
     long pred = prid.getpnum ();
-    return isvalid (ip, slot, pred);
+    return (pred == 0) ? false : isvalid (ip, slot, pred);
   }
 
   // predict the predicate value by index
@@ -176,7 +171,7 @@ namespace iato {
     long slot = inst.getslot ();
     Rid  prid = inst.getpnum (); assert (prid.isvalid () == true);
     long pred = prid.getpnum ();
-    return compute (ip, slot, pred);
+    return (pred == 0) ? true : compute (ip, slot, pred);
   }
 
   // update the predicate system by ip, slot, predicate and value

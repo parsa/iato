@@ -78,23 +78,29 @@ namespace iato {
     void report (void) const;
  
     /// @return true if the branch is predicted taken
-    bool istaken (const t_octa cip, const long slot) const;
+    bool istaken (const t_octa cip) const;
 
     /// @return true if the branch can be predicted
-    bool ispredict (const t_octa cip, const long slot) const;
+    bool ispredict (const t_octa cip) const;
 
-    /// predict the next ip from the current ip and slot
+    /// set the predictor history
+    /// @param hist the history to set
+    void sethist (const t_octa hist);
+
+    /// @return the predictor history
+    t_octa gethist (void) const;
+
+    /// predict the next ip from the current ip
     /// @param cip  the current instruction pointer
-    /// @param slot the instruction slot
-    t_octa predict (const t_octa cip, const long slot);
+    t_octa predict (const t_octa cip);
 
     /// update the branch prediction with a current and next ip
-    /// @param cip  the current ip to update
-    /// @param slot the current slot to update
-    /// @param btk  the branch taken flag
-    /// @param nip  the next ip to use
-    void update (const t_octa cip, const long slot,
-		 const bool btk, const t_octa nip);
+    /// @param cip the current ip to update
+    /// @param btk the branch taken flag
+    /// @param nip the next ip to use
+    /// @param hst the history to use
+    void update (const t_octa cip, const bool btk, const t_octa nip,
+		 const t_octa hst);
 
   private:
     // make the copy constructor private

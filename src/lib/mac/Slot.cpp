@@ -92,6 +92,14 @@ namespace iato {
     return d_inst;
   }
 
+  // return the slot instruction and clear the slot
+
+  Ssi Slot::grabinst (void) {
+    Ssi ssi = d_inst;
+    reset ();
+    return ssi;
+  }
+
   // set the slot instruction
 
   void Slot::setinst (const Ssi& ssi) {

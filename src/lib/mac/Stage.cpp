@@ -23,9 +23,20 @@
 
 namespace iato {
   
-   // create a new stage with context by name
+  // create a new stage by context and name
   
   Stage::Stage (Mtx* mtx, const string& name) : Delayable  (name) {
+    d_sidx = 0;
+    p_pstg = 0;
+    p_nstg = 0;
+    reset ();
+  }
+
+  // create a new stage by context, index and name
+  
+  Stage::Stage (Mtx* mtx, const long sidx, const string& name) : 
+         Delayable  (name) {
+    d_sidx = sidx;
     p_pstg = 0;
     p_nstg = 0;
     reset ();

@@ -250,6 +250,7 @@ namespace iato {
       d_rprd.setlnum (PREG, get_pred (d_inst));
       d_rdst[0].setlnum (IPRG, 0);
       d_rsrc[0].setlnum (BREG, get_src_br (d_inst));
+      d_rrpm[0].setmap  (d_rsrc[0], d_rdst[0]);
       d_phint = get_phint   (d_inst);
       d_bhint = get_bhint_2 (d_inst); 
       d_chint = get_chint   (d_inst); 
@@ -288,6 +289,7 @@ namespace iato {
       d_rsrc[1].setlnum (CFMR, 0);
       d_rsrc[2].setlnum (AREG, AR_EC);
       d_rsrc[3].setlnum (AREG, AR_BSP);
+      d_rrpm[0].setmap  (d_rsrc[0], d_rdst[1]);
       d_phint = get_phint   (d_inst);
       d_bhint = get_bhint_2 (d_inst); 
       d_chint = get_chint   (d_inst); 
@@ -314,6 +316,7 @@ namespace iato {
       d_rprd.setlnum         (PREG, get_pred (d_inst));
       d_rdst[0].setlnum      (IPRG, 0);
       d_rsrc[0].setlnum      (BREG, get_src_br (d_inst));
+      d_rrpm[0].setmap       (d_rsrc[0], d_rdst[0]);
       d_immv[1] = get_tag13  (d_inst);
       d_bphint  = get_bphint (d_inst);
       d_ihint   = get_ihint  (d_inst); 

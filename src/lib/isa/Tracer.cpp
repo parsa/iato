@@ -144,7 +144,6 @@ namespace iato {
     d_vflg = false;
     d_bicc = TR_BICC;
     d_eicc = TR_EICC;
-    d_rmax = TR_RMAX;
     d_ptnm = "";
     d_tcnt = 0;
     p_ctrc = 0;
@@ -161,7 +160,6 @@ namespace iato {
     d_vflg = vflg;
     d_bicc = TR_BICC;
     d_eicc = TR_EICC;
-    d_rmax = TR_RMAX;
     d_ptnm = "";
     d_tcnt = 0;
     p_ctrc = 0;
@@ -178,7 +176,6 @@ namespace iato {
     d_vflg = ctx->getbool  ("TRACER-VERBOSE-FLAG");
     d_bicc = ctx->getllong ("TRACER-BEGIN-INDEX");
     d_eicc = ctx->getllong ("TRACER-END-INDEX");
-    d_rmax = ctx->getlong  ("TRACER-MAX-RECORD");
     d_ptnm = ctx->getstr   ("TRACER-PROGRAM-NAME"),
     d_tcnt = 0;
     p_ctrc = 0;
@@ -304,9 +301,6 @@ namespace iato {
     if (is_valid_name (rcd.getname (), d_rnam) == false) return;
     // check for current trace
     if (!p_ctrc) newtrace ();
-    // check if the max record is reached
-    if ((d_rmax != 0) && (p_ctrc->size () >= (unsigned long) d_rmax)) 
-      newtrace ();
     // push back record
     p_ctrc->push_back (rcd);
   }

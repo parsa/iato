@@ -62,16 +62,6 @@ namespace iato {
     }
   }
 
-  // partial flush this buffer
-
-  void Iib::pflsh (void) {
-    for (long i = 0; i < d_size; i++) {
-      if (p_vldb[i] == false) continue;
-      if (p_intr[i].isexec () == false) continue;
-      clear (i);
-    }
-  }
-
   // report this resource
 
   void Iib::report (void) const {

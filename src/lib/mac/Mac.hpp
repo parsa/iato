@@ -30,13 +30,6 @@ namespace iato {
   using namespace std;
 
   // -------------------------------------------------------------------------
-  // -  global resource modes                                                -
-  // -------------------------------------------------------------------------
-
-  /// default partial flush mode
-  const bool   RM_PFLS = false;
-
-  // -------------------------------------------------------------------------
   // - generic resource parameters                                           -
   // -------------------------------------------------------------------------
 
@@ -97,18 +90,11 @@ namespace iato {
   const bool   PP_BHUO = false;
 
   /// the master hybrid predictor
-  const string PP_HYPM = "pimodal";
+  const string PP_HYPM = "pshare";
   /// the slave hybrid predictor
-  const string PP_HYPS = "pshare";
-
-  /// default perceptron size
-  const long   PP_PSIZ = PS_HTRS;
-  /// default perceptron bound
-  const long   PP_PBND = 128;
-  /// default perceptron threshold
-  const long   PP_PTHR = PP_PBND / 2;
-  /// default perceptron confidence bound
-  const long   PP_PCBN = 16;
+  const string PP_HYPS = "pbmodal";
+  /// the hybrid meta predictor
+  const string PP_HYMP = "pimodal";
 
   // -------------------------------------------------------------------------
   // - register file                                                         -
@@ -139,33 +125,14 @@ namespace iato {
   /// total number of units
   const long IT_TUSZ = IT_MUSZ + IT_IUSZ + IT_FUSZ + IT_BUSZ;
 
-  /// system bus size in bytes
-  const long IT_SBSZ = 8;
-  /// system bus latency [133 Mhz @ 800Mhz]
-  const long IT_SBLT = 6;
-  /// system memory latency
-  const long IT_SMLT = 1;
-
   /// M unit latency
   const long IT_MLAT = 1;
   /// I unit latency
   const long IT_ILAT = 1;
   /// F unit latency
-  const long IT_FLAT = 3;
+  const long IT_FLAT = 4;
   /// B unit latency
   const long IT_BLAT = 1;
-
-  /// max number of gr loads
-  const long IT_GRLD = 1;
-  /// max number of gr store
-  const long IT_GRST = 1;
-
-  /// register file port latency
-  const long IT_GRFL = 2;
-  const long IT_FRFL = 2;
-  const long IT_PRFL = 2;
-  const long IT_BRFL = 2;
-  const long IT_ARFL = 2;
 
   /// number of cache level
   const long IT_CLVL = 3;
@@ -202,33 +169,14 @@ namespace iato {
   /// total number of units
   const long MK_TUSZ = MK_MUSZ + MK_IUSZ + MK_FUSZ + MK_BUSZ;
 
-  /// system bus size in bytes
-  const long MK_SBSZ = 16;
-  /// system bus latency [200 Mhz @ 1Ghz]
-  const long MK_SBLT = 5;
-  /// system memory latency
-  const long MK_SMLT = 1;
-
   /// M unit latency
   const long MK_MLAT = 1;
   /// I unit latency
   const long MK_ILAT = 1;
   /// F unit latency
-  const long MK_FLAT = 2;
+  const long MK_FLAT = 4;
   /// B unit latency
   const long MK_BLAT = 1;
-
-  /// max number of gr loads
-  const long MK_GRLD = 2;
-  /// max number of gr store
-  const long MK_GRST = 2;
-
-  /// register file port latency
-  const long MK_GRFL = 1;
-  const long MK_FRFL = 1;
-  const long MK_PRFL = 1;
-  const long MK_BRFL = 1;
-  const long MK_ARFL = 1;
 
   /// number of cache level
   const long MK_CLVL = 3;

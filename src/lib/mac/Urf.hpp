@@ -86,9 +86,6 @@ namespace iato {
     /// flush this urf
     void flush (void);
 
-    /// partial flush this urf
-    void pflsh (void);
-
     /// @return the associated rat
     Rat* getrat (void) const;
 

@@ -26,9 +26,11 @@
 int main (int argc, char** argv) {
   using namespace iato;
 
+  // main try/catch block
   try {
     // process the arguments
     Option opt (argc, argv);
+
     // get the option values
     bool   cdump = opt.getcdump ();
     bool   tflag = opt.gettflag ();
@@ -39,7 +41,6 @@ int main (int argc, char** argv) {
     bool   cflag = opt.getcflag ();
     bool   sflag = opt.getsflag ();
     bool   inops = opt.getinops ();
-    bool   apfls = opt.getapfls ();
     long   winsz = opt.getwinsz ();
     long   munit = opt.getmunit ();
     long   iunit = opt.getiunit ();
@@ -47,6 +48,7 @@ int main (int argc, char** argv) {
     long   bunit = opt.getbunit ();
     long   grnum = opt.getgrnum ();
     long   tthrs = opt.gettthrs ();
+    long   sccnt = opt.getsccnt ();
     string pname = opt.getpname ();
     string tname = opt.gettname ();
     string trcty = opt.gettrcty ();
@@ -72,6 +74,7 @@ int main (int argc, char** argv) {
     stx->setllong ("TRACER-END-INDEX",         etrcc);
     stx->setbool  ("CHECKER-FLAG",             cflag);
     stx->setbool  ("STAT-FLAG",                sflag);
+    stx->setlong  ("STAT-CYCLE-COUNT",         sccnt);
     stx->setbool  ("IGNORE-NOP",               inops);
     stx->setlong  ("MAXIMUM-CYCLE-COUNT",      maxcc);
     stx->setlong  ("ISSUE-WIDTH",              winsz);
@@ -82,7 +85,6 @@ int main (int argc, char** argv) {
     stx->setlong  ("LR-GR-SIZE",               grnum);
     stx->setstr   ("BRANCH-PREDICTOR-TYPE",    abprd);
     stx->setstr   ("PREDICATE-PREDICTOR-TYPE", apprd);
-    stx->setbool  ("PARTIAL-FLUSH-MODE",       apfls);
     
     // update the context with a vector of parameters
     stx->parse (opt.getcprm ());
@@ -103,7 +105,7 @@ int main (int argc, char** argv) {
     // check for report
     if (rflag == true) sim->report ();
     // eventually do stats
-    sim->pstat ();
+    if (sflag == true) sim->pstat  ();
     delete sim;
     delete stx;
     return status;

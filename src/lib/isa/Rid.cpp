@@ -83,12 +83,33 @@ namespace iato {
     d_erdy  = false;
   }
 
+  // return true if the register is valid
+
+  bool Rid:: isvalid (void) const {
+    return d_valid;
+  }
+
   // return true if the rid is a predicate
 
   bool Rid::ispred (void) const {
     if (d_valid == false) return false;
     if (d_type != PREG) return false;
     if (d_pnum == 0) return false;
+    return true;
+  }
+
+  // return true if the rid are equal physically
+
+  bool Rid::isequal (const Rid& rid) const {
+    if ((d_valid == false) || (rid.d_valid == false)) return false;
+    // type and physical must match
+    if (d_type != rid.d_type) return false;
+    if (d_pnum != rid.d_pnum) return false;
+    // special case for virtual bits
+    if (d_vbit != rid.d_vbit) return false;
+    if (d_vbit == true) {
+      if (d_vnum != rid.d_vnum) return false;
+    }
     return true;
   }
 
@@ -102,17 +123,21 @@ namespace iato {
   // set the eval ready bit if both rid are equal
 
   void Rid::seterdy (const Rid& rid) {
-    if ((d_valid == false) || (rid.d_valid == false)) return;
-    // type and physical must match
-    if (d_type != rid.d_type) return;
-    if (d_pnum != rid.d_pnum) return;
-    // special case for virtual bits
-    if (d_vbit != rid.d_vbit) return;
-    if (d_vbit == true) {
-      if (d_vnum != rid.d_vnum) return;
-    }
-    // done
+    if (isequal (rid) == false) return;
     d_erdy = true;
+  }
+
+  // clear the eval ready bit if both rid are equal
+
+  void Rid::clrerdy (const Rid& rid) {
+    if (isequal (rid) == false) return;
+    d_erdy = false;
+  }
+
+  // return the eval ready bit
+
+  bool Rid::geterdy (void) const {
+    return d_erdy;
   }
 
   // return true if the rid must be logicaly renamed
@@ -148,7 +173,19 @@ namespace iato {
   // clear the virtual bit by rid
 
   void Rid::clrvbit (const Rid& rid) {
-    if (*this == rid) clrvbit ();
+    if (isequal (rid) == true) clrvbit ();
+  }
+
+  // return the register virtual bit
+  
+  bool Rid::getvbit (void) const {
+    return d_vbit;
+  }
+
+  // return the register type
+
+  t_lreg Rid::gettype (void) const {
+    return d_type;
   }
 
   // set the logical number by type
@@ -159,6 +196,30 @@ namespace iato {
     d_lnum  = lnum;
     d_pnum  = lnum;
   }  
+
+  // return the logical register number
+
+  long Rid::getlnum (void) const {
+    return d_lnum;
+  }
+
+  // set the physical register number
+
+  void Rid::setpnum (const long pnum) {
+    d_pnum = pnum;
+  }
+
+  // return the physical register number
+
+  long Rid::getpnum (void) const {
+    return d_pnum;
+  }
+  
+  // return the register virtual number
+
+  long Rid::getvnum (void) const {
+    return d_vnum;
+  }
 
   // set the virtual register number with a virtual bit
 
@@ -174,6 +235,12 @@ namespace iato {
     d_vbit = vnum < 0 ? false : true;
     d_vnum = vnum;
     d_onum = onum;
+  }
+
+  // return the target register number
+    
+  long Rid::gettnum (void) const {
+    return d_vbit ? d_vnum : d_pnum;
   }
 
   // set the register number by type and number

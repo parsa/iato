@@ -60,7 +60,7 @@ namespace iato {
       result = ioctl_tcgets (rse, rbk, mem);
       break;
     default:
-      throw Exception ("syscall-error", "unimplemented ioctl function");
+      result = -1;
       break;
     }
     // set syscall result

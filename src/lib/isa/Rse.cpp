@@ -74,6 +74,7 @@ namespace iato {
     if (d_rgr != that.d_rgr) return false;
     if (d_rfr != that.d_rfr) return false;
     if (d_rpr != that.d_rpr) return false;
+    if (d_bof != that.d_bof) return false;
     return true;
   }
 
@@ -271,6 +272,19 @@ namespace iato {
   void Rse::State::fill (void) {
   }
 
+  // dump the rse state (for debug)
+
+  void Rse::State::dump (const string& prefix) const {
+    cerr << prefix;
+    cerr << "  bof = " << d_bof;
+    cerr << ", sof = " << d_sof;
+    cerr << ", sol = " << d_sol;
+    cerr << ", sor = " << d_sor;
+    cerr << ", rgr = " << d_rgr;
+    cerr << ", rfr = " << d_rfr;
+    cerr << ", rpr = " << d_rpr << endl;
+  }
+
   // -------------------------------------------------------------------------
   // - rse section                                                           -
   // -------------------------------------------------------------------------
@@ -334,9 +348,14 @@ namespace iato {
 
   // validate a state against the rse state
 
-  bool Rse::validate (const Cfm& cfm) const {
-    State state (d_ngr, cfm);
+  bool Rse::validate (const State& state) const {
     return (d_state == state);
+  }
+
+  // validate a cfm against the rse state
+
+  bool Rse::validate (const Cfm& cfm) const {
+    return d_state.chkcfm (cfm);
   }
 
   // rename an instruction by doing rid mapping

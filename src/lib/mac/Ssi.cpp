@@ -34,11 +34,13 @@ namespace iato {
   Ssi::Ssi (const Instr& inst) : Instr (inst) {
     d_ridx = -1;
     d_iidx = -1;
-    d_midx = -1;
     d_cnlf = false;
+    d_intr = false;
+    d_vspf = true;
+    d_ppvl = true;
     d_ppfl = false;
-    d_icfm.reset ();
-    d_scfm.reset ();
+    d_iste.reset ();
+    d_sste.reset ();
   }
 
   // copy construct this ssi
@@ -46,11 +48,13 @@ namespace iato {
   Ssi::Ssi (const Ssi& that) : Instr (that) {
     d_ridx = that.d_ridx;
     d_iidx = that.d_iidx;
-    d_midx = that.d_midx;
     d_cnlf = that.d_cnlf;
+    d_intr = that.d_intr;
+    d_vspf = that.d_vspf;
+    d_ppvl = that.d_ppvl;
     d_ppfl = that.d_ppfl;
-    d_icfm = that.d_icfm;
-    d_scfm = that.d_scfm;
+    d_iste = that.d_iste;
+    d_sste = that.d_sste;
   }
 
   // assign a ssi to this one
@@ -59,11 +63,13 @@ namespace iato {
     this->Instr::operator = (that);
     d_ridx = that.d_ridx;
     d_iidx = that.d_iidx;
-    d_midx = that.d_midx;
     d_cnlf = that.d_cnlf;
+    d_intr = that.d_intr;
+    d_vspf = that.d_vspf;
+    d_ppvl = that.d_ppvl;
     d_ppfl = that.d_ppfl;
-    d_icfm = that.d_icfm;
-    d_scfm = that.d_scfm;
+    d_iste = that.d_iste;
+    d_sste = that.d_sste;
     return *this;
   }
 
@@ -73,11 +79,13 @@ namespace iato {
     this->Instr::operator = (inst);
     d_ridx = -1;
     d_iidx = -1;
-    d_midx = -1;
     d_cnlf = false;
+    d_intr = false;
+    d_vspf = true;
+    d_ppvl = true;
     d_ppfl = false;
-    d_icfm.reset ();
-    d_scfm.reset ();
+    d_iste.reset ();
+    d_sste.reset ();
     return *this;
   }
 
@@ -87,11 +95,39 @@ namespace iato {
     Instr::reset ();
     d_ridx = -1;
     d_iidx = -1;
-    d_midx = -1;
     d_cnlf = false;
+    d_intr = false;
+    d_vspf = true;
+    d_ppvl = true;
     d_ppfl = false;
-    d_icfm.reset ();
-    d_scfm.reset ();
+    d_iste.reset ();
+    d_sste.reset ();
+  }
+
+  // return true if this instruction requires pre-serialization
+  
+  bool Ssi::ispresr (void) const {
+    for (long i = 0; i < IA_MSRC; i++) {
+      if (d_rsrc[i].isvalid () == false) continue;
+      if (d_rsrc[i].gettype () == PRRG) return true;
+      if (d_rsrc[i].gettype () == PROT) return true;
+      if (d_rsrc[i].gettype () == UMRG) return true;
+      if (d_rsrc[i].gettype () == PSRG) return true;
+    }
+    return false;
+  }
+
+  // return true if this instruction requires post-serialization
+  
+  bool Ssi::ispostsr (void) const {
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_rdst[i].isvalid () == false) continue;
+      if (d_rdst[i].gettype () == PRRG) return true;
+      if (d_rdst[i].gettype () == PROT) return true;
+      if (d_rdst[i].gettype () == UMRG) return true;
+      if (d_rdst[i].gettype () == PSRG) return true;
+    }
+    return false;
   }
 
   // set the reorder index
@@ -121,19 +157,6 @@ namespace iato {
     return d_iidx;
   }
 
-  // set the mob index
-  
-  void Ssi::setmob (const long index) {
-    assert (index >= 0);
-    d_midx = index;
-  }
-
-  // get the mob index
-
-  long Ssi::getmob (void) const {
-    return d_midx;
-  }
-
   // set the cancellation flag
 
   void Ssi::setcnlf (const bool cnlf) {
@@ -153,28 +176,46 @@ namespace iato {
     return isvalid () ? d_cnlf : false;
   }
 
-  // set the instruction cfm
+  // set the interrupt flag
 
-  void Ssi::seticfm (const Cfm& cfm) {
-    d_icfm = cfm;
+  void Ssi::setintr (const bool intr) {
+    d_intr = d_valid ? intr : false;
   }
 
-  // return the instruction cfm
+  // return the interrupt flag
 
-  Cfm Ssi::geticfm (void) const {
-    return d_icfm;
+  bool Ssi::getintr (void) const {
+    return d_valid ? d_intr : false;
   }
 
-  // set the speculative cfm
+  // set the valid speculation flag
 
-  void Ssi::setscfm (const Cfm& cfm) {
-    d_scfm = cfm;
+  void Ssi::setvspf (const bool vspf) {
+    d_vspf = d_valid && d_sfl ? vspf : true;
   }
 
-  // return the speculative cfm
+  // return the valid speculation flag
 
-  Cfm Ssi::getscfm (void) const {
-    return d_scfm;
+  bool Ssi::getvspf (void) const {
+    return d_valid && d_sfl ? d_vspf : true;
+  }
+
+  // set the predicted predicate value
+
+  void Ssi::setppvl (const bool ppvl) {
+    if (d_valid == true) {
+      d_ppvl = ppvl;
+      d_ppfl = true;
+    } else {
+      d_ppvl = true;
+      d_ppfl = false;
+    }
+  }
+
+  // return the predicted predicate value
+
+  bool Ssi::getppvl (void) const {
+    return d_valid ? d_ppvl : true;
   }
 
   // set the predicate prediction flag
@@ -187,5 +228,41 @@ namespace iato {
 
   bool Ssi::getppfl (void) const {
     return d_valid ? d_ppfl : false;
+  }
+
+  // set the instruction rse state
+
+  void Ssi::setiste (const Rse::State& state) {
+    d_iste = state;
+  }
+
+  // return the instruction rse state
+
+  Rse::State Ssi::getiste (void) const {
+    return d_iste;
+  }
+
+  // return the instruction cfm
+
+  Cfm Ssi::geticfm (void) const {
+    return d_iste.getcfm ();
+  }
+
+  // set the speculative rse state
+
+  void Ssi::setsste (const Rse::State& state) {
+    d_sste = state;
+  }
+
+  // return the speculative rse state
+
+  Rse::State Ssi::getsste (void) const {
+    return d_sste;
+  }
+
+  // return the speculative cfm
+
+  Cfm Ssi::getscfm (void) const {
+    return d_sste.getcfm ();
   }
 }

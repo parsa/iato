@@ -75,6 +75,10 @@ namespace iato {
     /// report some resource information
     void report (void) const;
 
+    /// @return the predictor hash address by address, slot and predicate
+    virtual t_octa hash (const t_octa ip, const long slot, 
+			 const long pred) const;
+
     /// @return true if the predicate can be predicted
     bool isvalid (const t_octa ip, const long slot, const long pred) const;
 

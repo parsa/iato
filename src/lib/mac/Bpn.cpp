@@ -104,6 +104,42 @@ namespace iato {
     }
   }
 
+  // update a predicate from the bypass bynetwork
+
+  void Bpn::predup (Ssi& inst) const {
+    // check for valid instruction
+    if (inst.isvalid () == false) return;
+    // update the instruction predicate
+    Rid pred = inst.getpnum ();
+    Uvr puvr = eval (pred);
+    if (puvr.isvalid () == true) {
+      assert (puvr.gettype () == Uvr::BBV);
+      inst.setcnlf (!puvr.getbval ());
+    }
+  }
+
+  // update a predicate from the bypass bynetwork
+
+  void Bpn::predup (Ssi& inst, Operand& oprd) const {
+    // check for valid instruction
+    if (inst.isvalid () == false) return;
+    // update the instruction predicate
+    predup (inst);
+    // eventually update the operand predicate
+    for (long i = 0; i < IA_MSRC; i++) {
+      // check for a predicate rid
+      Rid orid = oprd.getrid (i);
+      if (orid.isvalid () == false) continue;
+      if (orid.gettype () != PREG)  continue;
+      // evaluate the predicate
+      Uvr ouvr = eval (orid);
+      if (ouvr.isvalid () == true) {
+	assert (ouvr.gettype () == Uvr::BBV);
+	oprd.setuvr (i, ouvr);
+      }
+    }
+  }
+
   // update an operand in the bypass network
 
   void Bpn::update (Operand& oprd) const {
@@ -141,9 +177,9 @@ namespace iato {
       // get the function mapping and update
       Rpm::t_rfm rfm = rpm.getrfm ();
       if (rfm) {
-	resl.setuval (dst, rfm (uvr));
+	resl.upduval (dst, rfm (uvr));
       } else {
-	resl.setuval (dst, uvr);
+	resl.upduval (dst, uvr);
       }	
     }
   }

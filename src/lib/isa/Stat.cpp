@@ -48,6 +48,7 @@ namespace iato {
     d_ncyc = 0;
     d_nbnd = 0;
     d_nins = 0;
+    d_nuis = 0;
     d_nprd = 0;
     d_nbpd = 0;
     d_ncan = 0;
@@ -59,7 +60,6 @@ namespace iato {
     d_npbr = 0;
     d_npbs = 0;
     d_nppr = 0;
-    d_nrpr = 0;
     d_npps = 0;
     for (long i = 0; i < Bundle::BN_MAXTPL; i++) d_bndl[i] = 0;
     for (long i = 0; i < OPCODE_MAX; i++)        d_inst[i] = 0;
@@ -77,6 +77,12 @@ namespace iato {
 
   void Stat::marksc (void) {
     d_ncyc++;
+  }
+
+  // mark a simulation cycle by value
+
+  void Stat::marksc (const long count) {
+    d_ncyc+= count;
   }
 
   // mark the end of the simulation
@@ -109,12 +115,6 @@ namespace iato {
     if (pflg == true) d_npps++;
   }
 
-  // mark rejected predicate prediction
-
-  void Stat::markrp (void) {
-    d_nrpr++;
-  }
-
   // add a bundle to this collection
 
   void Stat::addbndl (const Bundle& bndl) {
@@ -129,6 +129,7 @@ namespace iato {
     if (inst.isvalid () == false) return;
     // update instruction info
     d_nins++;
+    if (inst.isnop () == false) d_nuis++;
     d_inst[inst.getiopc ()]++;
     // update predicate info
     if (inst.ispred () == true) {
@@ -139,7 +140,7 @@ namespace iato {
 
   // add an instruction to this collection with cancel flag
 
-  void Stat::addinst (const Instr& inst, const bool cnlf, const bool rsch) {
+  void Stat::addinst (const Instr& inst, const bool cnlf) {
     // check and update instruction
     if (inst.isvalid () == false) return;
     addinst (inst);
@@ -148,8 +149,46 @@ namespace iato {
       d_ncan++;
       if (inst.isbr () == false) d_nbcn++;
     }
+  }
+
+  // add an instruction to this collection with cancel and rescheule flags
+
+  void Stat::addinst (const Instr& inst, const bool cnlf, const bool rsch) {
+    // check and update instruction
+    if (inst.isvalid () == false) return;
+    // update instruction
+    addinst (inst,cnlf);
     // update reschedule status
     if (rsch == true) d_nrsh++;
+  }
+
+  // add a nop instruction
+
+  void Stat::addnop (t_unit unit) {
+    switch (unit) {
+    case MUNIT:
+      d_inst[M_NOP]++;
+      d_nins++;
+      break;
+    case IUNIT:
+      d_inst[I_NOP]++;
+      d_nins++;
+      break;
+    case FUNIT:
+      d_inst[F_NOP]++;
+      d_nins++;
+      break;
+    case BUNIT:
+      d_inst[B_NOP]++;
+      d_nins++;
+      break;
+    case XUNIT:
+      d_inst[X_NOP]++;
+      d_nins++;
+      break;
+    default:
+      break;
+    }
   }
 
   // get number of nop instruction
@@ -204,7 +243,9 @@ namespace iato {
     // compute simulation time
     t_long et = d_etim - d_stim;
     if (et != 0) {
-      cout << "simulation time (in s)         : " << et << endl;
+      double rate = (double) d_nins / ((double) et * 1000.0);
+      cout << "simulation time (in s)         : " << et;
+      cout << "\t(" << setprecision (3) << rate << " Ki/s)" << endl;
     }
     // report bundles
     if (d_nbnd != 0) {
@@ -225,6 +266,7 @@ namespace iato {
       double pprd = 100.0 * (double) d_nprd / (double) d_nins;
       double pbpd = 100.0 * (double) d_nbpd / (double) d_nins;
       cout << "number of instructions         : " << d_nins << endl;
+      cout << "number of usefull instructions : " << d_nuis << endl;
       cout << "nop instructions               : " << getnnop ();
       cout << "\t(" << setprecision (3) << pnop << "%)" << endl;
       cout << "predicated instructions        : " << d_nprd;
@@ -265,7 +307,6 @@ namespace iato {
     // report predicate prediction
     if (d_nppr != 0) {
       double ppps = 100.0 * (double) d_npps / (double) d_nppr;
-      cout << "number of rejected  prediction : " << d_nrpr << endl;
       cout << "number of predicate prediction : " << d_nppr << endl;
       cout << "successfull predicates         : " << d_npps;
       cout << "\t(" << setprecision (3) << ppps << "%)" << endl;

@@ -33,6 +33,16 @@ namespace iato {
     reset ();
   }
 
+  // create a new pipelane by context and mode
+
+  Pipelane::Pipelane (Mtx* mtx, const bool mode) : Stage (mtx, RESOURCE_PLN) {
+    d_depth = 0;
+    d_block = false;
+    p_rctrl = 0;
+    reset ();
+    setmode (mode);
+  }
+
   // create a new pipelane by context and name
 
   Pipelane::Pipelane (Mtx* mtx, const string& name) : Stage (mtx, name) {
@@ -78,30 +88,10 @@ namespace iato {
     }
   }
 
-  // partially flush this pipelane
-
-  void Pipelane::pflsh (void) {
-    long size = d_lane.size ();
-    for (long i = 0; i < size; i++) d_lane[i]->pflsh ();
-    if (p_rctrl) {
-      for (long i = 0; i < d_depth; i++) {
-	Runnable* ctrl = p_rctrl[i];
-	if (ctrl) ctrl->pflsh ();
-      }
-    }
-  }
-
-  // return true if one stage is holding
+  // return true if one pipeline first stage is holding in blocking mode
+  // or false in non blocking mode
 
   bool Pipelane::isholding (void) const {
-    long size = d_lane.size ();
-    if (d_block == false) return false;
-    for (long i = d_depth - 1; i >= 0; i--) {
-      for (long j = 0; j < size; j++) {
-	Pipeline* pipe = d_lane[j];
-	if (pipe->isholding (i) == true) return true;
-      }
-    }
     return false;
   }
 
@@ -110,7 +100,7 @@ namespace iato {
   void Pipelane::activate (void) {
     long size = d_lane.size ();
     for (long i = d_depth - 1; i >= 0; i--) {
-      // check for blocking stage
+      // check for blocking stage line
       if (d_block == true) {
 	for (long j = 0; j < size; j++) {
 	  Pipeline* pipe = d_lane[j];
@@ -120,10 +110,14 @@ namespace iato {
       // run the pipe controller
       Runnable* ctrl = p_rctrl[i];
       if (ctrl) ctrl->run ();
-      // run each stage in parallel
+      // run or activate each stage in parallel
       for (long j = 0; j < size; j++) {
 	Pipeline* pipe = d_lane[j];
-	pipe->run (i);
+	if (d_block == true) {
+	  pipe->activate (i);
+	} else {
+	  pipe->run (i);
+	}
       }
     }
   }
@@ -172,6 +166,18 @@ namespace iato {
     long size = d_lane.size ();
     for (long i = 0; i < size; i++) delete d_lane[i];
     d_lane.clear ();
+  }
+
+  // set the blocking mode
+
+  void Pipelane::setmode (const bool mode) {
+    d_block = mode;
+  }
+
+  // get the blocking mode
+
+  bool Pipelane::getmode (void) const {
+    return d_block;
   }
 
   // return the pipelane depth

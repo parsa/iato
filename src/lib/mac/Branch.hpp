@@ -50,6 +50,10 @@ namespace iato {
     /// @param mtx  the architectural context
     static Branch* mkbr (Mtx* mtx);
 
+  protected:
+    /// the predictor history
+    t_octa d_hist;
+
   public:
     /// create a default branch predictor
     Branch (void);
@@ -74,34 +78,40 @@ namespace iato {
     void report (void) const;
 
     /// @return true if the branch is predicted taken
-    virtual bool istaken (const t_octa addr, const long slot) const;
+    virtual bool istaken (const t_octa addr) const;
 
     /// @return true if the branch can be predicted
-    virtual bool ispredict (const t_octa addr, const long slot) const;
+    virtual bool ispredict (const t_octa addr) const;
+
+    /// @return the predictor history
+    virtual t_octa gethist (void) const;
+
+    /// set the predictor history
+    /// @param hist the history to set
+    virtual void sethist (const t_octa hist);
 
     /// compute the next ip from the current ip and window size
     /// @param cip the current instruction pointer
     /// @param ws  the window size
     virtual t_octa nextip (const t_octa cip, const long ws);
 
-    /// predict the next ip from the current ip and slot
+    /// predict the next ip from the current ip
     /// @param cip the current instruction pointer
-    /// @param slt the instruction slot
-    virtual t_octa predict (const t_octa cip, const long slt);
+    virtual t_octa predict (const t_octa cip);
 
     /// update the branch prediction with a current and next ip
     /// @param cip the current ip to update
-    /// @param slt the current slot to update
     /// @param btk the branch taken flag
     /// @param nip the next ip to use
-    virtual void update (const t_octa cip, const long slt,
-			 const bool btk, const t_octa nip);
+    /// @param hst the history to use
+    virtual void update (const t_octa cip, const bool btk, const t_octa nip, 
+			 const t_octa hst);
 
     /// update the branch system with an instruction, result and cancel flag
     /// @param inst the branch instruction
     /// @param resl the instruction result
     /// @param btk  the branch taken flag
-    virtual void markbr (const Instr& inst, const Result& resl,const bool btk);
+    virtual void markbr (const Instr& inst,const Result& resl,const bool btk);
 
   private:
     // make the copy constructor private

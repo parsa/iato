@@ -74,14 +74,14 @@ namespace iato {
     ostringstream os;
     os << "MP" << index;
     // get the pipeline latency
-    long ulat = stx->getlong ("LATENCY-M-UNIT") - 1;
-    assert (ulat >= 0);
+    long plat = stx->getlong ("LATENCY-M-UNIT") - 1;
+    assert (plat >= 0);
     // create the pipeline
     Pipeline* pipe = new Pipeline (stx, os.str ());
     // add the stages
     pipe->add (new SlcStg (stx, MUNIT));
     pipe->add (new RegStg (stx, MUNIT));
-    for (long i = 0; i < ulat; i++) pipe->add (new DlyStg (stx, MUNIT));
+    for (long i = 0; i < plat; i++) pipe->add (new DlyStg (stx, MUNIT));
     pipe->add (new ExeStg (stx, MUNIT));
     pipe->add (new WbkStg (stx, MUNIT));
     return pipe;
@@ -93,14 +93,14 @@ namespace iato {
     ostringstream os;
     os << "IP" << index;
     // get the pipeline latency
-    long ulat = stx->getlong ("LATENCY-I-UNIT") - 1;
-    assert (ulat >= 0);
+    long plat = stx->getlong ("LATENCY-I-UNIT") - 1;
+    assert (plat >= 0);
     // create the pipeline
     Pipeline* pipe = new Pipeline (stx, os.str ());
     // add the stages
     pipe->add (new SlcStg (stx, IUNIT));
     pipe->add (new RegStg (stx, IUNIT));
-    for (long i = 0; i < ulat; i++) pipe->add (new DlyStg (stx, IUNIT));
+    for (long i = 0; i < plat; i++) pipe->add (new DlyStg (stx, IUNIT));
     pipe->add (new ExeStg (stx, IUNIT));
     pipe->add (new WbkStg (stx, IUNIT));
     return pipe;
@@ -112,14 +112,14 @@ namespace iato {
     ostringstream os;
     os << "FP" << index;
     // get the pipeline latency
-    long ulat = stx->getlong ("LATENCY-F-UNIT") - 1;
-    assert (ulat >= 0);
+    long plat = stx->getlong ("LATENCY-F-UNIT") - 1;
+    assert (plat >= 0);
     // create the pipeline
     Pipeline* pipe = new Pipeline (stx, os.str ());
     // add the stages
     pipe->add (new SlcStg (stx, FUNIT));
     pipe->add (new RegStg (stx, FUNIT));
-    for (long i = 0; i < ulat; i++) pipe->add (new DlyStg (stx, FUNIT));
+    for (long i = 0; i < plat; i++) pipe->add (new DlyStg (stx, FUNIT));
     pipe->add (new ExeStg (stx, FUNIT));
     pipe->add (new WbkStg (stx, FUNIT));
     return pipe;
@@ -131,14 +131,14 @@ namespace iato {
     ostringstream os;
     os << "BP" << index;
     // get the pipeline latency
-    long ulat = stx->getlong ("LATENCY-B-UNIT") - 1;
-    assert (ulat >= 0);
+    long plat = stx->getlong ("LATENCY-B-UNIT") - 1;
+    assert (plat >= 0);
     // create the pipeline
     Pipeline* pipe = new Pipeline (stx, os.str ());
     // add the stages
     pipe->add (new SlcStg (stx, BUNIT));
     pipe->add (new RegStg (stx, BUNIT));
-    for (long i = 0; i < ulat; i++) pipe->add (new DlyStg (stx, BUNIT));
+    for (long i = 0; i < plat; i++) pipe->add (new DlyStg (stx, BUNIT));
     pipe->add (new ExeStg (stx, BUNIT));
     pipe->add (new WbkStg (stx, BUNIT));
     return pipe;

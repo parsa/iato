@@ -56,7 +56,7 @@ namespace iato {
     cerr << "  -W #                   issue width in bundles        " << endl;
     cerr << "  -G #                   number of general registers   " << endl;
     cerr << "  -a:d                   enable disperse mode          " << endl;
-    cerr << "  -a:p                   branch pipeline refill        " << endl;
+    cerr << "  -a:p cost              branch pipeline refill cost   " << endl;
     cerr << "  -a:b bprd              branch predictor type         " << endl;
     cerr << endl;
     exit (1);

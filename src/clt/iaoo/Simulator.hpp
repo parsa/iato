@@ -66,6 +66,8 @@ namespace iato {
     bool d_cflag;
     /// the stat flag
     bool d_sflag;
+    /// the stat cycle count
+    long d_sccnt;
     /// the system interface
     System*    p_psys;
     /// the processor core

@@ -154,14 +154,6 @@ namespace iato {
     d_inst.reset  ();
   }
 
-  // partial flush this stage
-
-  void SlcStg::pflsh (void) {
-    if (d_flsh == false) return;
-    p_tsta->pflsh ();
-    d_inst.reset  ();
-  }
-
   // activate this select stage - the instructions are coming from the
   // previous stage and are assumed to be physically renamed.
 

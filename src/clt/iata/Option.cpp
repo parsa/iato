@@ -59,6 +59,8 @@ namespace iato {
     cerr << "  option related to the analyzer                        " << endl;
     cerr << "  -a:p name              analyze a predicate predictor  " << endl;
     cerr << "  -a:t                   build an analyze table         " << endl;
+    cerr << "  -a:b                   use branch instruction only    " << endl;
+    cerr << "  -a:n                   use non-branch instruction only" << endl;
     cerr << endl;
     cerr << "  options related to the analyzer                       " << endl;
     cerr << "  -d                     dump all traces                " << endl;
@@ -98,6 +100,8 @@ namespace iato {
     d_rpair  = "";
     d_pflg   = false;
     d_mdat   = false;
+    d_ibro   = false;
+    d_nbro   = false;
     // the sub option
     string data;
     // check for arguments
@@ -128,6 +132,14 @@ namespace iato {
 	  }
 	  if ((arg[2] == ':') && (arg[3] == 't') && (arg[4] == '\0')) {
 	    d_mdat = true;
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'b') && (arg[4] == '\0')) {
+	    d_ibro = true;
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'n') && (arg[4] == '\0')) {
+	    d_nbro = true;
 	    break;
 	  }
 	  usage ();

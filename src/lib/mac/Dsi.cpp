@@ -23,6 +23,24 @@
 
 namespace iato {
 
+  // this procedure returns true if the rid must be physically renamed
+
+  bool Dsi::isprnm (const Rid& rid) {
+    // if the rid is not valid, it cannot be renamed
+    if (rid.isvalid () == false) return false;
+    // check for logical renaming
+    if (rid.islrnm () == false) return false;
+    // check special registers
+    if (rid.gettype () == IPRG) return false;
+    if (rid.gettype () == CFMR) return false;
+    if (rid.gettype () == PRRG) return false;
+    if (rid.gettype () == PROT) return false;
+    if (rid.gettype () == UMRG) return false;
+    if (rid.gettype () == PSRG) return false;
+    // all others can be renamed
+    return true;
+  }
+
   // create a default dsi
 
   Dsi::Dsi (void) {
@@ -32,6 +50,7 @@ namespace iato {
   // create a dsi from an instruction
 
   Dsi::Dsi (const Instr& inst) : Ssi (inst) {
+    d_midx = -1;
     d_sidx = -1;
     d_igcs = -1;
     d_elat = 0;
@@ -42,6 +61,7 @@ namespace iato {
   // copy construct this dsi
 
   Dsi::Dsi (const Dsi& that) : Ssi (that) {
+    d_midx = that.d_midx;
     d_sidx = that.d_sidx;
     d_igcs = that.d_igcs;
     d_elat = that.d_elat;
@@ -53,6 +73,7 @@ namespace iato {
 
   Dsi& Dsi::operator = (const Dsi& that) {
     this->Ssi::operator = (that);
+    d_midx = that.d_midx;
     d_sidx = that.d_sidx;
     d_igcs = that.d_igcs;
     d_elat = that.d_elat;
@@ -65,6 +86,7 @@ namespace iato {
 
   Dsi& Dsi::operator = (const Instr& inst) {
     this->Ssi::operator = (inst);
+    d_midx = -1;
     d_sidx = -1;
     d_igcs = -1;
     d_elat = 0;
@@ -77,37 +99,12 @@ namespace iato {
 
   void Dsi::reset (void) {
     Ssi::reset ();
+    d_midx = -1;
     d_sidx = -1;
     d_igcs = -1;
     d_elat = 0;
     d_rsch = false;
     d_pnrd = false;
-  }
-
-  // return true if this instruction requires pre-serialization
-  
-  bool Dsi::ispresr (void) const {
-    for (long i = 0; i < IA_MSRC; i++) {
-      if (d_rsrc[i].isvalid () == false) continue;
-      if (d_rsrc[i].gettype () == PRRG) return true;
-      if (d_rsrc[i].gettype () == PROT) return true;
-      if (d_rsrc[i].gettype () == UMRG) return true;
-      if (d_rsrc[i].gettype () == PSRG) return true;
-    }
-    return false;
-  }
-
-  // return true if this instruction requires post-serialization
-  
-  bool Dsi::ispostsr (void) const {
-    for (long i = 0; i < IA_MDST; i++) {
-      if (d_rdst[i].isvalid () == false) continue;
-      if (d_rdst[i].gettype () == PRRG) return true;
-      if (d_rdst[i].gettype () == PROT) return true;
-      if (d_rdst[i].gettype () == UMRG) return true;
-      if (d_rdst[i].gettype () == PSRG) return true;
-    }
-    return false;
   }
 
   // return true if the instruction is ready for selection
@@ -129,12 +126,23 @@ namespace iato {
 
   // set an instruction operand ready by rid
 
-  void Dsi::setready (const Rid& rid) {
+  void Dsi::setrdy (const Rid& rid) {
     if (d_valid == false) return;
-    // set the predicate
-    d_rprd.seterdy (rid);
     // set all source operands
     for (long  i = 0; i < IA_MSRC; i++) d_rsrc[i].seterdy (rid);
+  }
+
+  // set the mob index
+  
+  void Dsi::setmob (const long index) {
+    assert (index >= 0);
+    d_midx = index;
+  }
+
+  // get the mob index
+
+  long Dsi::getmob (void) const {
+    return d_midx;
   }
 
   // set the reschedule flag

@@ -46,8 +46,8 @@ namespace iato {
     cerr << "  options related to the simulator                     " << endl;
     cerr << "  -c                     enable checker mode           " << endl;
     cerr << "  -s                     enable stat report            " << endl;
+    cerr << "  -s:c #                 enable cycle stat report      " << endl;
     cerr << "  -m #                   maximum cycle count           " << endl;
-    cerr << "  -n #                   ignore nop for execution      " << endl;
     cerr << "  -p:s name:type=value   set a context parameter       " << endl;
     cerr << "  -p:d                   dump the context to the output" << endl;
     cerr << endl;
@@ -58,9 +58,9 @@ namespace iato {
     cerr << "  -F #                   number of F units             " << endl;
     cerr << "  -B #                   number of B units             " << endl;
     cerr << "  -G #                   number of general registers   " << endl;
+    cerr << "  -a:n                   ignore nop for execution      " << endl;
     cerr << "  -a:b bprd              branch predictor type         " << endl;
     cerr << "  -a:p pprd              predicate predictor type      " << endl;
-    cerr << "  -a:f                   enable partial flushing       " << endl;
     exit (1);
   }
 
@@ -74,6 +74,7 @@ namespace iato {
     d_rflag = false;
     d_cflag = false;
     d_sflag = false;
+    d_sccnt = 0;
     d_tthrs = TR_THRS;
     d_inops = false;
     d_winsz = BN_IWSZ;
@@ -89,7 +90,6 @@ namespace iato {
     d_trsrc = "";
     d_bprd  = BP_TYPE;
     d_pprd  = PP_TYPE;
-    d_pfls  = RM_PFLS;
     // check for arguments
     string data;
     if (argc < 2) usage ();
@@ -104,6 +104,10 @@ namespace iato {
 	  usage ();
 	  break;
 	case 'a':
+	  if ((arg[2] == ':') && (arg[3] == 'n') && (arg[4] == '\0')) {
+	    d_inops = true;
+	    break;
+	  }
 	  if ((arg[2] == ':') && (arg[3] == 'b') && (arg[4] == '\0')) {
 	    if (++count == argc) usage ();
 	    d_bprd = argv[count];
@@ -112,10 +116,6 @@ namespace iato {
 	  if ((arg[2] == ':') && (arg[3] == 'p') && (arg[4] == '\0')) {
 	    if (++count == argc) usage ();
 	    d_pprd = argv[count];
-	    break;
-	  }
-	  if ((arg[2] == ':') && (arg[3] == 'f') && (arg[4] == '\0')) {
-	    d_pfls = true;
 	    break;
 	  }
 	  usage ();
@@ -175,7 +175,21 @@ namespace iato {
 	  d_cflag = true;
 	  break;
 	case 's':
-	  d_sflag = true;
+	  if (arg[2] == '\0') {
+	    d_sflag = true;
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'c') && (arg[4] == '\0')) {
+	    if (++count == argc) usage ();
+	    d_sccnt = tolong (argv[count]);
+	    if (d_sccnt < 0) {
+	      cerr << "error: illegal stat count, # = " << d_sccnt << endl;
+	      exit (1);
+	    }
+	    d_sflag = true;
+	    break;
+	  }
+	  usage ();
 	  break;
 	case 'r':
 	  d_rflag = true;
@@ -254,9 +268,6 @@ namespace iato {
 	    cerr << endl;
 	    exit (1);
 	  }
-	  break;	  
-	case 'n':
-	  d_inops = true;
 	  break;
 	default:
 	  usage ();

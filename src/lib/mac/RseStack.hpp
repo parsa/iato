@@ -41,11 +41,11 @@ namespace iato {
 
   class RseStack : public Resource {
   private:
-    // the stack size
-    long   d_size;
-    // number of entries
-    long   d_rlen;
-    // rse state data
+    /// the stack size
+    long d_size;
+    /// number of entries
+    long d_rlen;
+    /// rse state data
     Rse::State* p_rstk;
 
   public:

@@ -67,9 +67,6 @@ namespace iato {
     /// reset this mob
     void reset (void);
 
-    /// partial flush this mob
-    void pflsh (void);
-
     /// report this resource
     void report (void) const;
 

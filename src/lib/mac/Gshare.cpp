@@ -81,7 +81,7 @@ namespace iato {
 
   // return true if the branch is predicted taken
 
-  bool Gshare::istaken (const t_octa cip, const long slot) const {
+  bool Gshare::istaken (const t_octa cip) const {
     // compute hash address
     t_octa addr = (cip >> 4) ^ p_htr->gethist ();
     // get the taken flag
@@ -90,14 +90,31 @@ namespace iato {
 
   // return true if the branch can be predicted
 
-  bool Gshare::ispredict (const t_octa cip, const long slot) const {
-    if (p_btb->isvalid (cip) == false) return false;
-    return istaken (cip, slot);
+  bool Gshare::ispredict (const t_octa cip) const {
+    // compute taken branch and check btb if taken
+    bool result = istaken (cip);
+    if ((result == true) && (p_btb->isvalid (cip) == false)) return false;
+    // update the speculative history
+    p_htr->update (result);
+    // return the result
+    return result;
   }
 
-  // predict the next ip from the current ip and slot
+  // set the predictor history
 
-  t_octa Gshare::predict (const t_octa cip, const long slot) {
+  void Gshare::sethist (const t_octa hist) {
+    p_htr->sethist (d_hist);
+  }
+  
+  // return the predictor history
+
+  t_octa Gshare::gethist (void) const {
+    return p_htr->gethist ();
+  }
+
+  // predict the next ip from the current ip
+
+  t_octa Gshare::predict (const t_octa cip) {
     // compute next ip for safety
     t_octa nip = cip + BN_BYSZ;
     // check in the btb to see if the address is available
@@ -109,14 +126,12 @@ namespace iato {
 
   // update the branch system with an ip and next ip
 
-  void Gshare::update (const t_octa cip, const long slot, 
-			const bool btk, const t_octa nip) {
+  void Gshare::update (const t_octa cip, const bool btk, const t_octa nip, 
+		       const t_octa hst) {
     // compute hash address
-    t_octa addr = (cip >> 4) ^ p_htr->gethist ();
+    t_octa addr = (cip >> 4) ^ hst;
     // update the pht by address
     p_pht->update (addr, btk);
-    // update the branch history
-    p_htr->update (btk);
     // update the btb
     if (btk == true) p_btb->update (cip, nip);
   }

@@ -65,24 +65,6 @@ namespace iato {
     }
   }
 
-  // this procedure checks that an instruction is predicated and that the
-  // predicate is available in the in-flight resources only
-  static bool check_pred_inf (const Instr& inst, Bpn* bpn, Urf* urf) {
-    // check for valid
-    if (inst.isvalid () == false) return false;
-    if (inst.ispred  () == false) return false;
-    // get the predicate
-    Rid  prid = inst.getpnum ();
-    // check in the bypass
-    Uvr uvr = bpn->eval (prid);
-    if (uvr.isvalid () == true) return true;
-    // check in the urf
-    uvr = urf->eval (prid);
-    if (uvr.isvalid () == true) return true;
-    // only in the rbk
-    return false;
-  }
-
   // this procedure evaluate the instruction predicate with the urf and rbk
   static bool eval_pred (const Rid& pred, Urf* urf, Register* rbk) {
     assert (pred.isvalid () == true);
@@ -100,24 +82,20 @@ namespace iato {
   // create a new evaluation stage by context
 
   RegStg::RegStg (Stx* stx, t_unit unit) : DlyStg (stx, unit, RESOURCE_REG) {
-    d_gpp  = stx->getbool ("GLOBAL-PREDICATE-PREDICTION");
-    p_urf  = 0;
-    p_bpn  = 0;
-    p_rbk  = 0;
-    p_pps  = 0;
-    reset  ();
+    p_urf = 0;
+    p_bpn = 0;
+    p_rbk = 0;
+    reset ();
   }
 
   // create a new evaluation stage by context and name
 
   RegStg::RegStg (Stx* stx, t_unit unit, 
 		  const string& name) : DlyStg (stx, unit, name) {
-    d_gpp  = stx->getbool ("GLOBAL-PREDICATE-PREDICTION");
-    p_urf  = 0;
-    p_bpn  = 0;
-    p_rbk  = 0;
-    p_pps  = 0;
-    reset  ();
+    p_urf = 0;
+    p_bpn = 0;
+    p_rbk = 0;
+    reset ();
   }
 
   // activate this evaluation stage. The order of operand evaluation
@@ -153,19 +131,6 @@ namespace iato {
       }
       // check for consistency
       assert (check_pred_cnlf (d_inst) == true);      
-      // if the global predicate prediction is active (for analysis purpose)
-      // the prediction is forced here and the predicate ready flag is set.
-      // this rule applies only to non branch instructions.
-      // carefull here since a deadlock can occur if the misprediction persit
-      // for this reason, we force the prediction with only in-flight
-      // predicate computation
-      if ((d_gpp == true) && (check_pred_inf (inst, p_bpn, p_urf) == true) &&
-	  (d_inst.isbr () == false) && (p_pps->ispredict (d_inst) == true)) {
-	bool pval = p_pps->predict (d_inst);
-	d_inst.setcnlf (!pval);
-	d_inst.setppfl (true);
-	prdy = true;
-      }
       // here the predicate has been evaluated or the predicate was not ready
       // if the predicate was evaluated, the instruction is marked
       // cancelled or not. If not ready, the instruction must be rescheduled
@@ -178,16 +143,15 @@ namespace iato {
       // If the instruction is not cancelled, the evaluation is done across the
       // bypass network, the urf and rbk. 
       if (prdy == false) {
-	// check for a branch
-	if (d_inst.isbr () == true) {
+	// check for a B unit instruction
+	if (d_unit == BUNIT) {
 	  prdy = true;
 	  d_inst.setpnrd (true);
 	} else {
 	  // try to predict the predicate
-	  if (p_pps->ispredict (d_inst) == true) {
-	    bool pval = p_pps->predict (d_inst);
+	  if (d_inst.getppfl () == true) {
+	    bool pval = d_inst.getppvl ();
 	    d_inst.setcnlf (!pval);
-	    d_inst.setppfl (true);
 	    prdy = true;
 	  } else {
 	    // the predicate cannot be predicted, so reschedule
@@ -197,6 +161,8 @@ namespace iato {
 	  }
 	}
       }
+      // here the predicate is ready - the operand is evaluated as long as
+      // the instruction is not cancelled
       if (prdy == true) {
 	if (d_inst.getcnlf () == false) {
 	  d_oprd = d_inst.getoper ();
@@ -204,14 +170,14 @@ namespace iato {
 	  eval_oprd_inst (d_inst, d_oprd);
 	  // evaluate within the bypass network
 	  p_bpn->eval (d_oprd);
-	  // evaluate within the urb or reschedule
+	  // evaluate within the urb or reschedule (except for B unit)
 	  if (p_urf->isready (d_oprd) == true) {
 	    p_urf->eval (d_oprd);
 	    // evaluate within the register bank
 	    p_rbk->eval (d_oprd);
 	    // check that it is all done
 	    assert (d_oprd.isvalid () == true);
-	  } else {
+	  } else if (d_unit != BUNIT) {
 	    p_gcs->resched (d_inst);
 	    d_inst.reset ();
 	    d_oprd.reset ();
@@ -272,12 +238,6 @@ namespace iato {
     p_rbk = dynamic_cast <Register*> (env->get (RESOURCE_RBK));
     if (!p_rbk) {
       string msg = "cannot bind register bank within stage ";
-      throw Exception ("bind-error", msg + d_name);
-    }
-    // bind the predicate predictor 
-    p_pps = dynamic_cast <Predicate*> (env->get (RESOURCE_PPS));
-    if (!p_pps) {
-      string msg = "cannot bind predicate predictor within stage ";
       throw Exception ("bind-error", msg + d_name);
     }
   }

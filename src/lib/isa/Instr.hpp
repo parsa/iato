@@ -69,6 +69,8 @@ namespace iato {
     t_octa d_sip;
     /// the speculative flag
     bool   d_sfl;
+    /// the predictor history
+    t_octa d_hist;
     /// instruction bundle unit
     t_unit d_bunit;
     /// instruction functional unit
@@ -162,121 +164,113 @@ namespace iato {
     void reset (void);
 
     /// @return the instruction valid bit
-    bool isvalid (void) const {return d_valid;}
+    bool isvalid (void) const;
 
     /// set the instruction ip
     /// @param ip the instruction ip
-    void setiip (const t_octa ip) {
-      d_iip = ip;
-      d_sip = ip + BN_BYSZ;
-    }
+    void setiip (const t_octa ip);
 
     /// @return the instruction ip
-    t_octa getiip (void) const {return d_iip;}
+    t_octa getiip (void) const;
 
     /// set the speculative ip
     /// @param sip the speculative ip
-    void setsip (const t_octa sip) {
-      d_sip = sip;
-      d_sfl = true;
-    }
+    void setsip (const t_octa sip);
 
     /// @return the speculative ip
-    t_octa getsip (void) const {return d_sip;}
+    t_octa getsip (void) const;
 
     /// @return the speculative flag
-    bool getsfl (void) const {return d_sfl;}
+    bool getsfl (void) const;
+
+    /// set the predictor history
+    /// @param hist the history to set
+    void sethist (const t_octa hist);
+    
+    /// @return the predictor history
+    t_octa gethist (void) const;
 
     /// @return the instruction slot
-    long getslot (void) const {return d_slot;}
+    long getslot (void) const;
 
     /// @return the instruction stop bit
-    bool getstop (void) const {return d_stop;}
+    bool getstop (void) const;
 
     /// @return the instruction group
-    string getgroup (void) const {return d_group;}
-
-    /// @return the branch bit
-    bool isbr (void) const {return d_brch;}
+    string getgroup (void) const;
 
     /// @return the instruction data
-    t_octa getdata (void) const {return d_inst;}
+    t_octa getdata (void) const;
 
     /// @return the extension data
-    t_octa getextd (void) const {return d_extd;}
+    t_octa getextd (void) const;
     
     /// @return the instruction opcode
-    t_iopc getiopc (void) const {return d_opcd;}
+    t_iopc getiopc (void) const;
 
     /// @return the instruction bundle unit
-    t_unit getbunit (void) const {return d_bunit;}
+    t_unit getbunit (void) const;
 
     /// @return the instruction functional unit
-    t_unit getfunit (void) const {return d_funit;}
+    t_unit getfunit (void) const;
 
     /// @return the instruction slot unit
     t_unit getsunit (void) const;
 
-    /// @return the load bit
-    bool getldb (void) const {return d_ildb;}
+    /// @return true if the instruction is a load
+    bool getldb (void) const;
 
-    /// @return the store bit
-    bool getstb (void) const {return d_istb;}
+    /// @return true if the instruction is a store
+    bool getstb (void) const;
+
+    /// @return true if the instruction is a branch
+    bool isbr (void) const;
 
     /// @return true if the instruction is a nop
     bool isnop (void) const;
 
     /// @return the floating point status completer
-    t_fpcomp getfpcomp (void) const {return d_fpcomp;}
+    t_fpcomp getfpcomp (void) const;
 
     /// @return the instruction immediate value
-    t_octa getimmv (const long index) const {
-      assert ((index >= 0) && (index < IA_MSRC));
-      return d_immv[index];
-    }
+    t_octa getimmv (const long index) const;
     
+    /// @return true if the predicate matches the rid
+    bool ispnum (const Rid& rid) const;
+
     /// @return the predicate register number
-    Rid getpnum (void) const {return d_rprd;}
+    Rid getpnum (void) const;
 
     /// set the predicate register number
     /// @param pnum the register to set
-    void setpnum (const Rid& pnum) {d_rprd = pnum;}
+    void setpnum (const Rid& pnum);
+
+    /// @return true if one source matches the rid
+    bool issnum (const Rid& rid) const;
 
     /// get the source register number by index
     /// @param index the source operand index
-    Rid getsnum (const long index) const {
-      assert ((index >= 0) && (index < IA_MSRC));
-      return d_rsrc[index];
-    }
+    Rid getsnum (const long index) const;
 
     /// set the source register number
     /// @param index the source index
     /// @param snum the register to set
-    void setsnum (const long index, const Rid& snum) {
-      assert ((index >= 0) && (index < IA_MSRC));
-      d_rsrc[index] = snum;
-    }
+    void setsnum (const long index, const Rid& snum);
+
+    /// @return true if one destination matches the rid
+    bool isdnum (const Rid& rid) const;
 
     /// get the destination register number by index
     /// @param index the destination operand index
-    Rid getdnum (const long index) const {
-      assert ((index >= 0) && (index < IA_MDST));
-      return d_rdst[index];
-    }
+    Rid getdnum (const long index) const;
 
     /// set the destination register number
     /// @param index the source index
     /// @param dnum the register to set
-    void setdnum (const long index, const Rid& dnum) {
-      assert ((index >= 0) && (index < IA_MDST));
-      d_rdst[index] = dnum;
-    }
+    void setdnum (const long index, const Rid& dnum);
 
     /// @return the rid pair map by index
-    Rpm getrrpm (const long index) const {
-      assert ((index >= 0) && (index < IA_MRPM));
-      return d_rrpm[index];
-    }
+    Rpm getrrpm (const long index) const;
 
     /// @return the register operand
     Operand getoper (void) const;
@@ -323,123 +317,123 @@ namespace iato {
     void xdecode (void);
     void xupdate (void);
     // private recode methods
-    string arecode_01        (void) const;
-    string arecode_02        (void) const;
-    string arecode_03        (void) const;
-    string arecode_04        (void) const;
-    string arecode_05        (void) const;
-    string arecode_06        (void) const;
-    string arecode_07        (void) const;
-    string arecode_08        (void) const;
-    string arecode_09        (void) const;
-    string arecode_10        (void) const;
-    string mrecode_01        (void) const;
-    string mrecode_02        (void) const;
-    string mrecode_03        (void) const;
-    string mrecode_04        (void) const;
-    string mrecode_05        (void) const;
-    string mrecode_06        (void) const;
-    string mrecode_07        (void) const;
-    string mrecode_08        (void) const;
-    string mrecode_09        (void) const;
-    string mrecode_10        (void) const;
-    string mrecode_11        (void) const;
-    string mrecode_12        (void) const;
-    string mrecode_13        (void) const;
-    string mrecode_14        (void) const;
-    string mrecode_15        (void) const;
-    string mrecode_16        (void) const;
-    string mrecode_17        (void) const;
-    string mrecode_18        (void) const;
-    string mrecode_19        (void) const;
-    string mrecode_20        (void) const;
-    string mrecode_21        (void) const;
-    string mrecode_22        (void) const;
-    string mrecode_23        (void) const;
-    string mrecode_24        (void) const;
-    string mrecode_25        (void) const;
-    string mrecode_26        (void) const;
-    string mrecode_27        (void) const;
-    string mrecode_28        (void) const;
-    string mrecode_29        (void) const;
-    string mrecode_30        (void) const;
-    string mrecode_31        (void) const;
-    string mrecode_32        (void) const;
-    string mrecode_33        (void) const;
-    string mrecode_34        (void) const;
-    string mrecode_35        (void) const;
-    string mrecode_36        (void) const;
-    string mrecode_37        (void) const;
-    string mrecode_38        (void) const;
-    string mrecode_39        (void) const;
-    string mrecode_40        (void) const;
-    string mrecode_41        (void) const;
-    string mrecode_44        (void) const;
-    string mrecode_45        (void) const;
-    string mrecode_46        (void) const;
-    string irecode_01        (void) const;
-    string irecode_02        (void) const;
-    string irecode_03        (void) const;
-    string irecode_04        (void) const;
-    string irecode_05        (void) const;
-    string irecode_06        (void) const;
-    string irecode_07        (void) const;
-    string irecode_08        (void) const;
-    string irecode_09        (void) const;
-    string irecode_10        (void) const;
-    string irecode_11        (void) const;
-    string irecode_11_pseudo (void) const;
-    string irecode_12        (void) const;
-    string irecode_13        (void) const;
-    string irecode_14        (void) const;
-    string irecode_15        (void) const;
-    string irecode_16        (void) const;
-    string irecode_17        (void) const;
-    string irecode_19        (void) const;
-    string irecode_20        (void) const;
-    string irecode_21        (void) const;
-    string irecode_22        (void) const;
-    string irecode_23        (void) const;
-    string irecode_24        (void) const;
-    string irecode_25        (void) const;
-    string irecode_26        (void) const;
-    string irecode_27        (void) const;
-    string irecode_28        (void) const;
-    string irecode_29        (void) const;
-    string frecode_01        (void) const;
-    string frecode_01_pseudo (void) const;
-    string frecode_02        (void) const;
-    string frecode_03        (void) const;
-    string frecode_04        (void) const;
-    string frecode_05        (void) const;
-    string frecode_06        (void) const;
-    string frecode_07        (void) const;
-    string frecode_08        (void) const;
-    string frecode_09        (void) const;
-    string frecode_09_pseudo (void) const;
-    string frecode_10        (void) const;
-    string frecode_11        (void) const;
-    string frecode_12        (void) const;
-    string frecode_13        (void) const;
-    string frecode_14        (void) const;
-    string frecode_15        (void) const;
-    string brecode_01        (void) const;
-    string brecode_02        (void) const;
-    string brecode_03        (void) const;
-    string brecode_04        (void) const;
-    string brecode_05        (void) const;
-    string brecode_06        (void) const;
-    string brecode_07        (void) const;
-    string brecode_08        (void) const;
-    string brecode_09        (void) const;
-    string xrecode_01        (void) const;
-    string xrecode_02        (void) const;
-    string arecode           (void) const;
-    string mrecode           (void) const;
-    string irecode           (void) const;
-    string frecode           (void) const;
-    string brecode           (void) const;
-    string xrecode           (void) const;
+    string arecode_01 (void) const;
+    string arecode_02 (void) const;
+    string arecode_03 (void) const;
+    string arecode_04 (void) const;
+    string arecode_05 (void) const;
+    string arecode_06 (void) const;
+    string arecode_07 (void) const;
+    string arecode_08 (void) const;
+    string arecode_09 (void) const;
+    string arecode_10 (void) const;
+    string mrecode_01 (void) const;
+    string mrecode_02 (void) const;
+    string mrecode_03 (void) const;
+    string mrecode_04 (void) const;
+    string mrecode_05 (void) const;
+    string mrecode_06 (void) const;
+    string mrecode_07 (void) const;
+    string mrecode_08 (void) const;
+    string mrecode_09 (void) const;
+    string mrecode_10 (void) const;
+    string mrecode_11 (void) const;
+    string mrecode_12 (void) const;
+    string mrecode_13 (void) const;
+    string mrecode_14 (void) const;
+    string mrecode_15 (void) const;
+    string mrecode_16 (void) const;
+    string mrecode_17 (void) const;
+    string mrecode_18 (void) const;
+    string mrecode_19 (void) const;
+    string mrecode_20 (void) const;
+    string mrecode_21 (void) const;
+    string mrecode_22 (void) const;
+    string mrecode_23 (void) const;
+    string mrecode_24 (void) const;
+    string mrecode_25 (void) const;
+    string mrecode_26 (void) const;
+    string mrecode_27 (void) const;
+    string mrecode_28 (void) const;
+    string mrecode_29 (void) const;
+    string mrecode_30 (void) const;
+    string mrecode_31 (void) const;
+    string mrecode_32 (void) const;
+    string mrecode_33 (void) const;
+    string mrecode_34 (void) const;
+    string mrecode_35 (void) const;
+    string mrecode_36 (void) const;
+    string mrecode_37 (void) const;
+    string mrecode_38 (void) const;
+    string mrecode_39 (void) const;
+    string mrecode_40 (void) const;
+    string mrecode_41 (void) const;
+    string mrecode_44 (void) const;
+    string mrecode_45 (void) const;
+    string mrecode_46 (void) const;
+    string irecode_01 (void) const;
+    string irecode_02 (void) const;
+    string irecode_03 (void) const;
+    string irecode_04 (void) const;
+    string irecode_05 (void) const;
+    string irecode_06 (void) const;
+    string irecode_07 (void) const;
+    string irecode_08 (void) const;
+    string irecode_09 (void) const;
+    string irecode_10 (void) const;
+    string irecode_11 (void) const;
+    string ipseudo_11 (void) const;
+    string irecode_12 (void) const;
+    string irecode_13 (void) const;
+    string irecode_14 (void) const;
+    string irecode_15 (void) const;
+    string irecode_16 (void) const;
+    string irecode_17 (void) const;
+    string irecode_19 (void) const;
+    string irecode_20 (void) const;
+    string irecode_21 (void) const;
+    string irecode_22 (void) const;
+    string irecode_23 (void) const;
+    string irecode_24 (void) const;
+    string irecode_25 (void) const;
+    string irecode_26 (void) const;
+    string irecode_27 (void) const;
+    string irecode_28 (void) const;
+    string irecode_29 (void) const;
+    string frecode_01 (void) const;
+    string fpseudo_01 (void) const;
+    string frecode_02 (void) const;
+    string frecode_03 (void) const;
+    string frecode_04 (void) const;
+    string frecode_05 (void) const;
+    string frecode_06 (void) const;
+    string frecode_07 (void) const;
+    string frecode_08 (void) const;
+    string frecode_09 (void) const;
+    string fpseudo_09 (void) const;
+    string frecode_10 (void) const;
+    string frecode_11 (void) const;
+    string frecode_12 (void) const;
+    string frecode_13 (void) const;
+    string frecode_14 (void) const;
+    string frecode_15 (void) const;
+    string brecode_01 (void) const;
+    string brecode_02 (void) const;
+    string brecode_03 (void) const;
+    string brecode_04 (void) const;
+    string brecode_05 (void) const;
+    string brecode_06 (void) const;
+    string brecode_07 (void) const;
+    string brecode_08 (void) const;
+    string brecode_09 (void) const;
+    string xrecode_01 (void) const;
+    string xrecode_02 (void) const;
+    string arecode    (void) const;
+    string mrecode    (void) const;
+    string irecode    (void) const;
+    string frecode    (void) const;
+    string brecode    (void) const;
+    string xrecode    (void) const;
   };
 }
 

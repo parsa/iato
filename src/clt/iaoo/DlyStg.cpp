@@ -61,13 +61,6 @@ namespace iato {
     d_oprd.reset ();
   }
 
-  // partially flush this stage
-
-  void DlyStg::pflsh (void) {
-    if (d_flsh == false) return;
-    d_inst.reset ();
-    d_oprd.reset ();
-  }
 
   // activate this execute stage - the instructions are coming from the
   // previous stage and are assumed to be physically renamed.

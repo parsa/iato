@@ -42,6 +42,10 @@
 #include "Stage.hpp"
 #endif
 
+#ifndef  IATO_PREDICATE_HPP
+#include "Predicate.hpp"
+#endif
+
 namespace iato {
 
   /// The LrnStg class is the logical renaming stage. It operates with
@@ -60,6 +64,8 @@ namespace iato {
     Rse* p_rse;
     /// the iib
     Iib* p_iib;
+    /// the predicate predictor
+    Predicate* p_pps;
 
   public:
     /// create a new logical rename stage by context

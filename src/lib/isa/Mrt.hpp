@@ -66,6 +66,10 @@ namespace iato {
     t_mrtt d_type;
     /// the request address
     t_octa d_addr;
+    /// the speculative bit
+    bool   d_sbit;
+    /// the nat value bit
+    bool   d_nval;
     /// the integer buffer
     union {
       t_byte d_bval;
@@ -91,6 +95,12 @@ namespace iato {
     /// @param addr the mrt address
     Mrt (const t_mrtt type, const t_octa addr);
 
+    /// create a mrt by type, address and speculative bit
+    /// @param type the mrt type
+    /// @param addr the mrt address
+    /// @param sbit the speculative bit
+    Mrt (const t_mrtt type, const t_octa addr, const bool sbit);
+
     /// copy construct this mrt
     /// @param that the mrt to copy
     Mrt (const Mrt& that);
@@ -105,6 +115,12 @@ namespace iato {
     /// @return true if the mrt is valid
     bool isvalid (void) const;
 
+    /// return true if the speculative bit is set
+    bool issbit (void) const;
+
+    /// return true if the nat bit is set
+    bool isnval (void) const;
+
     /// @return true if the mrt is a load
     bool isload (void) const;
 
@@ -116,6 +132,13 @@ namespace iato {
 
     /// @return the mrt address
     t_octa getaddr (void) const;
+
+    /// @return the mrt mask
+    t_octa getmask (void) const;
+
+    /// set the nat value bit
+    /// @param nval the nat value to set
+    void setnval (const bool nval);
 
     /// set the mrt byte value
     /// @param bval the value to set
@@ -177,19 +200,22 @@ namespace iato {
     /// @param addr the request address
     void setbnd (const t_octa addr);
 
-    /// set the load information by type, address and rid
+    /// set the load information by type, address, speculative bit and rid
     /// @param type the load type to process
     /// @param addr the load address
-    /// @param rid the register to load
-    void setld (t_mrtt type, const t_octa addr, const Rid& rid);
+    /// @param sbit the speculative bit
+    /// @param rid  the register to load
+    void setld (t_mrtt type, const t_octa addr, const bool sbit,
+		const Rid& rid);
 
     /// set the load information by type, address and rid pair
     /// @param type the load type to process
     /// @param addr the load address
+    /// @param sbit the speculative bit
     /// @param lrid the low register to load
     /// @param hrid the high register to load
-    void setld (t_mrtt type, const t_octa addr, const Rid& lrid,
-		const Rid& hrid);
+    void setld (t_mrtt type, const t_octa addr, const bool sbit,
+		const Rid& lrid, const Rid& hrid);
 
     /// set the store information by type, address and value
     /// @param type the load type to process
@@ -210,6 +236,10 @@ namespace iato {
     /// @param hval the high real value to store
     void setst (t_mrtt type, const t_octa addr, const t_real& lval,
 		const t_real& hval);
+
+    /// set the mrt value from a mrt
+    /// @param mrt the mrt used for setting
+    void setmv (const Mrt& mrt);
   };
 }
 

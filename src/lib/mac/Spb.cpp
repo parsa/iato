@@ -1,11 +1,10 @@
 // ---------------------------------------------------------------------------
-// - Ipb.cpp                                                                 -
+// - Spb.cpp                                                                 -
 // - iato:mac library - issue port buffer class implementation               -
 // ---------------------------------------------------------------------------
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
 // - authors                                      Amaury Darsch    2002:2004 -
-// -                                              Pierre Villalon  2002:2003 -
 // -                                              Andre  Seznec    2002:2004 -
 // ---------------------------------------------------------------------------
 // - This program  is  free software;  you can redistribute it and/or modify -
@@ -21,7 +20,7 @@
 
 #include "Mac.hpp"
 #include "Prn.hpp"
-#include "Ipb.hpp"
+#include "Spb.hpp"
 #include "Exception.hpp"
 
 namespace iato {
@@ -29,15 +28,15 @@ namespace iato {
 
   // create a new buffer with a context
 
-  Ipb::Ipb (Mtx* mtx) : Resource (RESOURCE_IPB) {
+  Spb::Spb (Mtx* mtx) : Resource (RESOURCE_SPB) {
     d_mbsz = mtx->getlong ("NUMBER-M-UNITS"); assert (d_mbsz > 0);
     d_ibsz = mtx->getlong ("NUMBER-I-UNITS"); assert (d_ibsz > 0);
     d_fbsz = mtx->getlong ("NUMBER-F-UNITS"); assert (d_fbsz > 0);
     d_bbsz = mtx->getlong ("NUMBER-B-UNITS"); assert (d_bbsz > 0);
     p_mbuf = new (Slot*)[d_mbsz];
-    p_ibuf = new (Slot*)[d_mbsz];
-    p_fbuf = new (Slot*)[d_mbsz];
-    p_bbuf = new (Slot*)[d_mbsz];
+    p_ibuf = new (Slot*)[d_ibsz];
+    p_fbuf = new (Slot*)[d_fbsz];
+    p_bbuf = new (Slot*)[d_bbsz];
     for (long i = 0; i < d_mbsz; i++) p_mbuf[i] = 0;
     for (long i = 0; i < d_ibsz; i++) p_ibuf[i] = 0;
     for (long i = 0; i < d_fbsz; i++) p_fbuf[i] = 0;
@@ -46,15 +45,15 @@ namespace iato {
 
   // create a new buffer with a context and a name
 
-  Ipb::Ipb (Mtx* mtx, const string& name) : Resource (name) {
+  Spb::Spb (Mtx* mtx, const string& name) : Resource (name) {
     d_mbsz = mtx->getlong ("NUMBER-M-UNITS"); assert (d_mbsz > 0);
     d_ibsz = mtx->getlong ("NUMBER-I-UNITS"); assert (d_ibsz > 0);
     d_fbsz = mtx->getlong ("NUMBER-F-UNITS"); assert (d_fbsz > 0);
     d_bbsz = mtx->getlong ("NUMBER-B-UNITS"); assert (d_bbsz > 0);
     p_mbuf = new (Slot*)[d_mbsz];
-    p_ibuf = new (Slot*)[d_mbsz];
-    p_fbuf = new (Slot*)[d_mbsz];
-    p_bbuf = new (Slot*)[d_mbsz];
+    p_ibuf = new (Slot*)[d_ibsz];
+    p_fbuf = new (Slot*)[d_fbsz];
+    p_bbuf = new (Slot*)[d_bbsz];
     for (long i = 0; i < d_mbsz; i++) p_mbuf[i] = 0;
     for (long i = 0; i < d_ibsz; i++) p_ibuf[i] = 0;
     for (long i = 0; i < d_fbsz; i++) p_fbuf[i] = 0;
@@ -63,7 +62,7 @@ namespace iato {
 
   // destroy this buffer
 
-  Ipb::~Ipb (void) {
+  Spb::~Spb (void) {
     delete [] p_mbuf;
     delete [] p_ibuf;
     delete [] p_fbuf;
@@ -72,7 +71,7 @@ namespace iato {
 
   // reset this buffer
 
-  void Ipb::reset (void) {
+  void Spb::reset (void) {
     for (long i = 0; i < d_mbsz; i++) 
       if (p_mbuf[i]) p_mbuf[i]->reset ();
     for (long i = 0; i < d_ibsz; i++) 
@@ -81,11 +80,13 @@ namespace iato {
       if (p_fbuf[i]) p_fbuf[i]->reset ();
     for (long i = 0; i < d_bbsz; i++) 
       if (p_bbuf[i]) p_bbuf[i]->reset ();
+    d_intr.reset ();
+    d_iioi = -1;
   }
 
   // report this reosurce
 
-  void Ipb::report (void) const {
+  void Spb::report (void) const {
     using namespace std;
     Resource::report ();
     cout << "\tresource type\t\t: " << "issue port buffer" << endl;
@@ -97,7 +98,7 @@ namespace iato {
 
   // return a buffer size by unit
 
-  long Ipb::getsize (t_unit unit) const {
+  long Spb::getsize (t_unit unit) const {
     long   size = 0;
     switch (unit) {
     case MUNIT:
@@ -121,7 +122,7 @@ namespace iato {
 
   // add a slot in this buffer
 
-  void Ipb::add (Slot* slot) {
+  void Spb::add (Slot* slot) {
     // check for a valid slot
     if (!slot) return;
     // get valid buffer
@@ -156,12 +157,26 @@ namespace iato {
       slot->setspos (i);
       return;
     }
-    throw Exception ("ipb-error", "port buffer is full");
+    throw Exception ("spb-error", "port buffer is full");
   }
 
+  // return true if all slot are free
+
+  bool Spb::isfree (void) const {
+    for (long i = 0; i < d_mbsz; i++)
+      if (p_mbuf[i]->isfree () == false) return false;
+    for (long i = 0; i < d_ibsz; i++)
+      if (p_ibuf[i]->isfree () == false) return false;
+    for (long i = 0; i < d_fbsz; i++)
+      if (p_fbuf[i]->isfree () == false) return false;
+    for (long i = 0; i < d_bbsz; i++)
+      if (p_bbuf[i]->isfree () == false) return false;
+    return true;
+  }
+  
   // find a free slot by unit
 
-  long Ipb::find (t_unit unit) const {
+  long Spb::find (const t_unit unit) const {
     // initialize size and buffer pointer
     long   size = 0;
     Slot** sbuf = 0;
@@ -196,7 +211,7 @@ namespace iato {
 
   // set an instruction by unit and slot index
 
-  void Ipb::setinst (t_unit unit, const long slot, const Ssi& ssi) {
+  void Spb::setinst (t_unit unit, const long slot, const Ssi& ssi) {
     // initialize size and buffer pointer
     long   size = 0;
     Slot** sbuf = 0;
@@ -229,7 +244,7 @@ namespace iato {
 
   // return an instruction by unit and index
 
-  Ssi Ipb::getinst (t_unit unit, const long slot) const {
+  Ssi Spb::getinst (t_unit unit, const long slot) const {
     // initialize size and buffer pointer
     long   size = 0;
     Slot** sbuf = 0;
@@ -260,5 +275,18 @@ namespace iato {
     Ssi result;
     if (sbuf[slot]) result = sbuf[slot]->getinst ();
     return result;
+  }
+
+  // return true if the port buffer has been interrupted
+
+  bool Spb::isintr (void) const {
+    return d_intr.isvalid ();
+  }
+
+  // set the offending interrupt and index
+
+  void Spb::setintr (const Interrupt& vi, const long iioi) {
+    d_intr = vi;
+    d_iioi = iioi;
   }
 }

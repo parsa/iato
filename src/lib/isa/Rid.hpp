@@ -87,10 +87,13 @@ namespace iato {
     void reset (void);
 
     /// @return true if the register is valid
-    bool isvalid (void) const {return d_valid;}
+    bool isvalid (void) const;
 
     /// @return true if the rid is a valid predicate
     bool ispred (void) const;
+
+    /// @return true if both rid are equal physically
+    bool isequal (const Rid& rid) const;
 
     /// set the eval ready bit
     /// @param erdy the eval ready bit to set
@@ -100,8 +103,12 @@ namespace iato {
     /// @param rid the rid to compare
     void seterdy (const Rid& rid);
 
+    /// clear the eval ready bit if both rid are equal
+    /// @param rid the rid to compare
+    void clrerdy (const Rid& rid);
+
     /// @return the eval ready bit
-    bool geterdy (void) const {return d_erdy;}
+    bool geterdy (void) const;
 
     /// clear the virtual bit
     void clrvbit (void);
@@ -110,41 +117,35 @@ namespace iato {
     /// @param rid the rid to compare
     void clrvbit (const Rid& rid);
 
+    /// @return the virtual bit
+    bool getvbit (void) const;
+
     /// @return true if the rid must be logically renamed
     bool islrnm (void) const;
 
     /// @return true if the rid is ready, invalid rid returns true
     bool isready (void) const;
 
-    /// return the register type
-    t_lreg gettype (void) const {return d_type;}
-
-    /// return the logical register number
-    long getlnum (void) const {return d_lnum;}
-
-    /// return the physical  register number
-    long getpnum (void) const {return d_pnum;}
-
-    /// @return the register virtual bit
-    bool getvbit (void) const {return d_vbit;}
-
-    /// @return the register virtual number
-    long getvnum (void) const {return d_vnum;}
-
-    /// @return the old register virtual number
-    long getonum (void) const {return d_onum;}
-
-    /// @return the target register number
-    long gettnum (void) const {return d_vbit ? d_vnum : d_pnum;}
+    /// @return the register type
+    t_lreg gettype (void) const;
 
     /// set the logical number by type
     /// @param type the register type
     /// @param lnum the logical register number
     void setlnum (t_lreg type, const long lnum);
 
+    /// @return the logical register number
+    long getlnum (void) const;
+
     /// set the physical register number
     /// @param pnum the physical register number
-    void setpnum (const long pnum) {d_pnum = pnum;}
+    void setpnum (const long pnum);
+
+    /// @return the physical register number
+    long getpnum (void) const;
+
+    /// @return the register virtual number
+    long getvnum (void) const;
 
     /// set the virtual register number and virtual bit
     /// @param vnum the virtual register number
@@ -154,6 +155,12 @@ namespace iato {
     /// @param vnum the virtual register number
     /// @param onum the old virtual number
     void setvnum (const long vnum, const long onum);
+
+    /// @return the old register virtual number
+    long getonum (void) const {return d_onum;}
+
+    /// @return the target register number
+    long gettnum (void) const;
 
     /// set a register by type and number
     /// @param type the register type

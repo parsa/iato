@@ -86,7 +86,7 @@ namespace iato {
   }
 
   // recode a F01 pseudo instruction
-  string Instr::frecode_01_pseudo (void) const {
+  string Instr::fpseudo_01 (void) const {
     string result = to_pred (d_rprd.getlnum ());
     bool flag = (d_rsrc[2].getlnum () == 1);
     switch (d_opcd) {
@@ -377,7 +377,7 @@ namespace iato {
   }
 
   // recode a F09 pseudo instruction
-  string Instr::frecode_09_pseudo (void) const {
+  string Instr::fpseudo_09 (void) const {
     string result = to_pred (d_rprd.getlnum ());
     switch (d_opcd){
     case F_FMERGE_S:
@@ -484,7 +484,7 @@ namespace iato {
     case F_FMA_S:
     case F_FMA_D:
       if (d_rsrc[0].getlnum () == 0)
-	result = frecode_01_pseudo ();
+	result = fpseudo_01 ();
       else
 	result = frecode_01 ();
       break;
@@ -544,7 +544,7 @@ namespace iato {
       break;
     case F_FMERGE_S:
       if (d_rsrc[1].getlnum () == d_rsrc[0].getlnum ())
-	result = frecode_09_pseudo ();
+	result = fpseudo_09 ();
       else
 	result = frecode_09 ();
       break;

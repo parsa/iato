@@ -92,7 +92,7 @@ namespace iato {
   // return true if the buffer has reached the threshold
 
   bool Bdb::isthr (void) const {
-    return (d_blen == d_bthr);
+    return (d_blen >= d_bthr);
   }
 
   // push a bundle in the buffer

@@ -53,6 +53,8 @@ namespace iato {
     t_octa d_ip;
     // the instruction slot
     long   d_slot;
+    // the instruction unit
+    t_unit d_unit;
     // create a new rob entry
     t_rob (void) {
       reset ();
@@ -72,17 +74,7 @@ namespace iato {
       d_nopb  = false;
       d_ip    = OCTA_0;
       d_slot  = 0;
-    }
-    // partial flush this rob entry
-    void pflsh (void) {
-      if (d_exec == true) {
-	d_iiib = -1;
-	d_intr = false;
-	d_exec = false;
-      }
-      d_cnlf = false;
-      d_sbit = false;
-      d_bbss = false;
+      d_unit  = MUNIT;
     }
   };
 
@@ -115,12 +107,6 @@ namespace iato {
     d_rlen = 0;
     d_iptr = 0;
     d_optr = 0;
-  }
-
-  // partial flush this rob
-
-  void Rob::pflsh (void) {
-    for (long i = 0; i < d_size; i++) p_rbuf[i].pflsh ();
   }
 
   // report this resource
@@ -197,8 +183,8 @@ namespace iato {
 
   // allocate a new rob entry with serialize and nop bit
 
-  void Rob::alloc (const t_octa ip, const long slot, const bool srlz,
-		   const bool nopb) {
+  void Rob::alloc (const t_octa ip, const long slot, t_unit unit,
+		   const bool srlz, const bool nopb) {
     assert (d_rlen < d_size);
     assert (p_rbuf[d_iptr].d_valid == false);
     // update the rob record
@@ -209,8 +195,9 @@ namespace iato {
       p_rbuf[d_iptr].d_nopb  = nopb;
       p_rbuf[d_iptr].d_exec  = true;
     }
-    p_rbuf[d_iptr].d_ip    = ip;
-    p_rbuf[d_iptr].d_slot  = slot;
+    p_rbuf[d_iptr].d_ip   = ip;
+    p_rbuf[d_iptr].d_slot = slot;
+    p_rbuf[d_iptr].d_unit = unit;
     // update rob input index
     d_iptr = ++d_iptr % d_size;
     d_rlen++;
@@ -229,6 +216,7 @@ namespace iato {
     p_rbuf[d_iptr].d_iiib  = iiib;
     p_rbuf[d_iptr].d_ip    = inst.getiip  ();
     p_rbuf[d_iptr].d_slot  = inst.getslot ();
+    p_rbuf[d_iptr].d_unit  = inst.getbunit ();
     // update rob input index
     long result = d_iptr;
     d_iptr = ++d_iptr % d_size;
@@ -306,6 +294,13 @@ namespace iato {
   long Rob::getslot (void) const {
     assert (p_rbuf[d_optr].d_valid == true);
     return p_rbuf[d_optr].d_slot;
+  }
+
+  // return the latest instruction unit
+
+  t_unit Rob::getunit (void) const {
+    assert (p_rbuf[d_optr].d_valid == true);
+    return p_rbuf[d_optr].d_unit;
   }
 
   // return the latest irb index

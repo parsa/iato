@@ -50,16 +50,24 @@ namespace iato {
   protected:
     /// the halt bit
     bool d_halt;
+    /// the stage index
+    long d_sidx;
     /// the previous stage
     Stage* p_pstg;
     /// the next stage
     Stage* p_nstg;
 
   public:
-    /// create a new stage with context by name
+    /// create a new stage by context and name
     /// @param mtx the architectural context
     /// @param name the stage name
     Stage (Mtx* mtx, const string& name);
+
+    /// create a new stage by context, index and name
+    /// @param mtx the architectural context
+    /// @param sidx the stage index
+    /// @param name the stage name
+    Stage (Mtx* mtx, const long sidx, const string& name);
 
     /// reset this stage
     void reset (void);

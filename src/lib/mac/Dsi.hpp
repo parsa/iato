@@ -35,7 +35,13 @@ namespace iato {
   /// entry.
 
   class Dsi : public Ssi {
+  public:
+    /// @return true if a register must be physically renamed
+    static bool isprnm (const Rid& rid);
+
   private:
+    /// the mob index
+    long d_midx;
     /// the station index
     long d_sidx;
     /// the gcs index
@@ -70,32 +76,19 @@ namespace iato {
     /// reset this dsi
     void reset (void);
 
-    /// @return true if this instruction needs pre-serialization
-    bool ispresr (void) const;
-
-    /// @return true if this instruction needs post-serialization
-    bool ispostsr (void) const;
-
     /// @return true if the instruction is ready for selection
     bool isready (void) const;
 
     /// set an instruction operand ready by rid
     /// @param rid the rid use to mark the operand ready
-    void setready (const Rid& rid);
+    void setrdy (const Rid& rid);
 
-    /// set the instruction reschedule flag
-    /// @param rsch the reschedule flag to set
-    void setrsch (const bool rsch);
-
-    /// @return the reschedule flag
-    bool getrsch (void) const;
-
-    /// set the predicate not ready flag
-    /// @param pnrd the not ready flag 
-    void setpnrd (const bool pnrd);
-
-    /// @return the predicate not ready flag
-    bool getpnrd (void) const;
+    /// set the mob index
+    /// @param index the mob index
+    void setmob (const long index);
+    
+    /// @return the mob index
+    long getmob (void) const;
 
     /// set the station entry
     /// @param index the station index
@@ -117,6 +110,20 @@ namespace iato {
 
     /// @return the execution latency
     long getelat (void) const;
+
+    /// set the instruction reschedule flag
+    /// @param rsch the reschedule flag to set
+    void setrsch (const bool rsch);
+
+    /// @return the reschedule flag
+    bool getrsch (void) const;
+
+    /// set the predicate not ready flag
+    /// @param pnrd the not ready flag 
+    void setpnrd (const bool pnrd);
+
+    /// @return the predicate not ready flag
+    bool getpnrd (void) const;
   };
 }
 

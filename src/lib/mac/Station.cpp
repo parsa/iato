@@ -48,15 +48,6 @@ namespace iato {
       d_schi  = -1;
       d_inst.reset ();
     }
-    // partial flush this station
-    void pflsh (void) {
-      if (d_valid == false) return;
-      if (d_wakup == true) {
-	d_wakup = false;
-	d_inst.setcnlf (false);
-	d_inst.setrsch (true);
-      }
-    }
     // insert a new instruction
     void insert (const Dsi& dsi, const long sidx, const long igcs, 
 		 const long schi) {
@@ -86,7 +77,7 @@ namespace iato {
       // do nothing if the wakeup bit is set
       if (d_wakup == true) return;
       // set the instruction ready bit
-      d_inst.setready (rid);
+      d_inst.setrdy (rid);
     }
     // mark instruction cancelled
     void setcnl (const Rid& rid, const bool value) {
@@ -154,14 +145,6 @@ namespace iato {
     for (long  i = 0; i < d_size; i++) {
       p_stbl[i].reset ();
       p_rsst[i] = -1;
-    }
-  }
-
-  // partially flush this station
-
-  void Station::pflsh (void) {
-    for (long  i = 0; i < d_size; i++) {
-      p_stbl[i].pflsh ();
     }
   }
 

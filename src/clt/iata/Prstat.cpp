@@ -24,12 +24,27 @@
 namespace iato {
   using namespace std;
 
+  // this fucntion decides whether or not the instruction is elegible
+  // for analysis, based on the use flags
+  static bool iscomp (const Instr& inst, const bool ibro, const bool nbro) {
+    // check for valid instrcution
+    if (inst.isvalid () == false) return false;
+    // check for branch
+    if (ibro == true) return inst.isbr ();
+    // check for non-branch
+    if (nbro == true) return !inst.isbr ();
+    // valid, after all
+    return true;
+  }
+
   // create a new trace predictor analyzer object
 
   Prstat::Prstat (const string& name, Atx* atx) {
     p_reader = new Tracer::Reader (name);
     p_filter = new Filtering      (atx);
     p_pred   = Predicate::mkpr    (atx);
+    d_ibro   = false;
+    d_nbro   = false;
     reset ();
   }
 
@@ -51,6 +66,13 @@ namespace iato {
     d_npps = 0;
     d_npbs = 0;
     d_nnbs = 0;
+  }
+
+  // set the instruction use flags
+
+  void Prstat::setbro (const bool ibro, const bool nbro) {
+    d_ibro   = ibro;
+    d_nbro   = nbro;
   }
 
   // analyze the predictor statistics
@@ -102,6 +124,8 @@ namespace iato {
 	if (rcd.gettype () != Record::RINSTR) continue;
 	// get the instruction and check for predicate
 	Instr inst = rcd.getinst ();
+	// check for compute
+	if (iscomp (inst, d_ibro, d_nbro) == false) continue;
 	// get the actual result
 	bool pflg = !rcd.iscancel ();
 	// anylze the instruction
@@ -137,23 +161,33 @@ namespace iato {
       double pnbi = 100.0 * (double) d_nnbs / (double) d_nins;
       cout << "number of predicate prediction : " << d_nppr;
       cout << "\t(" << setprecision (3) << pppr << "%)" << endl;
-      cout << "number of branch prediction    : " << d_npbr;
-      cout << "\t(" << setprecision (3) << ppbr << "%)";
-      cout << "\t(" << setprecision (3) << pibr << "%)" << endl;
-      cout << "number of non branch prediction: " << d_npnb;
-      cout << "\t(" << setprecision (3) << ppnb << "%)";
-      cout << "\t(" << setprecision (3) << pinb << "%)" << endl;
-      cout << "successfull predicates         : " << d_npps;
-      cout << "\t(" << setprecision (3) << ppps << "%)";
-      cout << "\t(" << setprecision (3) << pppi << "%)" << endl;
-      cout << "successfull branch predicates  : " << d_npbs;
-      cout << "\t(" << setprecision (3) << ppbp << "%)";
-      cout << "\t(" << setprecision (3) << ppbs << "%)";
-      cout << "\t(" << setprecision (3) << ppbi << "%)" << endl;
-      cout << "successfull non branch pred    : " << d_nnbs;
-      cout << "\t(" << setprecision (3) << pnbp << "%)";
-      cout << "\t(" << setprecision (3) << pnbs << "%)";
-      cout << "\t(" << setprecision (3) << pnbi << "%)" << endl;
+      if (d_npbr > 0) {
+	cout << "number of branch prediction    : " << d_npbr;
+	cout << "\t(" << setprecision (3) << ppbr << "%)";
+	cout << "\t(" << setprecision (3) << pibr << "%)" << endl;
+      }
+      if (d_npnb > 0) {
+	cout << "number of non branch prediction: " << d_npnb;
+	cout << "\t(" << setprecision (3) << ppnb << "%)";
+	cout << "\t(" << setprecision (3) << pinb << "%)" << endl;
+      }
+      if (d_npps > 0) {
+	cout << "successfull predicates         : " << d_npps;
+	cout << "\t(" << setprecision (3) << ppps << "%)";
+	cout << "\t(" << setprecision (3) << pppi << "%)" << endl;
+      }
+      if (d_npbs > 0) {
+	cout << "successfull branch predicates  : " << d_npbs;
+	cout << "\t(" << setprecision (3) << ppbp << "%)";
+	cout << "\t(" << setprecision (3) << ppbs << "%)";
+	cout << "\t(" << setprecision (3) << ppbi << "%)" << endl;
+      }
+      if (d_nnbs > 0) {
+	cout << "successfull non branch pred    : " << d_nnbs;
+	cout << "\t(" << setprecision (3) << pnbp << "%)";
+	cout << "\t(" << setprecision (3) << pnbs << "%)";
+	cout << "\t(" << setprecision (3) << pnbi << "%)" << endl;
+      }
     }
   }
 

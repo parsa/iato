@@ -53,6 +53,10 @@ namespace iato {
     Filtering*      p_filter;
     /// the predicate predictor
     Predicate*      p_pred;
+    /// use branch instruction only
+    bool d_ibro;
+    // use non-branch instruction only
+    bool d_nbro; 
     /// the number of predicated instructions
     t_long d_nins;
     /// number of predicted predicates
@@ -79,6 +83,11 @@ namespace iato {
     
     /// reset this analyzer
     virtual void reset (void);
+
+    /// set the instrcution use flags
+    /// @param ibro the branch only flag
+    /// @param nbro the non-branch only flah
+    void setbro (const bool ibro, const bool nbro);
 
     /// analyze an instruction for statistics
     /// @param inst the instruction to analyze

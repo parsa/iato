@@ -36,8 +36,5 @@ namespace iato {
     Mtx::reset ();
     // simulator parameters
     setlong ("MAXIMUM-CYCLE-COUNT",   SM_MXCC);
-    // architecture flags
-    setbool ("GLOBAL-PREDICATE-PREDICTION", PP_FGPP);
-    setbool ("INCOMPLETE-BYPASS-PREDICATE", PP_IBYP);
   }
 }

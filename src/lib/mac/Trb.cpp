@@ -84,15 +84,6 @@ namespace iato {
       d_tbit = false;
       d_tnum = -1;
     }
-    // partial flush a trb entry
-    void pflsh (void) {
-      if (d_vbit == false) return;
-      if ((d_tbit == false) && (d_rfrc == false)) return;
-      d_tbit = false;
-      d_rbit = false;
-      d_tnum = -1;
-    }
-
     // allocate a new trb entry
     bool alloc (void) {
       if (d_vbit == true) return false;
@@ -165,12 +156,6 @@ namespace iato {
 
   void Trb::reset (void) {
     for (long i = 0; i < d_size; i++) p_vtrb[i].reset ();
-  }
-
-  // partial flush this trb
-
-  void Trb::pflsh (void) {
-    for (long i = 0; i < d_size; i++) p_vtrb[i].pflsh ();
   }
 
   // report this resource

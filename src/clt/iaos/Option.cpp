@@ -138,6 +138,11 @@ namespace iato {
 	  }
 	  if ((arg[2] == ':') && (arg[3] == 'f')) {
 	    d_dfrc = true;
+	    if ((d_dadr || d_dbnd || d_dins) == false) {
+	      d_dadr = true;
+	      d_dbnd = true;
+	      d_dins = true;
+	    }
 	    break;
 	  }
 	  usage ();

@@ -85,6 +85,10 @@ namespace iato {
     string d_pnam;
     /// the make data analyze flag
     bool d_mdat;
+    /// use branch instruction only
+    bool d_ibro;
+    // use non-branch instruction only
+    bool d_nbro;
 
   public:
     /// create a new option from the argument list
@@ -203,8 +207,18 @@ namespace iato {
     }
 
     /// @return the make data flag
-    long getmdat (void) const {
+    bool getmdat (void) const {
       return d_mdat;
+    }
+
+    /// @return the use branch instruction flag
+    bool getibro (void) const {
+      return d_ibro;
+    }
+
+    /// @return the use non-branch instruction flag
+    bool getnbro (void) const {
+      return d_nbro;
     }
 
   private:

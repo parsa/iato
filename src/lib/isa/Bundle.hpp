@@ -100,6 +100,8 @@ namespace iato {
     long d_blen;
     /// the bundle buffer
     t_byte* p_data;
+    /// the predictor history
+    t_octa  d_hist;
     /// the bundle ip
     t_octa d_bip;
     /// the speculative ip
@@ -133,6 +135,13 @@ namespace iato {
     /// @return true if the bundle slot is a branch
     bool isbr (const long slot) const;
 
+    /// set the predictor history
+    /// @param hist the history to set
+    void sethist (const t_octa hist);
+    
+    /// @return the predictor history
+    t_octa gethist (void) const;
+
     /// set the bundle instruction pointer
     /// @param ip the instruction pointer
     void setbip (const t_octa ip);
@@ -144,6 +153,12 @@ namespace iato {
     /// @param sip the speculative ip
     /// @param ssl the speculative slot
     void setsip (const t_octa sip, const long ssl);
+
+    /// set the bundle speculative ip with the history
+    /// @param sip  the speculative ip
+    /// @param ssl  the speculative slot
+    /// @param hist the proedictor history
+    void setsip (const t_octa sip, const long ssl, const t_octa hist);
 
     /// @return the bundle speculative ip
     t_octa getsip (void) const;

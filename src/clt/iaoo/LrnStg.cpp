@@ -34,6 +34,7 @@ namespace iato {
     p_inst = new Dsi[d_swsz];
     p_rse  = 0;
     p_iib  = 0;
+    p_pps  = 0;
     reset ();
   }
 
@@ -44,6 +45,7 @@ namespace iato {
     p_inst = new Dsi[d_swsz];
     p_rse  = 0;
     p_iib  = 0;
+    p_pps  = 0;
     reset ();
   }
 
@@ -88,18 +90,24 @@ namespace iato {
       p_inst[i] = dec->getinst (i);
       if (p_inst[i].isvalid () == true) {
 	try {
-	  // save the instruction cfm
+	  // save the instruction state - this permits to get
+	  // the cfm used to compute the alloc
 	  Rse::State irs = p_rse->getsst ();
-	  p_inst[i].seticfm (irs.getcfm ());
+	  p_inst[i].setiste (irs);
 	  // preset the rse with the instruction
 	  p_rse->preset (p_inst[i]);
 	  // rename the instruction by rse
 	  p_rse->rename (p_inst[i]);
 	  // after set the rse with the instruction
 	  p_rse->aftset (p_inst[i]);
-	  // set the speculative cfm in the instruction
+	  // set the speculative state in the instruction
 	  Rse::State srs = p_rse->getsst ();
-	  p_inst[i].setscfm (srs.getcfm ());
+	  p_inst[i].setsste (srs);
+	  // predict the predicate
+	  if (p_pps->ispredict (p_inst[i]) == true) {
+	    bool pval = p_pps->predict (p_inst[i]);
+	    p_inst[i].setppvl (pval);
+	  }
 	} catch (Interrupt& vi) {
 	  vi.setinst (p_inst[i]);
 	  long iiib = p_inst[i].getiib (); 
@@ -159,6 +167,12 @@ namespace iato {
     p_iib = dynamic_cast <Iib*> (env->get (RESOURCE_IIB));
     if (!p_iib) {
       string msg = "cannot bind iib within stage ";
+      throw Exception ("bind-error", msg + d_name);
+    }
+    // bind the predicate predictor 
+    p_pps = dynamic_cast <Predicate*> (env->get (RESOURCE_PPS));
+    if (!p_pps) {
+      string msg = "cannot bind predicate predictor within stage ";
       throw Exception ("bind-error", msg + d_name);
     }
   }

@@ -121,7 +121,8 @@ namespace iato {
 		}
 		// check for nop execution
 		if ((d_inop == true) && (p_inst[ipos].isnop () == true)) {
-		  p_rob->alloc (ip,slot,false,true);
+		  t_unit unit = p_inst[ipos].getbunit ();
+		  p_rob->alloc (ip, slot, unit, false, true);
 		  p_inst[ipos].reset ();
 		} else {
 		  // allocate instruction interrupt
@@ -129,7 +130,8 @@ namespace iato {
 		  p_inst[ipos].setiib (iidx);
 		  // check for pre-serialization
 		  if ((p_inst[ipos].ispresr () == true) && (srlz == false)) {
-		    p_rob->alloc (ip, slot, true, false);
+		    t_unit unit = p_inst[ipos].getbunit ();
+		    p_rob->alloc (ip, slot, unit, true, false);
 		  }
 		  // allocate the rob index
 		  long ridx = p_rob->alloc (p_inst[ipos], imob, iidx);

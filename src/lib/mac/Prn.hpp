@@ -29,14 +29,30 @@
 namespace iato {
   using namespace std;
 
+  /// resource external interrupt buffer name
+  const string RESOURCE_EIB = "EIB";
+  /// resource instruction interrupt buffer name
+  const string RESOURCE_IIB = "IIB";
+  /// resource bypass network element name
+  const string RESOURCE_BNE = "BNE";
+  /// resource bypass network name
+  const string RESOURCE_BPN = "BPN";
+  /// resource memory bypass network name
+  const string RESOURCE_MBN = "MBN";
+
   /// resource decoupling buffer name
   const string RESOURCE_BDB = "BDB";
-  /// resource issue port buffer name
-  const string RESOURCE_IPB = "IPB";
+  /// resource slot port buffer name
+  const string RESOURCE_SPB = "SPB";
   /// resource bundle dispersal name
   const string RESOURCE_BDS = "BDS";
   /// resource pipeline scoreboard name
   const string RESOURCE_PSB = "PSB";
+  /// resource hazard detection logic
+  const string RESOURCE_HDL = "HDL";
+  /// resource memory ordering buffer name
+  const string RESOURCE_MOB = "MOB";
+
   /// resource translation register bank
   const string RESOURCE_TRB = "TRB";
   /// resource universal register bank
@@ -53,22 +69,12 @@ namespace iato {
   const string RESOURCE_ROB = "ROB";
   /// resource instruction result name
   const string RESOURCE_IRB = "IRB";
-  /// resource external interrupt buffer name
-  const string RESOURCE_EIB = "EIB";
-  /// resource instruction interrupt buffer name
-  const string RESOURCE_IIB = "IIB";
   /// resource grand central station name
   const string RESOURCE_GCS = "GCS";
-  /// resource bypass network element name
-  const string RESOURCE_BNE = "BNE";
-  /// resource bypass network name
-  const string RESOURCE_BPN = "BPN";
   /// resource detection logic name
   const string RESOURCE_DTL = "DTL";
   /// resource flush and restart name
   const string RESOURCE_PFR = "PFR";
-  /// resource memory ordering buffer name
-  const string RESOURCE_MOB = "MOB";
   /// resource store buffer name
   const string RESOURCE_STB = "STB";
   /// resource replay instruction buffer  name
@@ -92,11 +98,10 @@ namespace iato {
   const string RESOURCE_MTA = "MTA";
   /// resource hierarchical memory architecture
   const string RESOURCE_HMA = "HMA";
-
-  /// memory read logic resource name
-  const string RESOURCE_MRL = "MRL";
-  /// memory write logic resource name
-  const string RESOURCE_MWL = "MWL";
+  /// memory logic resource name
+  const string RESOURCE_MLI = "MLI";
+  /// memory synchro resource name
+  const string RESOURCE_MSI = "MSI";
 
   /// resource pipelane name
   const string RESOURCE_PLN = "PLN";
@@ -104,9 +109,9 @@ namespace iato {
   const string RESOURCE_PPL = "PPL";
 
   /// resource system memory bus name
-  const string RESOURCE_SMB = "SMB";
+  //const string RESOURCE_SMB = "SMB";
   /// resource system memory port name
-  const string RESOURCE_SMP = "SMP";
+  //const string RESOURCE_SMP = "SMP";
 }
 
 #endif

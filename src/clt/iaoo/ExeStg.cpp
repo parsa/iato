@@ -34,20 +34,19 @@ namespace iato {
   // create a new execute stage by context and unit
 
   ExeStg::ExeStg (Stx* stx, t_unit unit): ResStg (stx, unit, RESOURCE_EXE) {
-    d_ibyp = stx->getbool ("INCOMPLETE-BYPASS-PREDICATE");
     p_exec = 0;
     p_bpn  = 0;
     p_bpe  = new Bpe (stx);
     p_gcs  = 0;
     p_mli  = 0;
     // set the execution units
-    if (unit == MUNIT) p_exec = new Mexecute;
-    if (unit == IUNIT) p_exec = new Iexecute;
-    if (unit == FUNIT) p_exec = new Fexecute;
-    if (unit == BUNIT) p_exec = new Bexecute;
+    if (d_unit == MUNIT) p_exec = new Mexecute;
+    if (d_unit == IUNIT) p_exec = new Iexecute;
+    if (d_unit == FUNIT) p_exec = new Fexecute;
+    if (d_unit == BUNIT) p_exec = new Bexecute;
     assert (p_exec);
     // set the mli for M units
-    if (unit == MUNIT) p_mli = new Mli (stx);
+    if (d_unit == MUNIT) p_mli = new Mli (stx);
     reset ();
   }
 
@@ -55,20 +54,19 @@ namespace iato {
 
   ExeStg::ExeStg (Stx* stx, t_unit unit, 
 		  const string& name) : ResStg (stx, unit, name) {
-    d_ibyp = stx->getbool ("INCOMPLETE-BYPASS-PREDICATE");
     p_exec = 0;
     p_bpn  = 0;
     p_bpe  = new Bpe (stx);
     p_gcs  = 0;
     p_mli  = 0;
     // set the execution units
-    if (unit == MUNIT) p_exec = new Mexecute;
-    if (unit == IUNIT) p_exec = new Iexecute;
-    if (unit == FUNIT) p_exec = new Fexecute;
-    if (unit == BUNIT) p_exec = new Bexecute;
+    if (d_unit == MUNIT) p_exec = new Mexecute;
+    if (d_unit == IUNIT) p_exec = new Iexecute;
+    if (d_unit == FUNIT) p_exec = new Fexecute;
+    if (d_unit == BUNIT) p_exec = new Bexecute;
     assert (p_exec);
     // set the mli for M units
-    if (unit == MUNIT) p_mli = new Mli (stx);
+    if (d_unit == MUNIT) p_mli = new Mli (stx);
     reset ();
   }
 
@@ -110,25 +108,17 @@ namespace iato {
     d_inst = p_gcs->setrdy (d_inst);
     // check the instruction predicate - with branch, the predicate might
     // be forwarded by the other units
-    if (d_inst.isvalid () == true) {
+    if ((d_unit == BUNIT) && (d_inst.isvalid () == true)) {
       // check if we need to evaluate the predicate
       if (d_inst.getpnrd () == true) {
-	// check if the instruction is a branch
-	if (d_inst.isbr () == true) {
-	  // get the predicate and evaluate it
-	  Rid pred = d_inst.getpnum ();
-	  Uvr uvr = p_bpn->eval (pred);
-	  if (uvr.isvalid () == true) {
-	    // mark the instruction
-	    bool bval = uvr.getbval ();
-	    d_inst.setpnrd (false);
-	    d_inst.setcnlf (!bval);
-	  } else {
-	    // reschedule the instruction
-	    p_gcs->resched (d_inst);
-	    d_inst.reset ();
-	    d_resl.reset ();
-	  }
+	// get the predicate and evaluate it
+	Rid pred = d_inst.getpnum ();
+	Uvr uvr = p_bpn->eval (pred);
+	if (uvr.isvalid () == true) {
+	  // mark the instruction
+	  bool bval = uvr.getbval ();
+	  d_inst.setpnrd (false);
+	  d_inst.setcnlf (!bval);
 	} else {
 	  // reschedule the instruction
 	  p_gcs->resched (d_inst);
@@ -136,10 +126,19 @@ namespace iato {
 	  d_resl.reset ();
 	}
       }
+      // evaluate the operands in the bypass
+      p_bpn->eval (oprd);
+      // check if we reschedule
+      if (oprd.isvalid () == false) {
+	// reschedule the instruction
+	p_gcs->resched (d_inst);
+	d_inst.reset ();
+	d_resl.reset ();
+      }
     }
     // check the instruction for validity. If the instruction is not valid
     // no result is produced
-      if (d_inst.isvalid () == true) {
+    if (d_inst.isvalid () == true) {
       // if the instruction has been cancelled, a default result is produced
       // without data. It is used later to update the trb
       if (d_inst.getcnlf () == false) {
@@ -151,11 +150,7 @@ namespace iato {
 	  // preset the result with the port request if needed
 	  if (p_mli) p_mli->preset (d_inst, d_resl);
 	  // update the bpe (for bypass)
-	  if (d_inst.getppfl () == true) {
-	    if (d_ibyp == false) p_bpe->update (d_resl);
-	  } else {
-	    p_bpe->update (d_resl);
-	  }
+	  p_bpe->update (d_resl);
 	  // fix interrupt
 	  d_intr.reset ();
 	} catch (const Interrupt& vi) {

@@ -129,6 +129,8 @@ namespace iato {
   static void process_prstat (const Option& opt) {
     // get the options
     bool   mdat = opt.getmdat  ();
+    bool   ibro = opt.getibro  ();
+    bool   nbro = opt.getnbro  ();
     bool   pflg = opt.getpflg  ();
     string name = opt.getname  ();
     string pred = opt.getpnam  ();
@@ -150,6 +152,7 @@ namespace iato {
     // create analyzer object
     try {
       Prstat prstat (name, atx);
+      prstat.setbro (ibro, nbro);
       if (mdat == true) {
 	prstat.mkdata ();
       }

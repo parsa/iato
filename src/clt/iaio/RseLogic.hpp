@@ -5,7 +5,6 @@
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
 // - authors                                      Amaury Darsch    2002:2004 -
-// -                                              Pierre Villalon  2002:2003 -
 // -                                              Andre  Seznec    2002:2004 -
 // ---------------------------------------------------------------------------
 // - This program  is  free software;  you can redistribute it and/or modify -
@@ -26,25 +25,19 @@
 #include "Mtx.hpp"
 #endif
 
-#ifndef  IATO_RSESTACK_HPP
-#include "RseStack.hpp"
+#ifndef  IATO_RSE_HPP
+#include "Rse.hpp"
 #endif
 
 namespace iato {
 
   /// The RseLogic class is the rse control logic with speculative support.
-  /// The logic operates in a predict/update mode. If the logic is
-  /// associated with a branch prediction system, such logic is updated
-  /// according to the speculation status. The rse logic also implements
-  /// a rse stack buffer that hold the rse state in association with
-  /// predicted branches.
+  /// The logic operates in a predict/update mode.
 
   class RseLogic : public Rse {
   private:
     // the speculative state
     State d_spste;
-    // the rse stack
-    RseStack* p_rstk;
 
   public:
     /// create a default rse logic

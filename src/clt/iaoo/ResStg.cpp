@@ -50,15 +50,6 @@ namespace iato {
     d_intr.reset ();
   }
 
-  // partially flush this execute stage
-
-  void ResStg::pflsh (void) {
-    if (d_flsh == false) return;
-    d_inst.reset ();
-    d_resl.reset ();
-    d_intr.reset ();
-  }
-
   // return the executed instruction
 
   Dsi ResStg::getinst (void) const {

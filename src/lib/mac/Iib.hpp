@@ -68,9 +68,6 @@ namespace iato {
     /// reset this buffer
     void reset (void);
 
-    /// partial flush this rob
-    void pflsh (void);
-
     /// report this resource
     void report (void) const;
 

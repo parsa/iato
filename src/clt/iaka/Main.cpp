@@ -68,7 +68,7 @@ int main (int argc, char** argv) {
     atx->setllong ("TRACER-BEGIN-INDEX",       btrc);
     atx->setllong ("TRACER-END-INDEX",         etrc);
     atx->setstr   ("TRACER-PROGRAM-NAME",      name);
-    atx->setbool  ("DISPERSE-FLAG",            dflg);
+    atx->setbool  ("FETCHER-DISPERSE-FLAG",    dflg);
     atx->setbool  ("CHECKER-FLAG",             cflg);
     atx->setbool  ("STAT-FLAG",                sflg);
     atx->setlong  ("MAXIMUM-CYCLE-COUNT",      mbnd);

@@ -91,13 +91,6 @@ namespace iato {
     init_rat_trb (CREG, p_rat, p_trb);
   }
 
-  // partial flush this urf
-
-  void Urf::pflsh (void) {
-    p_trb->pflsh ();
-    p_urb->reset ();;
-  }
-
   // report this resource
 
   void Urf::report (void) const {

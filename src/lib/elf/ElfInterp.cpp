@@ -21,6 +21,7 @@
 
 #include "Abi.hpp"
 #include "ElfInterp.hpp"
+#include "ElfInterp.hxx"
 #include "Exception.hpp"
 
 namespace iato {

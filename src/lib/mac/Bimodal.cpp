@@ -79,20 +79,20 @@ namespace iato {
 
   // return true if the branch is predicted taken
 
-  bool Bimodal::istaken (const t_octa cip, const long slot) const {
+  bool Bimodal::istaken (const t_octa cip) const {
     return p_pht->istrue (cip >> 4);
   }
 
   // return true if the branch can be predicted
 
-  bool Bimodal::ispredict (const t_octa cip, const long slot) const {
+  bool Bimodal::ispredict (const t_octa cip) const {
     if (p_btb->isvalid (cip) == false) return false;
-    return istaken (cip, slot);
+    return istaken (cip);
   }
 
-  // predict the next ip from the current ip and slot
+  // predict the next ip from the current ip
 
-  t_octa Bimodal::predict (const t_octa cip, const long slot) {
+  t_octa Bimodal::predict (const t_octa cip) {
     // compute next ip for safety
     t_octa nip = cip + BN_BYSZ;
     // check in the btb to see if the address is available
@@ -104,8 +104,8 @@ namespace iato {
 
   // update the branch system with an ip and next ip
 
-  void Bimodal::update (const t_octa cip, const long slot, 
-			const bool btk, const t_octa nip) {
+  void Bimodal::update (const t_octa cip, const bool btk, const t_octa nip,
+			const t_octa hst) {
     // update the pht by address
     p_pht->update (cip >> 4, btk);
     // update the btb

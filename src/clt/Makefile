@@ -25,6 +25,7 @@ build:
 	${MAKE} -C iaos all
 	${MAKE} -C iata all
 	${MAKE} -C iaka all
+	${MAKE} -C iaio all
 	${MAKE} -C iaoo all
 
 install:
@@ -38,6 +39,7 @@ distri:
 	@mkdir         ../../bld/src/clt
 	${MAKE} -C iaos distri
 	${MAKE} -C iaka distri
+	${MAKE} -C iaio distri
 	${MAKE} -C iaoo distri
 	${MAKE} -C iata distri
 
@@ -45,5 +47,6 @@ clean:
 	${MAKE} -C iaos clean
 	${MAKE} -C iata clean
 	${MAKE} -C iaka clean
+	${MAKE} -C iaio clean
 	${MAKE} -C iaoo clean
 	@/bin/rm -f *.o *.d *.a core *~

@@ -74,6 +74,15 @@ namespace iato {
     /// @param oprd the operand to evaluate
     void eval (Operand& oprd) const;
 
+    /// update the predicate from the bypass network
+    /// @param inst the instruction to update
+    void predup (Ssi& inst) const;
+
+    /// update the predicate from the bypass network
+    /// @param inst the instruction to update
+    /// @param oprd the operand to update
+    void predup (Ssi& inst, Operand& oprd) const;
+
     /// update an operand in the network
     /// @param oprd the operand to evaluate
     void update (Operand& oprd) const;

@@ -22,16 +22,12 @@
 #ifndef  IATO_DISPERSE_HPP
 #define  IATO_DISPERSE_HPP
 
-#ifndef  IATO_IPB_HPP
-#include "Ipb.hpp"
+#ifndef  IATO_SPB_HPP
+#include "Spb.hpp"
 #endif
 
 #ifndef  IATO_IIB_HPP
 #include "Iib.hpp"
-#endif
-
-#ifndef  IATO_MOB_HPP
-#include "Mob.hpp"
 #endif
 
 #ifndef  IATO_BUNDLE_HPP
@@ -58,12 +54,10 @@ namespace iato {
 
   class Disperse : public Resource {
   protected:
-    /// the input port buffer
-    Ipb* p_ipb;
+    /// the issue port buffer
+    Spb* p_ipb;
     /// the interrupt buffer
     Iib* p_iib;
-    /// the memory ordering buffer
-    Mob* p_mob;
     /// the scoreboard
     Scoreboard* p_psb;
 
@@ -98,14 +92,14 @@ namespace iato {
 
     /// disperse a bundle into an issue port buffer
     /// @param bndl the bundle to expand
-    virtual void expand (Bundle& bndl);
+    /// @param boix the bundle index
+    virtual void expand (Bundle& bndl, const long boix);
 
     /// bind the ipb and the scoreboard
     /// @param iib the interrupt buffer
     /// @param ipb the ipb to bind
-    /// @param mob the mob to bind
     /// @param psb the scoreboard to bind
-    virtual void bind (Ipb* ipb, Iib* iib, Mob* mob, Scoreboard* psb);
+    virtual void bind (Spb* ipb, Iib* iib, Scoreboard* psb);
 
   private:
     // make the copy constructor private

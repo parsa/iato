@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// - Pshare.cpp                                                             -
-// - iato:mac library - global history predicate predictor class definition  -
+// - Pshare.cpp                                                              -
+// - iato:mac library - global history pred predictor class implementation   -
 // ---------------------------------------------------------------------------
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
@@ -95,12 +95,20 @@ namespace iato {
       cout << "  branch history update only   : false" << endl;
   }
 
+  // compute the hash address for this predictor
+
+  t_octa Pshare::hash (const t_octa ip, const long slot, 
+		       const long pred) const {
+    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
+    return addr;
+  }
+
   // return true if the predicate can be predicted
 
   bool Pshare::isvalid (const t_octa ip, const long slot, 
 			const long pred) const {
     // compute hash address
-    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
+    t_octa addr = hash (ip, slot, pred);
     // check for valid pht entry
     return d_usec ? p_pht->isstrong (addr) : true;
   }
@@ -112,7 +120,7 @@ namespace iato {
     // check for fixed predicate
     if (pred == 0) return true;
     // compute hash address
-    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
+    t_octa addr = hash (ip, slot, pred);
     // get pht predicate
     return p_pht->istrue (addr);
   }
@@ -124,7 +132,7 @@ namespace iato {
     // do nothing with fixed predicate
     if (pred == 0) return;
     // compute hash address
-    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
+    t_octa addr = hash (ip, slot, pred);
     // update according to branch only flag
     if (d_bhuo == true) {
       if (bflg == true) {

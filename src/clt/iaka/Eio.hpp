@@ -29,8 +29,8 @@
 namespace iato {
   /// maximum cycle count (0 = infinite)
   const long EM_MXCC = 0;
-  /// default pipeline refill
-  const long EM_PFIL = 10;
+  /// default pipeline refill cost (in-order)
+  const long EM_PFIL = 7;
 
   /// default tracer branch only
   const bool EM_BOFL = false;

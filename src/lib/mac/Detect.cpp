@@ -62,6 +62,8 @@ namespace iato {
     if (ssi.isvalid () == false) return true;
     // check if we are speculating
     if (ssi.getsfl () == false) return true;
+    // if the instruction has been canceled the verification is not ok
+    if (ssi.getcnlf () == true) return false;
     // if the result is not valid, the verification is not ok since
     // the instruction might have been cancelled
     if (resl.isvalid () == false) return false;
@@ -87,7 +89,7 @@ namespace iato {
     Rid  prid = ssi.getpnum (); assert (prid.isvalid () == true);
     bool pval = p_rbk->getbval (prid);
     // get the instruction cancel flag and check
-    bool sval = !ssi.getcnlf ();
+    bool sval = ssi.getppvl ();
     return (pval == sval);
   }
 

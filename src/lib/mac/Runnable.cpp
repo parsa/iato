@@ -27,18 +27,10 @@ namespace iato {
   // create a default runnable
 
   Runnable::Runnable (void) {
-    d_flsh = RM_PFLS;
   }
 
   // create a runnable by name
 
   Runnable::Runnable (const string& name) : Resource (name) {
-    d_flsh = RM_PFLS;
-  }
-
-  // partially flush this interface
-
-  void Runnable::pflsh (void) {
-    if (d_flsh == true) flush ();
   }
 }

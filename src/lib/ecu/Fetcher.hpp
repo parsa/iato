@@ -82,6 +82,11 @@ namespace iato {
     /// @param ip the ip used for fetching
     void fill (const t_octa ip);
 
+    /// refill the fetch buffer at a certain ip and slot
+    /// @param ip the ip used for fetching
+    /// @param slot the restarting slot
+    void refill (const t_octa ip, const long slot);
+
     /// pack the tech buffer
     void pack (void);
 

@@ -238,4 +238,36 @@ namespace iato {
       break;
     }
   }
+
+  // clear the rrb
+
+  void Cfm::clrrrb (void) {
+    setfld (Cfm::RGR, 0);
+    setfld (Cfm::RFR, 0);
+    setfld (Cfm::RPR, 0);
+  }
+
+  // perform an alloc operation
+
+  void Cfm::alloc (const t_byte sof, const t_byte sol, const t_byte sor) {
+    setfld (Cfm::SOF, sof);
+    setfld (Cfm::SOL, sol);
+    setfld (Cfm::SOR, sor);
+  }
+
+  // perform a call operation
+
+  void Cfm::call (const Cfm& cfm) {
+    // reset this cfm
+    reset ();
+    // compute arguments
+    t_byte sof = cfm.getfld (Cfm::SOF);
+    t_byte sol = cfm.getfld (Cfm::SOL);
+    // set arguments
+    setfld (Cfm::SOF, sof - sol);
+    setfld (Cfm::RGR, BYTE_0);
+    setfld (Cfm::RFR, BYTE_0);
+    setfld (Cfm::RPR, BYTE_0);
+    assert (getfld (Cfm::SOL) == BYTE_0);
+  }
 }

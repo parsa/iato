@@ -111,6 +111,19 @@ namespace iato {
     /// @param fld the cfm field
     /// @param val the cfm field value
     void setrrb (t_field fld, const long val);
+
+    /// clean the rrb
+    void clrrrb (void);
+
+    /// perform an alloc operation
+    /// @param sof the size of frame
+    /// @param sol the size of locals
+    /// @param sor the size of rotating
+    void alloc (const t_byte sof, const t_byte sol, const t_byte sor);
+
+    /// perform a call operation
+    /// @param cfm the cfm used for the call
+    void call (const Cfm& cfm);
   };
 }
 

@@ -126,8 +126,6 @@ namespace iato {
     }
     // broadcast tag for instruction cancellation
     p_gcs->setcnl (resl);
-    // clear station entry
-    //p_gcs->clear (inst);
     // clear bypass network entry
     p_bpn->clear (resl);
     // check if the previous stage is halted

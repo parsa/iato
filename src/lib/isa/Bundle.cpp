@@ -79,6 +79,7 @@ namespace iato {
     d_sip  = that.d_sip;
     d_ssl  = that.d_ssl;
     d_blen = that.d_blen;
+    d_hist = that.d_hist;
     p_data = new t_byte[BN_BYSZ];
     for (long i = 0; i < BN_BYSZ; i++) p_data[i] = that.p_data[i];
     for (long i = 0; i < BN_SLSZ; i++) d_vsb[i]  = that.d_vsb[i];
@@ -111,6 +112,7 @@ namespace iato {
 
   void Bundle::reset (void) {
     d_blen = 0;
+    d_hist = OCTA_0;
     d_bip  = OCTA_0;
     d_sip  = OCTA_0;
     d_ssl  = -1;
@@ -139,6 +141,18 @@ namespace iato {
     }
   }
 
+  // set the predictor history
+
+  void Bundle::sethist (const t_octa hist) {
+    d_hist = hist;
+  }
+  
+  // return the predictor history
+
+  t_octa Bundle::gethist (void) const {
+    return d_hist;
+  }
+  
   // set the bundle ip
 
   void Bundle::setbip (const t_octa ip) {
@@ -162,6 +176,13 @@ namespace iato {
     for (long i = d_ssl+1; i < BN_SLSZ; i++) setvsb (i, false);
   }
 
+  // set the bundle speculative ip with the history
+
+  void Bundle::setsip (const t_octa sip, const long ssl, const t_octa hist) {
+    d_hist = hist;
+    setsip (sip, ssl);
+  }
+  
   // get the bundle speculative ip
 
   t_octa Bundle::getsip (void) const {
@@ -251,7 +272,10 @@ namespace iato {
     Instr inst;
     if (d_vsb[slot] == false) return inst;
     inst.setiip (d_bip);
-    if ((d_ssl != -1) && (d_ssl == slot)) inst.setsip (d_sip);
+    if ((d_ssl != -1) && (d_ssl == slot)) {
+      inst.setsip  (d_sip);
+      inst.sethist (d_hist);
+    }
     switch (tmpl) {
     case BN_MxIxIx:
       if (slot == 0) inst.decode (MUNIT, 0, false, ival);

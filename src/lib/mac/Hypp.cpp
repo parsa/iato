@@ -28,8 +28,10 @@ namespace iato {
 
   Hypp::Hypp (void) : Predicate (RESOURCE_PPS) {
     d_type = "hypp";
+    d_usec = PP_UCFG;
     p_mpp  = Predicate::mkpr (PP_HYPM);
     p_spp  = Predicate::mkpr (PP_HYPS);
+    p_msp  = Predicate::mkpr (PP_HYMP);
     reset ();
   }
 
@@ -37,12 +39,16 @@ namespace iato {
 
   Hypp::Hypp (Mtx* mtx) : Predicate (mtx,RESOURCE_PPS) {
     d_type = "hypp";
+    d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
     string mpp = mtx->getstr ("HYBRID-MASTER-PREDICTOR");
     assert (mpp != d_type);
     string spp = mtx->getstr ("HYBRID-SLAVE-PREDICTOR");
     assert (spp != d_type);
+    string msp = mtx->getstr ("HYBRID-META-PREDICTOR");
+    assert (msp != d_type);
     p_mpp  = Predicate::mkpr (mpp, mtx);
     p_spp  = Predicate::mkpr (spp, mtx);
+    p_msp  = Predicate::mkpr (msp, mtx);
     reset ();
   }
   
@@ -50,12 +56,16 @@ namespace iato {
 
   Hypp::Hypp (Mtx* mtx, const string& name) : Predicate (mtx, name) {
     d_type = "hypp";
+    d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
     string mpp = mtx->getstr ("HYBRID-MASTER-PREDICTOR");
     assert (mpp != d_type);
     string spp = mtx->getstr ("HYBRID-SLAVE-PREDICTOR");
     assert (spp != d_type);
+    string msp = mtx->getstr ("HYBRID-META-PREDICTOR");
+    assert (msp != d_type);
     p_mpp  = Predicate::mkpr (mpp, mtx);
     p_spp  = Predicate::mkpr (spp, mtx);
+    p_msp  = Predicate::mkpr (msp, mtx);
     reset ();
   }
 
@@ -64,6 +74,7 @@ namespace iato {
   Hypp::~Hypp (void) {
     delete p_mpp;
     delete p_spp;
+    delete p_msp;
   }
 
   // reset this branch predictor
@@ -71,6 +82,7 @@ namespace iato {
   void Hypp::reset (void) {
     p_mpp->reset ();
     p_spp->reset ();
+    p_msp->reset ();
   }
 
   // report some resource information
@@ -82,31 +94,28 @@ namespace iato {
     cout << "  predictor type               : hybrid" << endl;
     p_mpp->report ();
     p_spp->report ();
+    p_msp->report ();
   }
 
   // return true if the predicate can be predicted
 
   bool Hypp::isvalid (const t_octa ip, const long slot, 
 		      const long pred) const {
-    // get master result
-    bool mflg = p_mpp->isvalid (ip, slot, pred);
-    if (mflg == false) return false;
-    // get slave result
-    bool sflg = p_spp->isvalid (ip, slot, pred);
-    if (sflg == false) return false;
-    // compute the value
-    bool mval = p_mpp->compute (ip, slot, pred);
-    bool sval = p_spp->compute (ip, slot, pred);
-    if (mval != sval) return false;
-    // ok, both agree
-    return true;
+    return d_usec ? p_msp->isvalid (ip, slot, pred) : true;
   }
 
-  // compute the predicate value with the master
+  // compute the predicate value with the selector
 
   bool Hypp::compute (const t_octa ip, const long slot, 
 		      const long pred) const {
-    return p_mpp->compute (ip, slot,pred);
+    // compute meta selector
+    bool meta = p_msp->compute (ip, slot, pred);
+    // get result from selector
+    if (meta == true) {
+      return p_mpp->compute (ip, slot, pred);
+    } else {
+      return p_spp->compute (ip, slot, pred);
+    }
   }
 
   // update the predicate system by ip, slot, predicate and value
@@ -115,5 +124,6 @@ namespace iato {
 		     const bool pval, const bool bflg) {
     p_mpp->update (ip, slot, pred, pval, bflg);
     p_spp->update (ip, slot, pred, pval, bflg);
+    p_msp->update (ip, slot, pred, pval, bflg);
   }
 }

@@ -26,8 +26,8 @@
 #include "Mtx.hpp"
 #endif
 
-#ifndef  IATO_SSI_HPP
-#include "Ssi.hpp"
+#ifndef  IATO_DSI_HPP
+#include "Dsi.hpp"
 #endif
 
 #ifndef  IATO_MOB_HPP
@@ -41,9 +41,11 @@
 namespace iato {
   using namespace std;
 
-  /// The Mli class is a special resource used to perform read operations
-  /// from a result object with a memory port request. This class acts as a
-  /// simple logic.
+  /// The Mli class is a special resource used to perform memory operations
+  /// from a result object with a memory port request. This class is combined
+  /// with a memory ordering buffer (mob). With a load tranaction, the port
+  /// is preset with the load request. The result object is updated during
+  /// a store operation.This class acts as a logic interface.
 
   class Mli : public Resource {
   private:
@@ -53,19 +55,19 @@ namespace iato {
     Mob* p_mob;
 
   public:
-    /// create a default memory read logic
+    /// create a default memory logic
     Mli (void);
 
-    /// create a new memory read logic by context
+    /// create a new memory logic by context
     /// @param mtx  the architectural context
     Mli (Mtx* mtx);
 
-    /// create a new memory read logic by context and name
+    /// create a new memory logic by context and name
     /// @param mtx  the architectural context
     /// @param name the branch resource name
     Mli (Mtx* mtx, const string& name);
  
-    /// reset this memory read logic
+    /// reset this memory logic
     void reset (void);
 
     /// report some resource information
@@ -77,14 +79,14 @@ namespace iato {
     void bind (Mta* mta, Mob* mob);
 
     /// preset a memory operation with a result
-    /// @param inst  the instruction to process
+    /// @param inst the instruction to process
     /// @param resl the result used for request
-    void preset (const Ssi& inst, Result& resl);
+    void preset (const Dsi& inst, Result& resl);
 
     /// update a memory operation with a result
-    /// @param inst  the instruction to process
+    /// @param inst the instruction to process
     /// @param resl the result used for request
-    void update (const Ssi& inst, const Result& resl);
+    void update (const Dsi& inst, const Result& resl);
 
   private:
     // make the copy constructor private

@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // - Mli.cpp                                                                 -
-// - iato:mac library - memory logic interface class definition              -
+// - iato:mac library - memory logic interface class implementation          -
 // ---------------------------------------------------------------------------
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
@@ -24,28 +24,28 @@
 
 namespace iato {
 
-  // create a default memory read logic
+  // create a default memory logic
 
-  Mli::Mli (void) : Resource (RESOURCE_MRL) {
+  Mli::Mli (void) : Resource (RESOURCE_MLI) {
     p_mpr = new Mpr;
     p_mob = 0;
   }
 
-  // create a memory read logic by context
+  // create a memory logic by context
 
-  Mli::Mli (Mtx* mtx) : Resource (RESOURCE_MRL) {
+  Mli::Mli (Mtx* mtx) : Resource (RESOURCE_MLI) {
     p_mpr = new Mpr (mtx);
     p_mob = 0;
   }
-  
-  // create a memory read logic by context and name
+
+  // create a memory logic by context and name
 
   Mli::Mli (Mtx* mtx, const string& name) : Resource (name) {
     p_mpr = new Mpr (mtx);
     p_mob = 0;
   }
  
-  // reset this memory read logic
+  // reset this memory logic
 
   void Mli::reset (void) {
     if (p_mpr) p_mpr->reset ();
@@ -57,7 +57,7 @@ namespace iato {
   void Mli::report (void) const {
     using namespace std;
     Resource::report ();
-    cout << "\tresource type\t\t: memory read logic" << endl;
+    cout << "\tresource type\t\t: memory logic interface" << endl;
   }
 
   // bind a memory request port
@@ -69,7 +69,7 @@ namespace iato {
 
   // request a memory transaction by instruction and result
 
-  void Mli::preset (const Ssi& inst, Result& resl) {
+  void Mli::preset (const Dsi& inst, Result& resl) {
     // check for valid result
     if (inst.isvalid () == false) return;
     if (resl.isvalid () == false) return;
@@ -82,12 +82,12 @@ namespace iato {
     p_mob->preset (inst.getmob (), mrt);
     p_mpr->preset (mrt);
     // eventually update the result
-    if (p_mpr->istack () == true) resl.update (p_mpr->getmrt ());
+    if (p_mpr->istack () == true) resl.update (p_mpr->getmrt ());	
   }
 
   // update a memory transaction by instruction and result
 
-  void Mli::update (const Ssi& inst, const Result& resl) {
+  void Mli::update (const Dsi& inst, const Result& resl) {
     // check for valid result
     if (inst.isvalid () == false) return;
     if (resl.isvalid () == false) return;

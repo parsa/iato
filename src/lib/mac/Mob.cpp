@@ -97,14 +97,6 @@ namespace iato {
       d_mask   = OCTA_0;
       d_addr   = OCTA_0;
     }
-    // partial flush a buffer element
-    void pflsh (void) {
-      if (d_valid == false) return;
-      if (d_updb == true) {
-	d_cancel = false;
-	d_updb   = false;
-      }
-    }
     // check a load with an address and a size
     void chkld (const t_octa addr, const t_octa mask) {
       // do not check invalid, cancelled, store entry or updated entry
@@ -146,12 +138,6 @@ namespace iato {
   void Mob::reset (void) {
     for (long i = 0; i < d_size; i++) p_mobe[i].reset ();
     d_aidx = 0;
-  }
-
-  // partial flush this mob
-
-  void Mob::pflsh (void) {
-    for (long i = 0; i < d_size; i++) p_mobe[i].pflsh ();
   }
 
   // report this resource

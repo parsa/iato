@@ -5,7 +5,6 @@
 # - (c) inria 2002-2004                                                       -
 # -----------------------------------------------------------------------------
 # - authors                                        Amaury Darsch    2002:2004 -
-# -                                                Pierre Villalon  2002:2003 -
 # -                                                Andre  Seznec    2002:2004 -
 # -----------------------------------------------------------------------------
 # - This program  is  free  software;  you can redistribute  it and/or modify -
@@ -24,7 +23,7 @@ SOURCES 	= Mtx.cpp         \
 		  Dsi.cpp         \
 		  Rat.cpp         \
 		  Bdb.cpp         \
-		  Ipb.cpp         \
+		  Spb.cpp         \
 		  Rob.cpp         \
 		  Eiq.cpp         \
 		  Eib.cpp         \
@@ -36,6 +35,8 @@ SOURCES 	= Mtx.cpp         \
 		  Urf.cpp         \
 		  Bpe.cpp         \
 		  Bpn.cpp         \
+		  Mbe.cpp         \
+		  Mbn.cpp         \
 		  Mob.cpp         \
 		  Stb.cpp         \
 		  Sct.cpp         \
@@ -45,26 +46,27 @@ SOURCES 	= Mtx.cpp         \
 		  Mta.cpp         \
 		  Mpr.cpp         \
 		  Mli.cpp         \
+		  Msi.cpp         \
 		  Hma.cpp         \
 		  Rib.cpp         \
 		  Slot.cpp        \
-		  Ghpp.cpp        \
-		  Phpp.cpp        \
-		  Ppag.cpp        \
+		  Mspp.cpp        \
 		  Hypp.cpp        \
 		  Stage.cpp       \
 		  Cache.cpp       \
+		  Gskew.cpp       \
 		  Branch.cpp      \
 		  Gshare.cpp      \
 		  Pshare.cpp      \
 		  Detect.cpp      \
+		  Hazard.cpp      \
 		  System.cpp      \
 		  Bimodal.cpp     \
 		  Pimodal.cpp     \
+		  Pbmodal.cpp     \
 		  Restart.cpp     \
 		  Station.cpp     \
 		  Disperse.cpp    \
-		  RseLogic.cpp    \
 		  RseStack.cpp    \
 		  Runnable.cpp    \
 		  Pipeline.cpp    \
@@ -72,7 +74,6 @@ SOURCES 	= Mtx.cpp         \
 		  Weakable.cpp    \
 		  Delayable.cpp   \
 		  Predicate.cpp   \
-		  Perceptron.cpp  \
 		  Scoreboard.cpp  \
 		  CacheBlock.cpp  \
 		  CacheDirect.cpp

@@ -39,6 +39,7 @@
 #endif
 
 namespace iato {
+  using namespace std;
 
   /// The Rse class is a complete Register Stack Engine class that is
   /// responsible to manage register renaming as well as spilling and filling
@@ -158,6 +159,9 @@ namespace iato {
 
       /// fill register if needed
       void fill (void);
+
+      /// dump the rse state (for debug)
+      void dump (const string& prefix) const;
     };
 
   protected:
@@ -199,7 +203,10 @@ namespace iato {
     /// @return the speculative  rse state
     virtual State getsst (void) const;
 
-    /// validate a state against  a cfm
+    /// validate a state against the rse state
+    virtual bool validate (const State& state) const;
+
+    /// validate a cfm against the rse state
     virtual bool validate (const Cfm& cfm) const;
 
     /// rename an instruction with the rse

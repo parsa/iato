@@ -30,7 +30,6 @@ namespace iato {
   // create a default restart resource
   
   Restart::Restart (void) : Resource (RESOURCE_PFR) {
-    d_pfls = RM_PFLS;
     p_rbk  = 0;
     p_pipe = 0;
     reset ();
@@ -39,7 +38,6 @@ namespace iato {
   // create a new restart with a context
   
   Restart::Restart (Mtx* mtx) : Resource (RESOURCE_PFR) {
-    d_pfls = mtx->getbool ("PARTIAL-FLUSH-MODE");
     p_rbk  = 0;
     p_pipe = 0;
     reset ();
@@ -52,13 +50,6 @@ namespace iato {
     d_srlz = false;
     d_rip  = OCTA_0;
     d_slot = 0;
-  }
-
-  // partially flush this resource - by default perform a complete flush
-  // in other implementation, specific resources might be flushed
-
-  void Restart::pflsh (void) {
-    if (d_pfls == true) flush ();
   }
 
   // report this resource

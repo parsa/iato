@@ -50,9 +50,6 @@ namespace iato {
     /// flush this runnable interface
     virtual void flush (void) =0;
 
-    /// partialy flush this runnable
-    virtual void pflsh (void);
-
     /// run this runnable object
     virtual void run (void) =0;
   };

@@ -75,9 +75,6 @@ namespace iato {
     /// flush this delay stage
     void flush (void);
 
-    /// partially flush this delay stage
-    void pflsh (void);
-
     /// activate this delay stage
     void activate (void);
 

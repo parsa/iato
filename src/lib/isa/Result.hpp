@@ -222,6 +222,11 @@ namespace iato {
     /// @return the result uvr value by index
     Uvr getuvr (const long index) const;
 
+    /// set the result nat value by rid
+    /// @param rid   the result rid to set
+    /// @param value the result value
+    void setnval (const Rid& rid, const bool value);
+
     /// set the result by index and value
     /// @param index the result index
     /// @param value the result value
@@ -231,6 +236,16 @@ namespace iato {
     /// @param rid   the result rid
     /// @param value the result value
     void setbval (const Rid& rid, const bool value);
+
+    /// update the result by index and value but do not touch the rop
+    /// @param index the result index
+    /// @param value the result value
+    void updbval (const long index, const bool value);
+
+    /// update the result by rid and value but do not touch the rop
+    /// @param rid   the result rid
+    /// @param value the result value
+    void updbval (const Rid& rid, const bool value);
 
     /// @return the result value by index
     bool getbval (const long index) const {
@@ -256,6 +271,16 @@ namespace iato {
     /// @param value the result value
     void setoval (const Rid& rid, const t_octa value);
 
+    /// update the result by index and value but do not touch the rop
+    /// @param index the result index
+    /// @param value the result value
+    void updoval (const long index, const t_octa value);
+
+    /// update the result by rid and value but do not touch the rop
+    /// @param rid   the result rid
+    /// @param value the result value
+    void updoval (const Rid& rid, const t_octa value);
+
     /// @return the result value by index
     t_octa getoval (const long index) const {
       assert ((index >= 0) && (index < IA_MDST));
@@ -274,6 +299,16 @@ namespace iato {
     /// @param value the result value
     void setrval (const Rid& rid, const t_real& value);
 
+    /// update the result by index and value but do not touch the rop
+    /// @param index the result index
+    /// @param value the result value
+    void updrval (const long index, const t_real& value);
+
+    /// update the result by rid and value but do not touch the rop
+    /// @param rid   the result rid
+    /// @param value the result value
+    void updrval (const Rid& rid, const t_real& value);
+
     /// @return the result value by index
     /// @param index the result index
     t_real getrval (const long index) const {
@@ -287,6 +322,11 @@ namespace iato {
     /// @param rid   the result rid
     /// @param value the result value
     void setuval (const Rid& rid, const Uvr& value);
+
+    /// update the result by rid and value but do not touch the rop
+    /// @param rid   the result rid
+    /// @param value the result value
+    void upduval (const Rid& rid, const Uvr& value);
 
     /// set the alat flag by index
     /// @param index the result index

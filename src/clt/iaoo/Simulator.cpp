@@ -34,6 +34,7 @@ namespace iato {
     d_maxcc = stx->getlong ("MAXIMUM-CYCLE-COUNT");
     d_cflag = stx->getbool ("CHECKER-FLAG");
     d_sflag = stx->getbool ("STAT-FLAG");
+    d_sccnt = stx->getlong ("STAT-CYCLE-COUNT");
     // the system interface
     p_psys = new System (stx, name);
     // the processor core
@@ -57,6 +58,7 @@ namespace iato {
     d_maxcc = stx->getlong ("MAXIMUM-CYCLE-COUNT");
     d_cflag = stx->getbool ("CHECKER-FLAG");
     d_sflag = stx->getbool ("STAT-FLAG");
+    d_sccnt = stx->getlong ("STAT-CYCLE-COUNT");
     // the system interface
     p_psys = new System (stx, name, argv);
     // the processor core
@@ -149,6 +151,10 @@ namespace iato {
       }
       // eventually print tracer
       if (p_ptrc) p_ptrc->print ();
+      // eventually print some stat
+      if ((d_sccnt != 0) && (d_cycle > 0) && ((d_cycle % d_sccnt) == 0)) {
+	if (p_pstc) p_pstc->print ();
+      }
     }
   }
 

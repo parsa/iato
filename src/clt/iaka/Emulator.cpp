@@ -44,7 +44,7 @@ namespace iato {
     d_pgflg = atx->getbool ("TRACER-PREDICATE-TARGETS");
     d_cflag = atx->getbool ("CHECKER-FLAG");
     d_sflag = atx->getbool ("STAT-FLAG");
-    d_dflag = atx->getbool ("DISPERSE-FLAG");
+    d_dflag = atx->getbool ("FETCHER-DISPERSE-FLAG");
     d_maxcc = atx->getlong ("MAXIMUM-CYCLE-COUNT");
     d_bpfil = atx->getlong ("BRANCH-PIPELINE-REFILL");
     // the emulator resources
@@ -86,7 +86,7 @@ namespace iato {
     d_pgflg = atx->getbool ("TRACER-PREDICATE-TARGETS");
     d_cflag = atx->getbool ("CHECKER-FLAG");
     d_sflag = atx->getbool ("STAT-FLAG");
-    d_dflag = atx->getbool ("DISPERSE-FLAG");
+    d_dflag = atx->getbool ("FETCHER-DISPERSE-FLAG");
     d_maxcc = atx->getlong ("MAXIMUM-CYCLE-COUNT");
     d_bpfil = atx->getlong ("BRANCH-PIPELINE-REFILL");
     // the emulator resources
@@ -216,6 +216,7 @@ namespace iato {
 
   void Emulator::loop (void) {
     // check for dispersal and initialize tracing
+    if ((p_stat) && (d_dflag == true)) p_stat->marksc (d_bpfil+1);
     if ((p_tracer) && (d_dflag == true)) {
       p_tracer->newtraces (d_bpfil+1);
       d_cycle += d_bpfil+1;
@@ -230,6 +231,7 @@ namespace iato {
 	t_octa ip = p_rbk->getoval (IPRG, 0);
 	p_ftch->fill (ip);
 	// initiate new cycle
+	if ((p_stat) && (d_dflag == true)) p_stat->marksc ();
 	if (p_tracer) p_tracer->newtrace ();
 	d_cycle++;
       }
@@ -297,10 +299,9 @@ namespace iato {
     // update the instruction speculative ip
     if (p_bprd && (d_dflag == true) && (inst.isbr () == true)) {
       t_octa iip  = inst.getiip  ();
-      long   slot = inst.getslot ();
       // ignore non predicted branch
-      if (p_bprd->ispredict (iip, slot) == true) {
-	t_octa sip = p_bprd->predict (iip, slot);
+      if (p_bprd->ispredict (iip) == true) {
+	t_octa sip = p_bprd->predict (iip);
 	inst.setsip (sip);
       }
     }
@@ -378,7 +379,7 @@ namespace iato {
 	}
       }
       // eventually add the instruction in the stat collection
-      if (p_stat) p_stat->addinst (inst);
+      if (p_stat) p_stat->addinst (inst, !pred);
       // update memory, rse and bank
       if (pred == true) update (result);
       // check for pipeline refill if branch in disperse mode
@@ -392,17 +393,22 @@ namespace iato {
 	  t_octa sip = inst.getsip   ();
 	  t_octa rip = result.getrip ();
 	  if ((sip != rip) || (inst.isbr () == true)) {
+	    if (p_stat)   p_stat->marksc      (d_bpfil);
 	    if (p_tracer) p_tracer->newtraces (d_bpfil);
 	    d_cycle += d_bpfil;
 	  }
 	} else {
+	  if (p_stat)   p_stat->marksc      (d_bpfil);
 	  if (p_tracer) p_tracer->newtraces (d_bpfil);
 	  d_cycle += d_bpfil;
 	}
       } else {
 	// check for stop bit in disperse mode, not at slot 2
-	if ((d_dflag == true) && (inst.getstop () == true) &&
-	    (inst.getslot () != 2)) {
+	// check special case with chk instructions that are not branches
+	if ((d_dflag == true) && (result.isreg (IPRG) == false) &&
+	    (inst.getstop () == true) && (inst.getslot () != 2)) {
+	  // update stat and tracer if needed
+	  if (p_stat)   p_stat->marksc     ();
 	  if (p_tracer) p_tracer->print    ();
 	  if (p_tracer) p_tracer->newtrace ();
 	  d_cycle++;
@@ -415,10 +421,8 @@ namespace iato {
       if ((status == true) && (d_dflag == true)) p_ftch->reset ();
       return status;
     } catch (const Interrupt& vi) {
-      // route interrupt
-      if (pred == true) p_irt->route (vi);
       // eventually add the instruction in the stat collection
-      if (p_stat) p_stat->addinst (inst);
+      if (p_stat) p_stat->addinst (inst, !pred);
       // update record tracer
       if (p_tracer) {
 	if ((d_poflg == true) && (inst.ispred () == true)) {
@@ -429,12 +433,16 @@ namespace iato {
 	  p_tracer->add (rcd);
 	}
       }
+      // route interrupt
+      if (pred == true) p_irt->route (vi);
       // force pipe refill in disperse mode
       if (d_dflag == true) {
-	if (p_tracer) p_tracer->print ();
+	if (p_stat)   p_stat->marksc      (d_bpfil+1);
+	if (p_tracer) p_tracer->print     ();
 	if (p_tracer) p_tracer->newtraces (d_bpfil+1);
 	d_cycle += d_bpfil + 1;
-	return (inst.getslot () != 2) ? true : false;
+	p_ftch->refill (inst.getiip (), inst.getslot ());
+	return true;
       }
     }
     // continue execution

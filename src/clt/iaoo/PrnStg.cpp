@@ -27,23 +27,6 @@
 namespace iato {
   using namespace std;
 
-  // this procedure returns true if the rid must be physically renamed
-  static bool isprnm (const Rid& rid) {
-    // if the rid is not valid, it cannot be renamed
-    if (rid.isvalid () == false) return false;
-    // check for logical renaming
-    if (rid.islrnm () == false) return false;
-    // check special registers
-    if (rid.gettype () == IPRG) return false;
-    if (rid.gettype () == CFMR) return false;
-    if (rid.gettype () == PRRG) return false;
-    if (rid.gettype () == PROT) return false;
-    if (rid.gettype () == UMRG) return false;
-    if (rid.gettype () == PSRG) return false;
-    // all others can be renamed
-    return true;
-  }
-
   // this procedure renames a logical instruction with the urf (rat+trb)
   static bool prninst (Dsi& dsi, Urf* urf) {
     // check first the instruction
@@ -55,7 +38,7 @@ namespace iato {
     // renamed, it is marked ready
     Rid  pred = dsi.getpnum ();
     if (pred.isvalid () == true) {
-      if (isprnm (pred) == true) {
+      if (Dsi::isprnm (pred) == true) {
 	long vnum = rat->getmap (pred);
 	assert (vnum != -1);
 	pred.setvnum (vnum);
@@ -69,7 +52,7 @@ namespace iato {
     for (long i = 0; i < IA_MSRC; i++) {
       Rid sreg = dsi.getsnum (i);
       if (sreg.isvalid () == false) continue;
-      if (isprnm (sreg)   == true) {
+      if (Dsi::isprnm (sreg)   == true) {
 	long vnum = rat->getmap (sreg);
 	assert (vnum != -1);
 	sreg.setvnum (vnum);
@@ -82,7 +65,7 @@ namespace iato {
     for (long i = 0; i < IA_MDST; i++) {
       Rid dreg = dsi.getdnum (i);
       if (dreg.isvalid () == false) continue;
-      if (isprnm (dreg)   == false) continue;
+      if (Dsi::isprnm (dreg)   == false) continue;
       // allocate a new trb entry and update the rat
       long vnum = trb->alloc  (); assert (vnum != -1);
       long onum = rat->setmap (dreg, vnum);

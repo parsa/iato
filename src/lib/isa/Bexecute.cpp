@@ -29,6 +29,7 @@
 
 namespace iato {
 
+  /// the bsp mask
   const t_octa BSP_MASK = 0x00000000000001F8ULL;
 
   // ------------------------------------------------------------------------
@@ -59,7 +60,7 @@ namespace iato {
     // test predicate and set result
     if (oprd.getbval (2) == false) {
       if (ec > 1) {
-	// in that case brach
+	// in that case do branch
 	ip += (t_long) inst.getimmv (0);
 	result.setoval (0, ip);
 	result.setoval (1, --ec);
@@ -233,19 +234,15 @@ namespace iato {
     t_octa nip  = ip + rd;
     t_octa rval = ip + BN_BYSZ;
     // compute cfm
-    Cfm    ocfm = oprd.getoval (0);
-    Cfm    ncfm = OCTA_0;
-    t_octa sol = ocfm.getfld (Cfm::SOL);
-    ncfm.setfld (Cfm::SOF, ocfm.getfld (Cfm::SOF) - sol);
-    ncfm.setfld (Cfm::RGR, BYTE_0);
-    ncfm.setfld (Cfm::RFR, BYTE_0);
-    ncfm.setfld (Cfm::RPR, BYTE_0);
-    assert (ncfm.getfld (Cfm::SOL) == BYTE_0);
+    Cfm ocfm = oprd.getoval (0);
+    Cfm ncfm = OCTA_0;
+    ncfm.call (ocfm);
     // compute new pfs
     Pfs pfs;
     pfs.setfld (Pfs::PFM, oprd.getoval (0));
     pfs.setfld (Pfs::PEC, oprd.getoval (1));
     // compute new ar.bsp
+    t_octa sol = ocfm.getfld (Cfm::SOL);
     t_octa bsp = oprd.getoval (2);
     bsp = ((bsp >> 3) + sol + ((((bsp & BSP_MASK) >> 3) + sol) / 63)) << 3;
     // set result
@@ -273,7 +270,7 @@ namespace iato {
 
   // B_RET
   static Result exec_br_ret (const Instr& inst, const Operand& oprd) {
-    Ip ip   = oprd.getoval (0);
+    Ip  ip  = oprd.getoval (0);
     Pfs pfs = oprd.getoval (1);
     Cfm cfm = pfs.getfld (Pfs::PFM);
     // compute ar.ec
@@ -301,19 +298,15 @@ namespace iato {
     t_octa nip   = oprd.getoval (0);
     t_octa rval  = inst.getiip () + BN_BYSZ;
     // compute new cfm
-    Cfm    ocfm = oprd.getoval (1);
-    Cfm    ncfm = OCTA_0;
-    t_octa sol = ocfm.getfld (Cfm::SOL);
-    ncfm.setfld (Cfm::SOF, ocfm.getfld (Cfm::SOF) - sol);
-    ncfm.setfld (Cfm::RGR, BYTE_0);
-    ncfm.setfld (Cfm::RFR, BYTE_0);
-    ncfm.setfld (Cfm::RPR, BYTE_0);
-    assert (ncfm.getfld (Cfm::SOL) == BYTE_0);
+    Cfm ocfm = oprd.getoval (1);
+    Cfm ncfm = OCTA_0;
+    ncfm.call (ocfm);
     // compute new pfs
     Pfs pfs;
     pfs.setfld (Pfs::PFM, oprd.getoval (1));
     pfs.setfld (Pfs::PEC, oprd.getoval (2));
     // compute ar.bsp
+    t_octa sol = ocfm.getfld (Cfm::SOL);
     t_octa bsp = oprd.getoval (3);
     bsp = ((bsp >> 3) + sol + ((((bsp & BSP_MASK) >> 3) + sol) / 63)) << 3;
     // set result

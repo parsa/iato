@@ -123,14 +123,17 @@ namespace iato {
 	  // here we have a branch, let's see if we predict it taken
 	  // we use ispredict, since we want to make sure that the ip
 	  // can be computed correctly
-	  btk = p_bprd->ispredict (bip, j);
-	  // if the branch is predicted taken, we mark the other slot
+	  btk = p_bprd->ispredict (bip);
+	  // if the branch can be predicted, we mark the other slot
 	  // as invalid, update the speculative ip and terminates the
 	  // bundle mapping
 	  if (btk == true) {
+	    // get the predictor history
+	    t_octa hist = p_bprd->gethist ();
 	    // compute the speculative ip and update bundle
-	    nip = p_bprd->predict (bip, j);
-	    p_bndl[i].setsip (nip,j);
+	    nip = p_bprd->predict (bip);
+	    // update the bundle
+	    p_bndl[i].setsip (nip, j, hist);
 	    break;
 	  }
 	}

@@ -69,6 +69,10 @@ namespace iato {
     /// @return the htr size
     long getsize (void) const;
 
+    /// set the htr by value
+    /// @param hist the history to use
+    void sethist (const t_octa hist);
+
     /// @return the masked htr value
     t_octa gethist (void) const;
 

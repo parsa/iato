@@ -35,6 +35,7 @@ SOURCES 	= Stx.cpp       \
 		  WbkStg.cpp    \
 		  CmtStg.cpp    \
 		  Resteer.cpp   \
+		  RseLogic.cpp  \
 		  Processor.cpp \
 		  Simulator.cpp
 

@@ -22,7 +22,7 @@
 #ifndef  IATO_SLOT_HPP
 #define  IATO_SLOT_HPP
 
-#ifndef  IATO_Ssi_HPP
+#ifndef  IATO_SSI_HPP
 #include "Ssi.hpp"
 #endif
 
@@ -36,7 +36,7 @@ namespace iato {
   private:
     /// the slot type
     t_unit d_unit;
-    /// the lsot index
+    /// the slot index
     long   d_spos;
     /// the instruction
     Ssi    d_inst;
@@ -77,6 +77,9 @@ namespace iato {
 
     /// @return the slot instruction
     Ssi getinst (void) const;
+
+    /// @return the slot instruction and clear the slot
+    Ssi grabinst (void);
 
     /// set the slot instruction
     /// @param ssi the instruction to set

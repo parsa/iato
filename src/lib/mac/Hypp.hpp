@@ -21,23 +21,31 @@
 #ifndef  IATO_HYPP_HPP
 #define  IATO_HYPP_HPP
 
-#ifndef  IATO_PREDICATE_HPP
-#include "Predicate.hpp"
+#ifndef  IATO_PIMODAL_HPP
+#include "Pimodal.hpp"
+#endif
+
+#ifndef  IATO_PBMODAL_HPP
+#include "Pbmodal.hpp"
 #endif
 
 namespace iato {
   using namespace std;
 
   /// The Hypp class is a hybrid predicate predictor that is built with
-  /// two predictors. The confidence is obtained by comparing for differences
-  /// the two predictors.
+  /// two predictors and a selector. The selector is built with an address
+  /// based pimodal predictor (pbmodal). The predictors are always updated.
 
   class Hypp : public Predicate {
   private:
+    /// the use confidence flag
+    bool d_usec;
     /// the master predictor
     Predicate* p_mpp;
     /// the slave predictor
     Predicate* p_spp;
+    /// the selector
+    Predicate* p_msp;
 
   public:
     /// create a default hybrid predictor
