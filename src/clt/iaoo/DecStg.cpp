@@ -86,8 +86,7 @@ namespace iato {
   }
 
   // activate this decode stage - the bundle are queried from the
-  // previous stage and decoded on the fly. Initiliy the rob and crb
-  // allocation is done in this stage for each valid bundle.
+  // previous stage and decoded on the fly.
 
   void DecStg::activate (void) {
     // get the previous stage and map it to ipg

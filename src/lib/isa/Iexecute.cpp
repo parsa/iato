@@ -701,17 +701,17 @@ namespace iato {
     union{
       t_octa oval;
       t_word wval[4];
-    } src1, res;
+    } src, res;
     t_byte immv = inst.getimmv (0);
     t_byte pos1 = immv & 0x03;
     t_byte pos2 = (immv & 0x0c) >> 2;
     t_byte pos3 = (immv & 0x30) >> 4;
     t_byte pos4 = (immv & 0xc0) >> 6;
-    src1.oval = lfixocta (oprd.getoval (0));
-    res.wval[0] = src1.wval[pos1];
-    res.wval[1] = src1.wval[pos2];
-    res.wval[2] = src1.wval[pos3];
-    res.wval[3] = src1.wval[pos4];
+    src.oval = lfixocta (oprd.getoval (0));
+    res.wval[0] = src.wval[pos1];
+    res.wval[1] = src.wval[pos2];
+    res.wval[2] = src.wval[pos3];
+    res.wval[3] = src.wval[pos4];
     //set result
     result.setoval (0, lfixocta (res.oval));
     result.setbval (0, nat);
@@ -1679,10 +1679,9 @@ namespace iato {
   // I_MOV_TO_AR_R
   static Result exec_mov_to_ar_r (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    // compute nat bit
-    bool natr = oprd.getbval (0);
-    // if natr the unimplemented Register NaT Consumption fault
-    assert (natr == false);
+    // check for nat bit and throw a register nat consumption fault
+    bool nat = oprd.getbval (0); 
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     // compute result
     t_octa rval = oprd.getoval (0);
     // set result 
@@ -1711,12 +1710,10 @@ namespace iato {
   // I_MOV_FROM_AR:
   static Result exec_mov_from_ar (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
-    // compute nat bit
-    bool natr = false;
     // compute result
     t_octa rval = oprd.getoval (1);
     // set result
-    result.setbval (0, natr); 
+    result.setbval (0, false); 
     result.setoval (0, rval);
     return result;
   }

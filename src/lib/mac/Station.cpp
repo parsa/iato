@@ -27,8 +27,16 @@
 namespace iato {
   using namespace std;
 
+  // -------------------------------------------------------------------------
+  // - reservation station structure                                         -
+  // -------------------------------------------------------------------------
+
   // the reservation station table
   struct t_rsen {
+    // the static x-flag for cancel
+    static bool d_xcnl;
+    // the static x-flag for reschedule
+    static bool d_xrsh;
     // the valid bit
     bool d_valid;
     // the wakeup bit
@@ -87,6 +95,10 @@ namespace iato {
       if (d_wakup == true) return;
       // set the instruction cancel flag
       d_inst.setcnlf (rid, value);
+      // eventually mark the extra flag
+      if (d_xcnl == true) {
+	if (d_inst.getcnlf () == true) d_inst.setxflg (true);
+      }
     }
     // reschedule an instruction
     void resched (void) {
@@ -94,9 +106,18 @@ namespace iato {
       assert (d_wakup == true);
       // clean wakeup it and mark rescheduled
       d_wakup = false;
-      d_inst.setrsch (true);
+      // eventually mark the extra flag
+      if (d_xrsh == true) d_inst.setxflg (true);
     }
   };
+
+  // reservation station extra flag preset
+  bool t_rsen::d_xcnl = false;
+  bool t_rsen::d_xrsh = false;
+
+  // -------------------------------------------------------------------------
+  // - reservation station class                                             -
+  // -------------------------------------------------------------------------
 
   // create a station table by type
 
@@ -117,6 +138,9 @@ namespace iato {
     d_size = mtx->getlong ("RST-SIZE"); assert (d_size > 0);
     p_stbl = new t_rsen[d_size];
     p_rsst = new long[d_size];
+    // preset extra flags
+    if (mtx->getbool ("STATION-STAT-CANCEL") == true) t_rsen::d_xcnl = true;
+    if (mtx->getbool ("STATION-STAT-RSCHED") == true) t_rsen::d_xrsh = true;
     reset ();
   }
 
@@ -129,6 +153,9 @@ namespace iato {
     d_size = mtx->getlong ("RST-SIZE"); assert (d_size > 0);
     p_stbl = new t_rsen[d_size];
     p_rsst = new long[d_size];
+    // preset extra flags
+    if (mtx->getbool ("STATION-STAT-CANCEL") == true) t_rsen::d_xcnl = true;
+    if (mtx->getbool ("STATION-STAT-RSCHED") == true) t_rsen::d_xrsh = true;
     reset ();
   }
 

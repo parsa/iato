@@ -283,7 +283,6 @@ namespace iato {
       d_info.d_inst.d_tip  = that.d_info.d_inst.d_tip;
       d_info.d_inst.d_can  = that.d_info.d_inst.d_can;
       d_info.d_inst.d_br   = that.d_info.d_inst.d_br;
-      d_info.d_inst.d_rsd  = that.d_info.d_inst.d_rsd;
       break;
     case REGUPD:
     case RGREAD:
@@ -350,7 +349,6 @@ namespace iato {
       d_info.d_inst.d_tip  = that.d_info.d_inst.d_tip;
       d_info.d_inst.d_can  = that.d_info.d_inst.d_can;
       d_info.d_inst.d_br   = that.d_info.d_inst.d_br;
-      d_info.d_inst.d_rsd  = that.d_info.d_inst.d_rsd;
       break;
     case REGUPD:
     case RGREAD:
@@ -461,7 +459,6 @@ namespace iato {
     d_info.d_inst.d_tip  = OCTA_0;
     d_info.d_inst.d_can  = false;
     d_info.d_inst.d_br   = false;
-    d_info.d_inst.d_rsd  = false;
   }
 
   // set a record with a cancel instruction
@@ -481,7 +478,6 @@ namespace iato {
     d_info.d_inst.d_tip  = OCTA_0;
     d_info.d_inst.d_can  = true;
     d_info.d_inst.d_br   = false;
-    d_info.d_inst.d_rsd  = false;
   }
 
   // set a record with a branch instruction
@@ -501,28 +497,6 @@ namespace iato {
     d_info.d_inst.d_tip  = tg;
     d_info.d_inst.d_can  = flg;
     d_info.d_inst.d_br   = true;
-    d_info.d_inst.d_rsd  = false;
-  }
-
-  // set a record with a rescheduled instruction
-
-  void Record::setrsch (const Instr& inst) {
-    // check for valid instruction
-    if (inst.isvalid () == false) return;
-    // update record info
-    d_type = RINSTR;
-    // update instruction info
-    d_info.d_inst.d_unit = encode_unit (inst.getbunit  ());
-    d_info.d_inst.d_slot = inst.getslot ();
-    d_info.d_inst.d_stop = inst.getstop ();
-    d_info.d_inst.d_data = inst.getdata ();
-    d_info.d_inst.d_extd = inst.getextd ();
-    d_info.d_inst.d_ip   = inst.getiip  ();
-    d_info.d_inst.d_tip  = OCTA_0;
-    d_info.d_inst.d_can  = false;
-    d_info.d_inst.d_br   = false;
-    d_info.d_inst.d_rsd  = true;
-
   }
 
   // set a record with checking data
@@ -767,10 +741,10 @@ namespace iato {
       os << " ["  << inst.getgroup () << ']';
       os << " ["  << unit_to_char (d_info.d_inst.d_unit) << ']';
       if (d_info.d_inst.d_br == true) os << " @" << hex << d_info.d_inst.d_tip;
-      string str = " ";
-      if (d_info.d_inst.d_rsd == true) str = " [R]";
-      else str = (d_info.d_inst.d_can == true) ? " [F]" : " [T]";
-      os << str;
+      if (d_info.d_inst.d_can == true) 
+	os << " [F]";
+      else 
+	os << " [T]";
       if (unit == XUNIT) os << ' ' << trim (inst.recode ());
       else os << ' ' << trim (inst.recode ());
     }
@@ -1040,13 +1014,6 @@ namespace iato {
     return (d_info.d_inst.d_br == true);
   }
 
-  // return true if the instruction is rescheduled
-
-  bool Record::isresched (void) const {
-    if (d_type != RINSTR) return false;
-    return (d_info.d_inst.d_rsd == true);
-  }
- 
   // get a bundle
 
   Bundle Record::getbnd (void) const {

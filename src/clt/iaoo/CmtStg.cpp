@@ -256,7 +256,7 @@ namespace iato {
 	      p_pfr->pfnxt (ip,slot);
 	    }
 	    // update the stat collection
-	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
@@ -277,7 +277,7 @@ namespace iato {
 	    // is in a valid state
 	    p_pfr->pfdef ();
 	    // update the stat collection
-	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
@@ -296,7 +296,7 @@ namespace iato {
 	    // flush and restart at next instruction
 	    p_pfr->pfnxt (ip, slot);
 	    // update the stat collection
-	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
@@ -313,7 +313,7 @@ namespace iato {
 	    // since the instruction has update the ip
 	    p_pfr->pflcl ();
 	    // update the stat collection
-	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
@@ -323,7 +323,7 @@ namespace iato {
 	    return;
 	  }
 	  // update the stat collection
-	  if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	  if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getxflg ());
 	  // update the tracer with commit info
 	  if ((p_tracer) && (dsi.isvalid () == true)) {
 	    Record rcd (d_name, dsi, !cnlf);

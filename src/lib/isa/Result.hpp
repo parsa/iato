@@ -112,8 +112,12 @@ namespace iato {
     bool   d_spec[IA_MDST];
 
   public:
-    /// create  a default result
+    /// create a default result
     Result (void);
+
+    /// create a result by valid flag
+    /// @param flag the valid flag to use
+    Result (const bool flag);
 
     /// create a result by index and value
     /// @param index the result index

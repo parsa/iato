@@ -73,17 +73,13 @@ namespace iato {
     // ignore non instruction records
     if (rcd.gettype () != Record::RINSTR) return;
     // process from instruction type
-    if (rcd.isresched () == true) {
-      d_nrsh++;
-    } else {
-      Instr inst = rcd.getinst ();
-      if (inst.isvalid () == false) return;
-      // check for cancel instruction. if the instruction is canceled
-      // a check is made to determine if the instruction was a branch
-      if (rcd.iscancel () == true) {
-	d_ncan++; 
-	if (inst.isbr () == false) d_nbcn++;
-      }
+    Instr inst = rcd.getinst ();
+    if (inst.isvalid () == false) return;
+    // check for cancel instruction. if the instruction is canceled
+    // a check is made to determine if the instruction was a branch
+    if (rcd.iscancel () == true) {
+      d_ncan++; 
+      if (inst.isbr () == false) d_nbcn++;
     }
   }
 
@@ -146,7 +142,6 @@ namespace iato {
   // update instruction stat
 
   void Statistic::updistat (const Record& rcd) {
-    if (rcd.isresched () == true) return;
     if (rcd.gettype () == Record::RINSTR) addinst (rcd.getinst ());
   }
 }

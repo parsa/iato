@@ -54,6 +54,8 @@ namespace iato {
     bool d_ppvl;
     /// the predicate prediction flag
     bool d_ppfl;
+    /// the extra stat flag
+    bool d_xflg;
     /// the instruction rse state
     Rse::State  d_iste;
     /// the speculative rse state
@@ -141,6 +143,13 @@ namespace iato {
 
     /// @return the predicate prediction flag
     bool getppfl (void) const;
+
+    /// set the stat extra flag
+    /// @param xflg the extra flag to set
+    void setxflg (const bool xflg);
+
+    /// @return the stat extra flag
+    bool getxflg (void) const;
 
     /// set the instruction rse state
     /// @param state the state to set

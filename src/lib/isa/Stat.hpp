@@ -58,8 +58,6 @@ namespace iato {
     t_long d_ncan;
     /// total number of cancel non branch instruction
     t_long d_nbcn;
-    /// total number of rescheduled instructions
-    t_long d_nrsh;
     /// total number of pipeline flushes
     t_long d_ntpf;
     /// number of branch pipeline flushes
@@ -74,6 +72,8 @@ namespace iato {
     t_long d_nppr;
     /// number of successfull predicate prediction
     t_long d_npps;
+    /// total number of extra marked instructions
+    t_long d_nxmi;
     /// the bunble distribution array
     t_long d_bndl[Bundle::BN_MAXTPL];
     /// the instruction distribution array
@@ -123,6 +123,10 @@ namespace iato {
     /// @parm pflg the successfull predicate prediction
     virtual void markpp (const bool pflg);
 
+    /// mark the extra stat
+    /// @parm xflg the extra stat flag
+    virtual void markxf (const bool xflg);
+
     /// add a new bundle for stat collection
     /// @param bndl the bundle to add
     virtual void addbndl (const Bundle& bndl);
@@ -139,8 +143,8 @@ namespace iato {
     /// add an instruction for stat collection
     /// @param inst the instruction to add
     /// @param cnlf the cancel flag
-    /// @param rsch the reschedule flag
-    virtual void addinst (const Instr& inst, const bool cnlf, const bool rsch);
+    /// @param xflg the extra flag
+    virtual void addinst (const Instr& inst, const bool cnlf, const bool xflg);
 
     /// add a nop instruction by unit
     /// @param unit the nop unit to add

@@ -320,6 +320,29 @@ namespace iato {
   }
 
   // ------------------------------------------------------------------------
+  // - B06 instruction group                                                -
+  // ------------------------------------------------------------------------
+
+  static Result exec_brp_ip (const Instr& inst, const Operand& oprd) {
+    Result result = true;
+    return result;
+  }
+
+  // ------------------------------------------------------------------------
+  // - B07 instruction group                                                -
+  // ------------------------------------------------------------------------
+
+  static Result exec_brp (const Instr& inst, const Operand& oprd) {
+    Result result = true;
+    return result;
+  }
+
+  static Result exec_brp_ret (const Instr& inst, const Operand& oprd) {
+    Result result = true;
+    return result;
+  }
+
+  // ------------------------------------------------------------------------
   // - B08 instruction group                                                -
   // ------------------------------------------------------------------------
 
@@ -390,6 +413,19 @@ namespace iato {
       // B05 instruction group
     case B_CALL:
       result = exec_br_call (inst, oprd);
+      break;
+
+      // B06 instruction group
+    case B_BRP_IP:
+      result = exec_brp_ip (inst, oprd);
+      break;
+
+      // B07 instruction group
+    case B_BRP:
+      result = exec_brp (inst, oprd);
+      break;
+    case B_BRP_RET:
+      result = exec_brp_ret (inst, oprd);
       break;
 
       // B08 instruction group

@@ -94,7 +94,6 @@ namespace iato {
 	bool   d_br;            // branch instruction (the target valid bit)
 	t_octa d_tip;           // the target ip
 	bool   d_can;           // cancel flag
-	bool   d_rsd;           // reschedule flag
       } d_inst;
       /// register result
       struct t_rdat {
@@ -235,10 +234,6 @@ namespace iato {
     /// @param tg the branch target value
     void setbr (const Instr& inst, const bool flg, const t_octa tg);
 
-    /// set the record with a rescheduled instruction
-    /// @param inst the instruction to set
-    void setrsch (const Instr& inst);
-
     /// set the record with a result and index
     /// @param resl the result to set
     /// @param index the result index
@@ -325,9 +320,6 @@ namespace iato {
 
     /// @return true if the instruction has the tip set
     bool istip (void) const;
-
-    /// @return true if the instruction is rescheduled
-    bool isresched (void) const;
 
     /// @return a bundle from a bundle record
     Bundle getbnd (void) const;

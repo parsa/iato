@@ -53,7 +53,6 @@ namespace iato {
     d_nbpd = 0;
     d_ncan = 0;
     d_nbcn = 0;
-    d_nrsh = 0;
     d_ntpf = 0;
     d_nbpf = 0;
     d_nopf = 0;
@@ -61,6 +60,7 @@ namespace iato {
     d_npbs = 0;
     d_nppr = 0;
     d_npps = 0;
+    d_nxmi = 0;
     for (long i = 0; i < Bundle::BN_MAXTPL; i++) d_bndl[i] = 0;
     for (long i = 0; i < OPCODE_MAX; i++)        d_inst[i] = 0;
   }
@@ -115,6 +115,12 @@ namespace iato {
     if (pflg == true) d_npps++;
   }
 
+  // mark the extra flag
+
+  void Stat::markxf (const bool xflg) {
+    if (xflg == true) d_nxmi++;
+  }
+
   // add a bundle to this collection
 
   void Stat::addbndl (const Bundle& bndl) {
@@ -153,13 +159,13 @@ namespace iato {
 
   // add an instruction to this collection with cancel and rescheule flags
 
-  void Stat::addinst (const Instr& inst, const bool cnlf, const bool rsch) {
+  void Stat::addinst (const Instr& inst, const bool cnlf, const bool xflg) {
     // check and update instruction
     if (inst.isvalid () == false) return;
     // update instruction
     addinst (inst,cnlf);
-    // update reschedule status
-    if (rsch == true) d_nrsh++;
+    // update extra flag
+    if (xflg == true) d_nxmi++;
   }
 
   // add a nop instruction
@@ -281,10 +287,10 @@ namespace iato {
 	cout << "cancelled instructions non br  : " << d_nbcn;
 	cout << "\t(" << setprecision (3) << pbcn << "%)" << endl;
       }
-      if (d_nrsh != 0) {
-	double prsh = 100.0 * (double) d_nrsh / (double) d_nins;
-	cout << "rescheduled instructions       : " << d_nrsh;
-	cout << "\t(" << setprecision (3) << prsh << "%)" << endl;
+      if (d_nxmi != 0) {
+	double pxmi = 100.0 * (double) d_nxmi / (double) d_nins;
+	cout << "extra marked instructions      : " << d_nxmi;
+	cout << "\t(" << setprecision (3) << pxmi << "%)" << endl;
       }
     }
     // report pipeline flushes

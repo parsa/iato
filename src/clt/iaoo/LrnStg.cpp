@@ -78,8 +78,7 @@ namespace iato {
 
   // activate this logical rename stage - the instructions are queried from
   // the decode stage, the rse is preset speculatively and logical renaming
-  // take place. Note that the rse state is as a speculative cfm in the 
-  // instruction.
+  // take place.
 
   void LrnStg::activate (void) {
     // get the previous stage and map it to decode

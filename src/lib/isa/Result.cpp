@@ -30,6 +30,14 @@ namespace iato {
     reset ();
   }
 
+  // create a result by valid flag
+
+  Result::Result (const bool flag) {
+    reset ();
+    setvalid (flag);
+  }
+
+
   // create a result by index and value
 
   Result::Result (const long index, const bool value) {

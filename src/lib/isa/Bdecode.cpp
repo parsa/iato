@@ -115,7 +115,7 @@ namespace iato {
     return B_CALL;
   }
 
-  // decode major opcode 2 - B9
+  // decode major opcode 2 - B7 B9
   static t_iopc get_opcode_group_2 (t_octa inst) {
     // check X6 bits (27:32)
     t_byte x6 = ((t_byte) (inst >> 27)) & 0x3F;

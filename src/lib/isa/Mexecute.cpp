@@ -2940,7 +2940,10 @@ namespace iato {
   // MOV_FROM_AR
   static Result exec_mov_from_ar (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
+    // compute result
     t_octa rval = oprd.getoval (1);
+    // set result 
+    result.setbval (0, false);
     result.setoval (0, rval);
     return result;
   }

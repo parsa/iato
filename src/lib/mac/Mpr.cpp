@@ -98,7 +98,7 @@ namespace iato {
 
   void Mpr::request (const Mrt& mrt) {
     // save request and mark busy
-    d_mrt = mrt;
+    d_mrt  = mrt;
     d_busy = true;
     d_tack = false;
     // check for immediate reply

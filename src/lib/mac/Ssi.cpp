@@ -39,6 +39,7 @@ namespace iato {
     d_vspf = true;
     d_ppvl = true;
     d_ppfl = false;
+    d_xflg = false;
     d_iste.reset ();
     d_sste.reset ();
   }
@@ -53,6 +54,7 @@ namespace iato {
     d_vspf = that.d_vspf;
     d_ppvl = that.d_ppvl;
     d_ppfl = that.d_ppfl;
+    d_xflg = that.d_xflg;
     d_iste = that.d_iste;
     d_sste = that.d_sste;
   }
@@ -68,6 +70,7 @@ namespace iato {
     d_vspf = that.d_vspf;
     d_ppvl = that.d_ppvl;
     d_ppfl = that.d_ppfl;
+    d_xflg = that.d_xflg;
     d_iste = that.d_iste;
     d_sste = that.d_sste;
     return *this;
@@ -84,6 +87,7 @@ namespace iato {
     d_vspf = true;
     d_ppvl = true;
     d_ppfl = false;
+    d_xflg = false;
     d_iste.reset ();
     d_sste.reset ();
     return *this;
@@ -100,6 +104,7 @@ namespace iato {
     d_vspf = true;
     d_ppvl = true;
     d_ppfl = false;
+    d_xflg = false;
     d_iste.reset ();
     d_sste.reset ();
   }
@@ -228,6 +233,18 @@ namespace iato {
 
   bool Ssi::getppfl (void) const {
     return d_valid ? d_ppfl : false;
+  }
+
+  // set the stat extra flag
+
+  void Ssi::setxflg (const bool xflg) {
+    d_xflg = d_valid ? xflg : false;
+  }
+
+  // return the stat extra flag
+
+  bool Ssi::getxflg (void) const {
+    return d_valid ? d_xflg : false;
   }
 
   // set the instruction rse state
