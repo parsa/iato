@@ -118,11 +118,13 @@ namespace iato {
   const t_octa ELF_AT_PLATFORM = 15;
   /// machine hints
   const t_octa ELF_AT_HWCAP    = 16;
+  /// exec-setuid flag
+  const t_octa ELF_AT_SECURE   = 23;
 
   /// processor capabilities
-  const t_octa ELF_AUX_HWCAP = OCTA_0;
+  const t_octa ELF_AUX_HWCAP   = OCTA_0;
   /// processor timer count in Hz
-  const t_octa ELF_AUX_CLKTK = 1024;
+  const t_octa ELF_AUX_CLKTK   = 1024;
 }
 
 #endif

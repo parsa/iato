@@ -41,6 +41,7 @@ namespace iato {
     d_bflag = atx->getbool ("TRACER-BRANCH-FLAG");
     d_boflg = atx->getbool ("TRACER-BRANCH-ONLY");
     d_poflg = atx->getbool ("TRACER-PREDICATE-ONLY");
+    d_pgflg = atx->getbool ("TRACER-PREDICATE-TARGETS");
     d_cflag = atx->getbool ("CHECKER-FLAG");
     d_sflag = atx->getbool ("STAT-FLAG");
     d_dflag = atx->getbool ("DISPERSE-FLAG");
@@ -48,9 +49,9 @@ namespace iato {
     d_bpfil = atx->getlong ("BRANCH-PIPELINE-REFILL");
     // the emulator resources
     p_irt   = new Irt      (atx);
-    p_rse   = new Rename   (atx);
+    p_rse   = new Renamer  (atx);
     p_rbk   = new Register (atx);
-    p_meml  = new MemLogic (atx);
+    p_mmap  = new Mapper   (atx);
     p_ftch  = new Fetcher  (atx);
     p_bprd  = Branch::mkbr (atx);
     // the emulator units
@@ -82,6 +83,7 @@ namespace iato {
     d_bflag = atx->getbool ("TRACER-BRANCH-FLAG");
     d_boflg = atx->getbool ("TRACER-BRANCH-ONLY");
     d_poflg = atx->getbool ("TRACER-PREDICATE-ONLY");
+    d_pgflg = atx->getbool ("TRACER-PREDICATE-TARGETS");
     d_cflag = atx->getbool ("CHECKER-FLAG");
     d_sflag = atx->getbool ("STAT-FLAG");
     d_dflag = atx->getbool ("DISPERSE-FLAG");
@@ -89,9 +91,9 @@ namespace iato {
     d_bpfil = atx->getlong ("BRANCH-PIPELINE-REFILL");
     // the emulator resources
     p_irt   = new Irt      (atx);
-    p_rse   = new Rename   (atx);
+    p_rse   = new Renamer  (atx);
     p_rbk   = new Register (atx);
-    p_meml  = new MemLogic (atx);
+    p_mmap  = new Mapper   (atx);
     p_ftch  = new Fetcher  (atx);
     p_bprd  = Branch::mkbr (atx);
     // the emulator units
@@ -121,7 +123,7 @@ namespace iato {
     delete p_rbk;
     delete p_stat;
     delete p_ftch;
-    delete p_meml;
+    delete p_mmap;
     delete p_bprd;
     delete p_munit;
     delete p_iunit;
@@ -139,7 +141,10 @@ namespace iato {
     // reset resources    
     p_rse->reset  ();
     p_rbk->reset  ();
-    p_meml->reset ();
+    // reset memory resources
+    p_ftch->reset ();
+    p_mmap->reset ();
+    // reset optional resources
     if (p_bprd)   p_bprd->reset   ();
     if (p_tracer) p_tracer->reset ();
     if (p_stat)   p_stat->reset   ();
@@ -175,14 +180,14 @@ namespace iato {
     p_rse->bind (p_mem, p_rbk);
     // bind the fetch buffer
     p_ftch->bind (p_mem);
-    // bind the memory logic
-    p_meml->bind (p_mem);
+    // bind the memory mapper
+    p_mmap->bind (p_mem);
     // bind the tracer
     p_rse->settrc  (p_tracer);
     p_irt->settrc  (p_tracer);
     p_rbk->settrc  (p_tracer);
     p_ftch->settrc (p_tracer);
-    p_meml->settrc (p_tracer);
+    p_mmap->settrc (p_tracer);
     // bind the irt with a syscall plugin
     p_irt->bind (FAULT_IT_INST_BREAK, new Syscall (p_rse, p_rbk, p_mem));
   }
@@ -246,7 +251,7 @@ namespace iato {
     if (p_stat) p_stat->addbndl (bnd);
     // eventually use the tracer to store bundle
     if ((p_tracer) && (d_dflag == false) && 
-	(d_boflg == false) && (d_poflg == false)) {
+	(d_boflg == false) && (d_poflg == false) && (d_pgflg == false)) {
       Record rcd ("EMU");
       rcd.setbndl (bnd);
       p_tracer->add (rcd);
@@ -335,14 +340,29 @@ namespace iato {
       }
       // eventually use the tracer to store instruction
       if (p_tracer) {
-	if ((d_boflg ==  true) || (d_poflg ==  true)) {
-	  if ((d_boflg == true) && (result.isreg (IPRG) == true)) {
-	    t_octa rip = result.getrip ();
-	    Record rcd ("EBO", inst, !pred, rip);
-	    p_tracer->add (rcd);
+	if ((d_boflg ==  true) || (d_poflg ==  true) || (d_pgflg == true)) {
+	  if ((d_boflg == true) && (inst.isbr () == true)) {
+	    if ((d_bflag == true) && (result.isreg (IPRG) == true)) {
+	      t_octa rip = result.getrip ();
+	      Record rcd ("EBO", inst, !pred, rip);
+	      p_tracer->add (rcd);
+	    } else {
+	      Record rcd ("EBO", inst, pred);
+	      p_tracer->add (rcd);
+	    }
 	  }
 	  if ((d_poflg == true) && (inst.ispred () == true)) {
-	    Record rcd ("EPO", inst, pred);
+	    if ((d_bflag == true) && (result.isreg (IPRG) == true)) {
+	      t_octa rip = result.getrip ();
+	      Record rcd ("EPO", inst, !pred, rip);
+	      p_tracer->add (rcd);
+	    } else {
+	      Record rcd ("EPO", inst, pred);
+	      p_tracer->add (rcd);
+	    }
+	  }
+	  if ((d_pgflg == true) && (inst.ispgen () == true)) {
+	    Record rcd ("EPG", inst, pred);
 	    p_tracer->add (rcd);
 	  }
 	} else {
@@ -371,9 +391,7 @@ namespace iato {
 	  // update pipe filling
 	  t_octa sip = inst.getsip   ();
 	  t_octa rip = result.getrip ();
-	  t_iopc opc = inst.getiopc  ();
-	  if ((sip != rip) || 
-	      (opc == B_CALL) || (opc == B_CALL_IP) || (opc == B_RET)) {
+	  if ((sip != rip) || (inst.isbr () == true)) {
 	    if (p_tracer) p_tracer->newtraces (d_bpfil);
 	    d_cycle += d_bpfil;
 	  }
@@ -428,7 +446,7 @@ namespace iato {
   void Emulator::update (Result& resl) {
     assert (resl.isvalid () == true);
     // check for memory update
-    p_meml->update (resl);
+    p_mmap->update (resl);
     // check for rse update
     p_rse->update (resl);
     // check for register update

@@ -52,18 +52,6 @@ namespace iato {
     stk->setstkva (tsp);
   }
 
-  // this procedure install the auxilliary elf vector on the stack
-  // the auxilliary vector is by definition aligned with the abi requirements
-  static void set_elf_aux (ElfStack* stk, ElfKernel* ekp) {
-    // do nothing with nothing
-    if ((!stk) || (!ekp)) return;    
-    // install the null record
-    set_aux_data (stk, ELF_AT_NULL, OCTA_0);
-    // install additional info
-    set_aux_data (stk, ELF_AT_PAGESZ, ekp->getpgsz  ());
-    set_aux_data (stk, ELF_AT_CLKTCK, ekp->getclktk ());
-  }
-
   // this procedure copy a data block on the stack and adjust the stack
   // pointer automatically
   static void set_elf_tbl (ElfStack* stk, const t_byte* blk, const long size) {
@@ -99,8 +87,11 @@ namespace iato {
   // create a default interpreter
 
   ElfInterp::ElfInterp (void) {
-    d_interp = "none";
+    d_interp = "";
     p_kernel = 0;
+    d_phdr   = OCTA_0;
+    d_phent  = OCTA_0;
+    d_phnum  = OCTA_0;
   }
 
   // create a default interpreter by name
@@ -112,6 +103,9 @@ namespace iato {
     }
     d_interp = interp;
     p_kernel = 0;
+    d_phdr   = OCTA_0;
+    d_phent  = OCTA_0;
+    d_phnum  = OCTA_0;
   }
 
   // destroy this interpreter
@@ -150,7 +144,27 @@ namespace iato {
       stk->setstkva (tsp);
     }
     // install the auxilliary vector
-    set_elf_aux (stk, p_kernel);
+    if (stk && p_kernel) {    
+      // install the null record
+      set_aux_data (stk, ELF_AT_NULL, OCTA_0);
+      // install additional info
+      set_aux_data (stk, ELF_AT_HWCAP,  ELF_AUX_HWCAP);
+      set_aux_data (stk, ELF_AT_PAGESZ, p_kernel->getpgsz  ());
+      set_aux_data (stk, ELF_AT_CLKTCK, p_kernel->getclktk ());
+      set_aux_data (stk, ELF_AT_PHDR,   d_phdr);
+      set_aux_data (stk, ELF_AT_PHENT,  d_phent);
+      set_aux_data (stk, ELF_AT_PHNUM,  d_phnum);
+      set_aux_data (stk, ELF_AT_FLAGS,  OCTA_0);
+      set_aux_data (stk, ELF_AT_UID,    getuid  ());
+      set_aux_data (stk, ELF_AT_EUID,   geteuid ());
+      set_aux_data (stk, ELF_AT_GID,    getgid  ());
+      set_aux_data (stk, ELF_AT_EGID,   getegid ());
+      if (d_interp.length () == 0) {
+      	set_aux_data (stk, ELF_AT_BASE,   OCTA_0);
+      } else {
+      	assert (false);
+      }
+    }
     // relocate the environment array
     t_octa* envv = envp->getargv (estk);
     set_elf_vec (stk, envv, envc + 1);
@@ -175,5 +189,14 @@ namespace iato {
     if (interp == ELF_INTERP_LINUX)   return true;
     if (interp == ELF_INTERP_LINUX_2) return true;
     return false;
+  }
+
+  // set the program information header
+
+  void ElfInterp::setph (const t_octa phdr, const t_octa phent, 
+			 const t_octa phnum) {
+    d_phdr  = phdr;
+    d_phent = phent;
+    d_phnum = phnum;
   }
 }

@@ -121,9 +121,7 @@ namespace iato {
     /// @param ipc   the instruction precision control completer
     /// @param field the floating point status field format
     /// @param val the real to convert
-    void convert (const t_fpipc ipc,
-		  const t_mfield field,
-		  t_real& val);
+    void convert (const t_fpipc ipc, const t_mfield field, t_real& val);
 
     /// convert ia floating point register for parallel computing
     /// @param field the floating point status field format

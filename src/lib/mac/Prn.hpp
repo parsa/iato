@@ -71,6 +71,8 @@ namespace iato {
   const string RESOURCE_MOB = "MOB";
   /// resource store buffer name
   const string RESOURCE_STB = "STB";
+  /// resource replay instruction buffer  name
+  const string RESOURCE_RIB = "RIB";
 
   /// resource branch predictor name
   const string RESOURCE_BPS = "BPS";

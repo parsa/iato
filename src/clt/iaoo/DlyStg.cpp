@@ -29,6 +29,7 @@ namespace iato {
   // create a new execute stage by context and unit
 
   DlyStg::DlyStg (Stx* stx, t_unit unit): Stage (stx, RESOURCE_DLY) {
+    d_flsh = stx->getbool ("PARTIAL-FLUSH-MODE");
     d_unit = unit;
     p_gcs  = 0;
     reset ();
@@ -38,6 +39,7 @@ namespace iato {
 
   DlyStg::DlyStg (Stx* stx, t_unit unit, 
 		  const string& name) : Stage (stx, name) {
+    d_flsh = stx->getbool ("PARTIAL-FLUSH-MODE");
     d_unit = unit;
     p_gcs  = 0;
     reset ();
@@ -55,6 +57,14 @@ namespace iato {
 
   void DlyStg::flush (void) {
     Stage::flush ();
+    d_inst.reset ();
+    d_oprd.reset ();
+  }
+
+  // partially flush this stage
+
+  void DlyStg::pflsh (void) {
+    if (d_flsh == false) return;
     d_inst.reset ();
     d_oprd.reset ();
   }

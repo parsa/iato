@@ -31,6 +31,13 @@ namespace iato {
     throw KrnExit (status);
   }
 
+  // exit_group system call
+
+  void krn_exit_group (Rse* rse, Register* rbk) {
+    // set syscall result
+    sys_args_setretn (OCTA_0, rbk);
+  }
+
   // brk system call
 
   void krn_brk (Rse* rse, Register* rbk, ElfExec* mem) {

@@ -25,6 +25,7 @@
 
 int main () {
   fprintf (stdout, "hello world\n");
+  fprintf (stdout, "(c) inria 2002-2004\n");
   return 0;
 }
 

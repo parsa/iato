@@ -30,6 +30,13 @@ namespace iato {
   using namespace std;
 
   // -------------------------------------------------------------------------
+  // -  global resource modes                                                -
+  // -------------------------------------------------------------------------
+
+  /// default partial flush mode
+  const bool   RM_PFLS = false;
+
+  // -------------------------------------------------------------------------
   // - generic resource parameters                                           -
   // -------------------------------------------------------------------------
 
@@ -51,6 +58,8 @@ namespace iato {
   const long   OB_SIZE = 64;
   /// default store buffer size
   const long   SB_SIZE = 64;
+  /// default rib size
+  const long   RI_SIZE = 64;
 
   // -------------------------------------------------------------------------
   // -  global prediction resources                                          -

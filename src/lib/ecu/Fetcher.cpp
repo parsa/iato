@@ -76,9 +76,6 @@ namespace iato {
   // fill the fetcher at a certain ip
 
   void Fetcher::fill (const t_octa ip) {
-    // reset the fetcher bundles
-    reset ();
-    // fill in the bundles
     t_octa bip = ip;
     for (long i = 0; i < d_iwsz; i++) {
       // check for valid bundle
@@ -89,21 +86,6 @@ namespace iato {
       for (long j = 0; j < BN_BYSZ; j++) {
 	p_bndl[i].push (p_imem->readexec (bip++));
       }
-    }
-  }
-
-  // fill the fetcher at a certain ip and slot, invalidate lower slots
-
-  void Fetcher::refill (const t_octa ip, const long slot) {
-    // fill the bundles
-    fill (ip);
-    // check for slot 2 and repack
-    if (slot == 2) {
-      p_bndl[0].reset ();
-      pack ();
-    } else {
-      // invalidate lower slots
-      for (long i = 0; i <= slot; i++) p_bndl[0].setvsb (i, false);
     }
   }
 

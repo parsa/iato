@@ -31,6 +31,7 @@ namespace iato {
   CmtStg::CmtStg (Stx* stx) : Stage (stx, RESOURCE_CMT) {
     d_iwsz = stx->getiwsz (); assert (d_iwsz > 0);
     d_swsz = d_iwsz * BN_SLSZ;
+    d_pfmd = stx->getbool ("PARTIAL-FLUSH-MODE");
     p_rse  = 0;
     p_rob  = 0;
     p_irb  = 0;
@@ -52,7 +53,9 @@ namespace iato {
 
   CmtStg::CmtStg (Stx* stx, const string& name) : Stage (stx,name) {
     d_iwsz = stx->getiwsz (); assert (d_iwsz > 0);
-    d_swsz = d_iwsz * BN_SLSZ;    p_rse  = 0;
+    d_swsz = d_iwsz * BN_SLSZ;
+    d_pfmd = stx->getbool ("PARTIAL-FLUSH-MODE");
+    p_rse  = 0;
     p_rob  = 0;
     p_irb  = 0;
     p_irt  = 0;
@@ -93,8 +96,27 @@ namespace iato {
       if (p_rob->ispop () == false) break;
       // check for interrupt or normal instruction
       if (p_rob->isintr () == true) {
-	// get the interrupt and route
-	Interrupt vi = p_rob->ipop ();	
+	// get the interrupt and check or route
+	bool sbit = p_rob->getsbit ();
+	long iiib = p_rob->ipop    ();
+	if (iiib == -1) {
+	  string msg = "unallocated interrupt in rob";
+	  throw Exception ("rob-error", msg);
+	}
+	// get the interrupt and clean the resource
+	Interrupt vi = p_iib->getintr (iiib);
+	p_iib->clear (iiib);
+	// check for speculation
+	if (sbit == true) {
+	  Instr inst = vi.getinst ();
+	  assert (inst.isvalid () == true);
+	  // mark the stat engine
+	  if (p_stat) p_stat->markpf (inst.isbr ());
+	  // update the restart engine
+	  p_pfr->pfstd (vi.getip (), vi.getslot ());
+	  return;
+	}
+	// here we route the interrupt
 	p_irt->route (vi);
 	// update the ip
 	Instr inst = vi.getinst ();
@@ -103,6 +125,7 @@ namespace iato {
 	p_pfr->pfnxt (vi.getip (), vi.getslot ());
 	// update the stat collection
 	if (p_stat) p_stat->addinst (inst);
+	if (p_stat) p_stat->markpf  (inst.isbr ());
 	// update the tracer with commit info
 	if ((p_tracer) && (inst.isvalid () == true)) {
 	  Record rcd (d_name, inst);
@@ -145,10 +168,34 @@ namespace iato {
 	    return;
 	  }
 	}
-	// get the bundle speculation bit
-	bool bsip = p_rob->getbsip ();
-	// grab the cancel flag
+	// get the branch speculative status
+	bool bbss = p_rob->getbbss ();
+	// get the cancel flag
 	bool cnlf = p_rob->iscancel ();
+	// get the speculation bit
+	bool sbit = p_rob->getsbit ();
+	// check for predicate speculation using partial mode
+	if ((d_pfmd == true) && (sbit == true)) {
+	  // get the irb index
+	  long iidx = p_rob->getiidx (); 
+	  assert (iidx != -1);
+	  // grab the instruction
+	  Dsi dsi = p_irb->getinst (iidx); 
+	  assert (dsi.isvalid () == true);
+	  // check for valid predicate prediction
+	  if (dsi.getppfl () == true) {
+	    if (p_dtl->chkspp (dsi) == false) {
+	      // update statistics
+	      if (p_stat) p_stat->markpp (false);
+	      if (p_stat) p_stat->markpf (dsi.isbr ());
+	      // update the predicate predictor
+	      p_ppr->markpp (dsi, !cnlf);
+	      // partial pipe flush the engine
+	      p_pfr->pflsh ();
+	      return;
+	    }
+	  }
+	}
 	// grab the latest irb index
 	long iidx = p_rob->pop ();
 	if (iidx != -1) {
@@ -164,12 +211,16 @@ namespace iato {
 	    } else {
 	      // update statistics
 	      if (p_stat) p_stat->markpp (false);
+	      if (p_stat) p_stat->markpf (dsi.isbr ());
 	      // update the predicate predictor
 	      p_ppr->markpp (dsi, !cnlf);
 	      // update restart engine
 	      p_pfr->pfstd (ip, slot);
 	      return;
 	    }
+	  } else {
+	    if ((dsi.ispred () == true)  &&
+		(dsi.isbr   () == false) && p_stat) p_stat->markrp ();
 	  }
 	  // check for cancellation status
 	  if (cnlf == false) {
@@ -198,6 +249,8 @@ namespace iato {
 	  p_bpr->markbr (dsi, resl, !cnlf);
 	  // update the predicate predictor
 	  p_ppr->markpp (dsi, !cnlf);
+	  // clear the station entry
+	  p_gcs->clear (dsi);
 	  // clean the irb
 	  p_irb->clear (iidx);
 	  // clear the mob
@@ -207,12 +260,12 @@ namespace iato {
 	  // update the stat machinery with branch prediction
 	  // branch are predicted if the instruction is a branch
 	  // with the speculative flag set. The prediction failed
-	  // if the bsip flag is false
+	  // if the bbss flag is false
 	  if ((dsi.isbr () == true) && (dsi.getsfl () == true)) {
-	    if (p_stat) p_stat->markbp (bsip);
+	    if (p_stat) p_stat->markbp (bbss);
 	  }
 	  // check for valid ip speculation
-	  if (bsip == false) {
+	  if (bbss == false) {
 	    // if the ip condition is defined by the result
 	    // the machine is in a good state and can be restarted
 	    // right away with local condition, else we use the next
@@ -224,6 +277,7 @@ namespace iato {
 	    }
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -242,6 +296,7 @@ namespace iato {
 	    p_pfr->pfdef ();
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -258,6 +313,7 @@ namespace iato {
 	    p_pfr->pfnxt (ip, slot);
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);
@@ -266,12 +322,13 @@ namespace iato {
 	    return;
 	  }
 	  // check for valid rse speculation
-	  if ((cnlf == false) && p_rse->validate (dsi.getscfm ()) == false) {
+	  if ((cnlf == false) && (p_rse->validate (dsi.getscfm ()) == false)) {
 	    // flush and restart at current condition
 	    // since the instruction has update the ip
 	    p_pfr->pflcl ();
 	    // update the stat collection
 	    if (p_stat) p_stat->addinst (dsi, cnlf, dsi.getrsch ());
+	    if (p_stat) p_stat->markpf  (dsi.isbr ());
 	    // update the tracer with commit info
 	    if ((p_tracer) && (dsi.isvalid () == true)) {
 	      Record rcd (d_name, dsi, !cnlf);

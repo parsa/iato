@@ -57,12 +57,16 @@ namespace iato {
   private:
     /// the valid bit
     bool d_valid;
+    /// the exec bit
+    bool d_exec;
     /// the interrupt code
     t_icode d_code;
     /// the offending instruction
     Instr  d_inst;
     /// the offending ip
     t_octa d_ip;
+    /// the offending slot
+    long   d_slot;
 
   public:
     /// create a default interrupt
@@ -78,6 +82,14 @@ namespace iato {
     /// @param reason the interrupt reason
     /// @param ip the offending ip
     Interrupt (t_icode code, const string& reason, const t_octa ip);
+
+    /// create a new interrupt by type, reason and ip and slot
+    /// @param code the interrupt code
+    /// @param reason the interrupt reason
+    /// @param ip the offending ip
+    /// @param slot the offending slot
+    Interrupt (t_icode code, const string& reason, const t_octa ip, 
+	       const long slot);
 
     /// create a new interrupt by type and instruction
     /// @param code the interrupt code
@@ -116,6 +128,13 @@ namespace iato {
     /// @return true if the interrupt is a trap
     bool istrap (void) const;
 
+    /// @return true if the interrupt is an execution one
+    bool isexec (void) const;
+
+    /// set the interupt execution bit
+    /// @param flag the flag to set
+    void setexec (const bool flag);
+
     /// @return the interruption code
     t_icode getcode (void) const;
 
@@ -129,6 +148,11 @@ namespace iato {
     /// set the interrupt offending ip
     /// @param ip the offending ip
     void setip (const t_octa ip);
+
+    /// set the interrupt offending ip and slot
+    /// @param ip   the offending ip
+    /// @param slot the offending slot
+    void setip (const t_octa ip, const long slot);
 
     /// @return the offending ip
     t_octa getip (void) const;

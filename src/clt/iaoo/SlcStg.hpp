@@ -91,6 +91,9 @@ namespace iato {
     /// flush this select stage
     void flush (void);
 
+    /// partially flush this select stage
+    void pflsh (void);
+
     /// activate this select stage
     void activate (void);
 

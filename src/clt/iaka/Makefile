@@ -22,13 +22,12 @@
 SOURCES 	= Atx.cpp       \
 		  Main.cpp      \
 		  Option.cpp    \
-		  Rename.cpp    \
-		  Fetcher.cpp   \
 		  Emulator.cpp
 
 DEPENDS		= $(SOURCES:.cpp=.d)
 OBJECTS 	= $(SOURCES:.cpp=.o)
 CCINCLUDE	= -I. 
+CCINCLUDE      += -I../../lib/ecu
 CCINCLUDE      += -I../../lib/mac 
 CCINCLUDE      += -I../../lib/krn
 CCINCLUDE      += -I../../lib/elf 
@@ -37,7 +36,8 @@ LIBIAISA	= ../../lib/isa/libiaisa.a
 LIBIAELF	= ../../lib/elf/libiaelf.a
 LIBIAKRN	= ../../lib/krn/libiakrn.a
 LIBIAMAC	= ../../lib/mac/libiamac.a
-LIBIAALL	= $(LIBIAMAC) $(LIBIAKRN) $(LIBIAELF) $(LIBIAISA)
+LIBIAECU	= ../../lib/ecu/libiaecu.a
+LIBIAALL	= $(LIBIAECU) $(LIBIAMAC) $(LIBIAKRN) $(LIBIAELF) $(LIBIAISA)
 include	      	../../../cnf/config.mak
 
 all : iaka

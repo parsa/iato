@@ -46,6 +46,7 @@ SOURCES 	= Mtx.cpp         \
 		  Mpr.cpp         \
 		  Mli.cpp         \
 		  Hma.cpp         \
+		  Rib.cpp         \
 		  Slot.cpp        \
 		  Ghpp.cpp        \
 		  Phpp.cpp        \

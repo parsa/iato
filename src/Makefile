@@ -32,7 +32,6 @@ install:
 distri:
 	@/bin/rm -rf   ../bld/src
 	@mkdir         ../bld/src
-	@cp Makefile   ../bld/src
 	${MAKE} -C lib distri
 	${MAKE} -C clt distri
 

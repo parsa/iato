@@ -590,7 +590,7 @@ namespace iato {
     case I_BREAK:
     case I_NOP:
       d_rprd.setlnum (PREG, get_pred (d_inst));
-      d_immv[0] = get_i20a (d_inst);
+      d_immv[0] = get_im21 (d_inst);
       d_group   = "I19";
       d_valid   = true;
       break;

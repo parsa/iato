@@ -97,6 +97,14 @@ namespace iato {
       d_mask   = OCTA_0;
       d_addr   = OCTA_0;
     }
+    // partial flush a buffer element
+    void pflsh (void) {
+      if (d_valid == false) return;
+      if (d_updb == true) {
+	d_cancel = false;
+	d_updb   = false;
+      }
+    }
     // check a load with an address and a size
     void chkld (const t_octa addr, const t_octa mask) {
       // do not check invalid, cancelled, store entry or updated entry
@@ -113,6 +121,7 @@ namespace iato {
   
   Mob::Mob (void) : Resource (RESOURCE_MOB) {
     d_size = SB_SIZE;
+    d_bthr = BN_IWSZ * BN_SLSZ; assert (d_bthr > 0);
     p_mobe = new t_mobe[d_size];
     reset ();
   }
@@ -121,6 +130,7 @@ namespace iato {
   
   Mob::Mob (Mtx* mtx) : Resource (RESOURCE_MOB) {
     d_size = mtx->getlong ("MOB-SIZE"); assert (d_size > 0);
+    d_bthr = mtx->getswsz ();  assert (d_bthr > 0);
     p_mobe = new t_mobe[d_size];
     reset ();
   }
@@ -136,6 +146,12 @@ namespace iato {
   void Mob::reset (void) {
     for (long i = 0; i < d_size; i++) p_mobe[i].reset ();
     d_aidx = 0;
+  }
+
+  // partial flush this mob
+
+  void Mob::pflsh (void) {
+    for (long i = 0; i < d_size; i++) p_mobe[i].pflsh ();
   }
 
   // report this resource
@@ -154,6 +170,16 @@ namespace iato {
       if (p_mobe[i].d_valid == true) return false;
     }
     return true;
+  }
+
+  // return true if the mob has reach a threshold
+
+  bool Mob::isthr (void) const {
+    for (long i = 0; i < d_bthr; i++) {
+      long midx = (d_aidx + i) % d_size;
+      if (p_mobe[midx].d_valid == true) return true;
+    }
+    return false;
   }
 
   // check if the mob entry is valid

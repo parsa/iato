@@ -92,7 +92,7 @@ namespace iato {
   /// the iato major number
   const t_byte RMAJOR = 0x01;
   /// the iato minor number
-  const t_byte RMINOR = 0x00;  
+  const t_byte RMINOR = 0x01;  
 }
 
 // ---------------------------------------------------------------------------

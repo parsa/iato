@@ -30,44 +30,22 @@
 
 int main (void) {
   struct stat sts;
-  int fd = 0;
+  int    fd   = -1;
 
-  if ( lstat ("p_0013.c", & sts) != 0) {
-    fprintf (stderr, "stat erreur\n");
-    return 1;
-  }
-  fprintf (stdout,
-	   "Noeud : %ld\n",
-	   sts . st_ino);
-  fprintf (stdout,
-	   "Taille : %lu octets\n",
-	   sts . st_size);
-  if ( stat ("p_0013.c", & sts) != 0) {
-    fprintf (stderr, "stat erreur\n");
-    return 2;
-  }
-  fprintf (stdout,
-	   "Noeud : %ld\n",
-	   sts . st_ino);
-  fprintf (stdout,
-	   "Taille : %lu octets\n",
-	   sts . st_size);
+  /* check stat and lstat */
+  if (stat ("p_0013.c", &sts) != 0) return 1;
+  fprintf (stdout, "p_0013: stat success\n");
+  if (lstat ("p_0013.c", &sts) != 0) return 1;
+  fprintf (stdout, "p_0013: lstat success\n");
 
+  /* check fstat */
   fd = open ("p_0013.c", O_RDONLY);
-  if ( fstat (fd, & sts) != 0) {
-    fprintf (stderr, "stat erreur\n");
-    return 3;
-  }
-  fprintf (stdout,
-	   "Noeud : %ld\n",
-	   sts . st_ino);
-  fprintf (stdout,
-	   "Taille : %lu octets\n",
-	   sts . st_size);
+  if (fstat (fd, &sts) != 0) return 1;
+  close (fd);
+  fprintf (stdout, "p_0013: fstat success\n");
 
-  if ( access ("p_0013", R_OK | X_OK) != 0) {
-    fprintf (stderr, "access erreur\n");
-    return 4;
-  }
+  // check for access */
+  if (access ("p_0013", R_OK | X_OK) != 0) return 1;
+  fprintf (stdout, "p_0013: access success\n");
   return 0;
 }

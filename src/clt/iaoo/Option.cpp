@@ -60,6 +60,7 @@ namespace iato {
     cerr << "  -G #                   number of general registers   " << endl;
     cerr << "  -a:b bprd              branch predictor type         " << endl;
     cerr << "  -a:p pprd              predicate predictor type      " << endl;
+    cerr << "  -a:f                   enable partial flushing       " << endl;
     exit (1);
   }
 
@@ -88,6 +89,7 @@ namespace iato {
     d_trsrc = "";
     d_bprd  = BP_TYPE;
     d_pprd  = PP_TYPE;
+    d_pfls  = RM_PFLS;
     // check for arguments
     string data;
     if (argc < 2) usage ();
@@ -110,6 +112,10 @@ namespace iato {
 	  if ((arg[2] == ':') && (arg[3] == 'p') && (arg[4] == '\0')) {
 	    if (++count == argc) usage ();
 	    d_pprd = argv[count];
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'f') && (arg[4] == '\0')) {
+	    d_pfls = true;
 	    break;
 	  }
 	  usage ();

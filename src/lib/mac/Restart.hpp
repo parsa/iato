@@ -46,6 +46,8 @@ namespace iato {
 
   class Restart : public Resource {
   protected:
+    /// the partial flush bit
+    bool d_pfls;
     /// the instruction restart flag
     bool d_ipfr;
     /// the pre-serialization flag
@@ -72,6 +74,9 @@ namespace iato {
 
     /// flush all resource
     virtual void flush (void) =0;
+
+    /// partially flush the resources
+    virtual void pflsh (void);
 
     /// report this resource
     void report (void) const;

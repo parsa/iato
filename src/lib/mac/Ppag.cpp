@@ -101,23 +101,23 @@ namespace iato {
   // return true if the predicate can be predicted
 
   bool Ppag::isvalid (const t_octa ip, const long slot, 
-			const long pred) const {
+		      const long pred) const {
     // compute hash address
-    t_octa addr = ip ^ p_htr[pred].gethist ();
+    t_octa addr = (ip >> 4) ^ p_htr[pred].gethist ();
     // check for valid pht entry
-    return d_usec ? p_pht->isstrong (addr, slot) : true;
+    return d_usec ? p_pht->isstrong (addr) : true;
   }
 
   // compute the predicate value by index
 
   bool Ppag::compute (const t_octa ip, const long slot, 
-			const long pred) const {
+		      const long pred) const {
     // check for fixed predicate
     if (pred == 0) return true;
     // compute hash address
-    t_octa addr = ip ^ p_htr[pred].gethist ();
+    t_octa addr = (ip >> 4) ^ p_htr[pred].gethist ();
     // get pht predicate
-    return p_pht->istrue (addr,slot);
+    return p_pht->istrue (addr);
   }
 
   // update the predicate system by ip, slot, predicate and value
@@ -127,9 +127,9 @@ namespace iato {
     // do nothing with fixed predicate
     if (pred == 0) return;
     // compute hash address
-    t_octa addr = ip ^ p_htr[pred].gethist ();
+    t_octa addr = (ip >> 4) ^ p_htr[pred].gethist ();
     // update the pht
-    p_pht->update (addr, slot, pval);
+    p_pht->update (addr, pval);
     // update the history
     if ((!d_bhuo | bflg) == true) p_htr[pred].update (pval);
   }

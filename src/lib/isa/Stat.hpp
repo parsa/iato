@@ -58,10 +58,18 @@ namespace iato {
     t_long d_nbcn;
     /// total number of rescheduled instructions
     t_long d_nrsh;
+    /// total number of pipeline flushes
+    t_long d_ntpf;
+    /// number of branch pipeline flushes
+    t_long d_nbpf;
+    /// number of other pipeline flushes
+    t_long d_nopf;
     /// number of predicted branches
     t_long d_npbr;
     /// number of successfull branch prediction
     t_long d_npbs;
+    /// number of rejected predicted predicates
+    t_long d_nrpr;
     /// number of predicted predicates
     t_long d_nppr;
     /// number of successfull predicate prediction
@@ -99,9 +107,16 @@ namespace iato {
     /// mark the end of the simulation
     virtual void markes (void);
 
+    /// mark a pipeline flush
+    /// @param bflg the branch flag
+    virtual void markpf (const bool bflg);
+
     /// mark the branch prediction stat
     /// @parm bflg the successfull branch prediction
     virtual void markbp (const bool bflg);
+
+    /// mark the rejected predicate prediction stat
+    virtual void markrp (void);
 
     /// mark the predicate prediction stat
     /// @parm pflg the successfull predicate prediction

@@ -68,6 +68,9 @@ namespace iato {
     /// reset this buffer
     void reset (void);
 
+    /// partial flush this rob
+    void pflsh (void);
+
     /// report this resource
     void report (void) const;
 
@@ -89,13 +92,23 @@ namespace iato {
     /// allocate a new iib entry
     long alloc (void);
 
+    /// allocate a new iib entry with an interrupt
+    /// @param vi the interrupt to set
+    long alloc (const Interrupt& vi);
+
     /// @return an interrupt by index
     Interrupt getintr (const long index) const;
 
     /// set an interrupt by index
     /// @param index the iib index
-    /// @param intr the interrupt to set
-    void setintr (const long index, const Interrupt& intr);
+    /// @param vi the interrupt to set
+    void setintr (const long index, const Interrupt& vi);
+
+    /// set an interrupt by index with the exec flag
+    /// @param index the iib index
+    /// @param vi the interrupt to set
+    /// @param flag the exec flag to set
+    void setintr (const long index, const Interrupt& vi, const bool flag);
 
   private:
     // make the copy constructor private

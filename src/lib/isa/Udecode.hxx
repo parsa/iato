@@ -105,6 +105,12 @@ namespace iato {
     return result;
   }
 
+  // get the instruction immediate bit
+  static inline bool get_ibit (const t_octa inst, const long pos) {
+    bool result = ((t_byte) (inst >> pos)) & 0x01 == 0x01;
+    return result;
+  }
+
   // get the instruction immediate sign bit at position 15
   static inline bool get_sbit15 (const t_octa inst) {
     bool result = ((t_byte) (inst >> 15)) & 0x01 == 0x01;
@@ -126,48 +132,48 @@ namespace iato {
 
   // get the instruction immediate (8) value
   static inline t_octa get_im08b (const t_octa inst) {
-    t_octa result = (inst >> 13) & 0x000000000000007F;
-    if (get_sbit (inst)) result |= ~0x000000000000003F;
+    t_octa result = (inst >> 13) & 0x000000000000007FULL;
+    if (get_sbit (inst)) result |= ~0x000000000000007FULL;
     return result;
   }
 
   // get the instruction immediate (9) value for M3 M8 and M15
   static inline t_octa get_im09b (const t_octa inst) {
-    bool     ibit = ((t_byte) (inst >> 27) & 0x01) == 0x01;
-    t_octa result = (inst >> 13) & 0x000000000000007F;
-    if (ibit == true) result |= 0x80;
-    if (get_sbit (inst)) result |= ~0x00000000000000FF;
+    t_octa result = (inst >> 13) & 0x000000000000007FULL;
+    if (get_ibit (inst, 27)) result |=  0x0000000000000080ULL;
+    if (get_sbit (inst))     result |= ~0x00000000000000FFULL;
     return result;
   }
 
   // get the instruction immediate (9) value for M5 M10
   static inline t_octa get_im09a (const t_octa inst) {
-    bool     ibit = ((t_byte) (inst >> 27) & 0x01) == 0x01;
-    t_octa result = (inst >> 6) & 0x000000000000007F;
-    if (ibit == true) result |= 0x80;
-    if (get_sbit (inst)) result |= ~0x00000000000000FF;
+    t_octa result = (inst >> 6) & 0x000000000000007FULL;
+    if (get_ibit (inst, 27)) result |=  0x0000000000000080ULL;
+    if (get_sbit (inst))     result |= ~0x00000000000000FFULL;
     return result;
   }
 
   // get the instruction immediate (14) value
   static inline t_octa get_im14 (const t_octa inst) {
-    t_octa result = (((inst >> 13) & 0x007F) | ((inst >> 20) & 0x003F80));
-    if (get_sbit (inst)) result |= ~0x0000000000001FFF;
+    t_octa result = (((inst >> 13) & 0x000000000000007FULL) | 
+		     ((inst >> 20) & 0x0000000000003F80ULL));
+    if (get_sbit (inst)) result |= ~0x0000000000001FFFULL;
     return result;
   }
 
-  // get the instruction immediate (20) value for break/nop
-  static inline t_octa get_i20a (const t_octa inst) {
-    t_octa result = (inst >> 6) & 0x00000000000FFFFF;
-    if (get_sbit (inst)) result |= 0x0000000000100000;
+  // get the instruction immediate (21) value for break/nop
+  static inline t_octa get_im21 (const t_octa inst) {
+    t_octa result = (inst >> 6) & 0x00000000000FFFFFULL;
+    if (get_ibit (inst, 36)) result |= 0x0000000000100000ULL;
     return result;
   }
 
   // get the instruction immediate (22) value
   static inline t_octa get_im22 (const t_octa inst) {
-    t_octa result = (((inst >> 13) & 0x007F) | ((inst >> 20) & 0x00FF80) |
-		     ((inst >> 6) & 0x1F0000));
-    if (get_sbit (inst)) result |= ~0x00000000001FFFFF;
+    t_octa result = (((inst >> 13) & 0x000000000000007FULL) | 
+		     ((inst >> 20) & 0x000000000000FF80ULL) |
+		     ((inst >> 6)  & 0x00000000001F0000ULL));
+    if (get_sbit (inst)) result |= ~0x00000000001FFFFFULL;
     return result;
   }
 
@@ -192,8 +198,8 @@ namespace iato {
   // get the instruction immediate (25) value for branch and advanced load
   // check. The value is shifted by 4 after the sign extension.
   static inline t_octa get_i25b (const t_octa inst) {
-    t_octa result = (inst >> 13) & 0x00000000000FFFFF;
-    if (get_sbit (inst) == true) result |= ~0x00000000000FFFFF;
+    t_octa result = (inst >> 13) & 0x00000000000FFFFFULL;
+    if (get_sbit (inst) == true) result |= ~0x00000000000FFFFFULL;
     result = result << 4;
     return result;
   }
@@ -201,9 +207,9 @@ namespace iato {
   // get the instruction target25 value for speculation check
   // it is shifted by 4 after the sign extension.
   static inline t_octa get_spectg (const t_octa inst) {
-    t_octa result = ((inst >> 6) & 0x000000000000007F)
-      |((inst >> 13) & 0x00000000000FFF80);
-    if (get_sbit (inst) == true) result |= ~0x00000000000FFFFF;
+    t_octa result = ((inst >> 6) & 0x000000000000007FULL)
+      |((inst >> 13) & 0x00000000000FFF80ULL);
+    if (get_sbit (inst) == true) result |= ~0x00000000000FFFFFULL;
     result = result << 4;
     return result;
   }
@@ -212,19 +218,19 @@ namespace iato {
   static inline t_octa get_im62 (const t_octa inst, const t_octa extd) {
     t_octa result = extd << 21;
     if (get_sbit (inst) == true) result |= (t_octa) 1 << 20;
-    result |= (inst >> 6) & 0x00000000000FFFFF;
+    result |= (inst >> 6) & 0x00000000000FFFFFULL;
     return result;
   }
 
   // get the instruction immediate (64) value
   static inline t_octa get_im64 (const t_octa inst, const t_octa extd) {
     t_octa result = 0;
-    if (get_sbit (inst) == true) result |= 0x8000000000000000LL;
+    if (get_sbit (inst) == true) result |= 0x8000000000000000ULL;
     result |= extd << 22;
-    result |= ((inst >> 21) & 0x0000000000000001LL) << 21;
-    result |= ((inst >> 22) & 0x000000000000001FLL) << 16;
-    result |= ((inst >> 27) & 0x00000000000001FFLL) << 7;
-    result |=  (inst >> 13) & 0x000000000000007FLL;
+    result |= ((inst >> 21) & 0x0000000000000001ULL) << 21;
+    result |= ((inst >> 22) & 0x000000000000001FULL) << 16;
+    result |= ((inst >> 27) & 0x00000000000001FFULL) << 7;
+    result |=  (inst >> 13) & 0x000000000000007FULL;
     return result;
   }
 }

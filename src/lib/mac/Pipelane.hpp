@@ -70,6 +70,9 @@ namespace iato {
     /// flush this pipelane
     void flush (void);
 
+    /// partially flush this pipelane
+    void pflsh (void);
+
     /// return true if one stage is holding
     bool isholding (void) const;
 

@@ -66,6 +66,8 @@ namespace iato {
     bool d_vbit;
     // the ready bit
     bool d_rbit;
+    // force ready bit
+    bool d_rfrc;
     // the translation bit
     bool d_tbit;
     // the register number
@@ -78,9 +80,19 @@ namespace iato {
     void reset (void) {
       d_vbit = false;
       d_rbit = false;
+      d_rfrc = false;
       d_tbit = false;
       d_tnum = -1;
     }
+    // partial flush a trb entry
+    void pflsh (void) {
+      if (d_vbit == false) return;
+      if ((d_tbit == false) && (d_rfrc == false)) return;
+      d_tbit = false;
+      d_rbit = false;
+      d_tnum = -1;
+    }
+
     // allocate a new trb entry
     bool alloc (void) {
       if (d_vbit == true) return false;
@@ -95,9 +107,19 @@ namespace iato {
       assert (d_vbit == true);
       long result = d_tbit ? d_tnum : -1;
       d_rbit = true;
+      d_rfrc = false;
       d_tbit = false;
       d_tnum = -1;
       return result;
+    }
+    // force ready bit and mark it
+    void setrdy (void) {
+      assert (d_vbit == true);
+      assert (d_tbit == false);
+      d_rbit = true;
+      d_rfrc = true;
+      d_tbit = false;
+      d_tnum = -1;
     }
     // cancel a translation, like clean but assert tbit
     void cancel (void) {
@@ -143,6 +165,12 @@ namespace iato {
 
   void Trb::reset (void) {
     for (long i = 0; i < d_size; i++) p_vtrb[i].reset ();
+  }
+
+  // partial flush this trb
+
+  void Trb::pflsh (void) {
+    for (long i = 0; i < d_size; i++) p_vtrb[i].pflsh ();
   }
 
   // report this resource
@@ -238,6 +266,6 @@ namespace iato {
 
   void Trb::setrdy (const long vnum) {
     assert ((vnum >= 0) && (vnum < d_size));
-    p_vtrb[vnum].cancel ();
+    p_vtrb[vnum].setrdy ();
   }
 }

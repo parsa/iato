@@ -30,6 +30,8 @@ namespace iato {
 
   /// exit system call
   void krn_exit    (Rse* rse, Register* rbk);
+  /// exit group system call
+  void krn_exit_group (Rse* rse, Register* rbk);
   /// brk system call
   void krn_brk     (Rse* rse, Register* rbk, ElfExec* mem);
 }

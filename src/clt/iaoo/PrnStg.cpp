@@ -157,9 +157,9 @@ namespace iato {
 	// rename it by the urf (rat and trb)
 	assert (prninst (p_inst[i], p_urf) == true);
       } catch (Interrupt& vi) {
-	long iidx = p_inst[i].getiib ();
 	vi.setinst (p_inst[i]);
-	p_iib->setintr (iidx, vi);
+	long iiib = p_inst[i].getiib ();
+	p_iib->setintr (iiib, vi);
 	p_inst[i].reset ();
       }
     }

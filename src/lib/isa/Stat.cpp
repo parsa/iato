@@ -53,9 +53,13 @@ namespace iato {
     d_ncan = 0;
     d_nbcn = 0;
     d_nrsh = 0;
+    d_ntpf = 0;
+    d_nbpf = 0;
+    d_nopf = 0;
     d_npbr = 0;
     d_npbs = 0;
     d_nppr = 0;
+    d_nrpr = 0;
     d_npps = 0;
     for (long i = 0; i < Bundle::BN_MAXTPL; i++) d_bndl[i] = 0;
     for (long i = 0; i < OPCODE_MAX; i++)        d_inst[i] = 0;
@@ -81,6 +85,16 @@ namespace iato {
     d_etim = time (NULL);
   }
 
+  // mark a pipeline flush
+
+  void Stat::markpf (const bool bflg) {
+    d_ntpf++;
+    if (bflg == true)
+      d_nbpf++;
+    else
+      d_nopf++;
+  }
+
   // mark branch prediction
 
   void Stat::markbp (const bool bflg) {
@@ -93,6 +107,12 @@ namespace iato {
   void Stat::markpp (const bool pflg) {
     d_nppr++;
     if (pflg == true) d_npps++;
+  }
+
+  // mark rejected predicate prediction
+
+  void Stat::markrp (void) {
+    d_nrpr++;
   }
 
   // add a bundle to this collection
@@ -225,6 +245,16 @@ namespace iato {
 	cout << "\t(" << setprecision (3) << prsh << "%)" << endl;
       }
     }
+    // report pipeline flushes
+    if (d_ntpf != 0) {
+      double pbpf = 100.0 * (double) d_nbpf / (double) d_ntpf;
+      double popf = 100.0 * (double) d_nopf / (double) d_ntpf;
+      cout << "number of pipeline flushes     : " << d_ntpf << endl;
+      cout << "number of branch   flushes     : " << d_nbpf;
+      cout << "\t(" << setprecision (3) << pbpf << "%)" << endl;
+      cout << "number of other    flushes     : " << d_nopf;
+      cout << "\t(" << setprecision (3) << popf << "%)" << endl;
+    }
     // report branch prediction
     if (d_npbr != 0) {
       double ppbs = 100.0 * (double) d_npbs / (double) d_npbr;
@@ -235,6 +265,7 @@ namespace iato {
     // report predicate prediction
     if (d_nppr != 0) {
       double ppps = 100.0 * (double) d_npps / (double) d_nppr;
+      cout << "number of rejected  prediction : " << d_nrpr << endl;
       cout << "number of predicate prediction : " << d_nppr << endl;
       cout << "successfull predicates         : " << d_npps;
       cout << "\t(" << setprecision (3) << ppps << "%)" << endl;

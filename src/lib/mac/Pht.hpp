@@ -68,37 +68,36 @@ namespace iato {
     /// @return the pht size
     long getsize (void) const;
 
-    /// @return a hashed index by address and slot
-    virtual long hash (const t_octa ip, const long slot) const;
+    /// @return a hashed index by address
+    virtual long hash (const t_octa addr) const;
 
     /// @return true if the prediction is strong by index
     virtual bool isstrong (const long index) const;
 
-    /// @return true if the prediction is strong by address and slot
-    virtual bool isstrong (const t_octa ip, const long slot) const;
+    /// @return true if the prediction is strong by address
+    virtual bool isstrong (const t_octa addr) const;
 
     /// @return true if the prediction is weak by index
     virtual bool isweak (const long index) const;
 
-    /// @return true if the prediction is weak by address and slot
-    virtual bool isweak (const t_octa ip, const long slot) const;
+    /// @return true if the prediction is weak by address
+    virtual bool isweak (const t_octa addr) const;
 
     /// @return true if the prediction is true by index
     virtual bool istrue (const long index) const;
 
-    /// @return true if the prediction is true by address and slot
-    virtual bool istrue (const t_octa ip, const long slot) const;
+    /// @return true if the prediction is true by address
+    virtual bool istrue (const t_octa addr) const;
 
     /// update the pht by index
     /// @param index the pht index
     /// @param flag the flag used for update
     virtual void update (const long index, const bool flag);
 
-    /// update the pht by address and slot
-    /// @param ip   the pht address
-    /// @param slot the pht slot
+    /// update the pht by address
+    /// @param addr the updating address
     /// @param flag the flag used for update
-    virtual void update (const t_octa ip, const long slot, const bool flag);
+    virtual void update (const t_octa addr, const bool flag);
 
   private:
     // make the copy constructor private

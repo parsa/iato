@@ -74,7 +74,15 @@ namespace iato {
   /// @param argi the argument index
   /// @param rse  the register stack engine
   /// @param rbk  the register bank
-  t_octa sys_args_getoval (const long argi, Rse* rse, Register* rbk);  
+  t_octa sys_args_getoval (const long argi, Rse* rse, Register* rbk);
+
+  /// compare two arguments by index
+  /// @param argx the argument index
+  /// @param argy the argument index
+  /// @param rse  the register stack engine
+  /// @param rbk  the register bank
+  bool sys_args_compare (const long argx, const long argy, 
+			 Rse* rse, Register* rbk);  
 }
 
 #endif

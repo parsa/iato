@@ -1801,6 +1801,21 @@ namespace iato {
     return result;
     }
 
+  // ------------------------------------------------------------------------
+  // - F12 instruction group                                                -
+  // ------------------------------------------------------------------------
+
+  // F_FSETC
+  static Result exec_fsetc (const Instr& inst, const Operand& oprd) {
+    // get fpsr register
+    Fpsr fpsr = oprd.getoval (0);
+
+    // prepare result and set final fpsr
+    Result result = inst.getresl ();
+    result.setoval (0, fpsr.getfpsr ());
+    return result;
+  }
+
   // execute a F unit instruction with operands
 
   Result Fexecute::exec (const Instr& inst, const Operand& oprd) const {
@@ -1985,6 +2000,11 @@ namespace iato {
       // F11 instruction group
     case F_FCVT_XF:
       result = exec_fcvt_xf (inst, oprd);
+      break;
+
+      // F12 instruction group
+    case F_FSETC:
+      result = exec_fsetc (inst, oprd);
       break;
 
       // F15 instruction group

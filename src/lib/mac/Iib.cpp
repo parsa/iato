@@ -62,6 +62,16 @@ namespace iato {
     }
   }
 
+  // partial flush this buffer
+
+  void Iib::pflsh (void) {
+    for (long i = 0; i < d_size; i++) {
+      if (p_vldb[i] == false) continue;
+      if (p_intr[i].isexec () == false) continue;
+      clear (i);
+    }
+  }
+
   // report this resource
 
   void Iib::report (void) const {
@@ -120,6 +130,14 @@ namespace iato {
     return -1;
   }
 
+  // allocate a new entry with an interrupt
+
+  long Iib::alloc (const Interrupt& vi) {
+    long index = alloc ();
+    if (index != -1) setintr (index, vi);
+    return index;
+  }
+
   // get the buffer interrupt by index
 
   Interrupt Iib::getintr (const long index) const {
@@ -130,9 +148,18 @@ namespace iato {
 
   // set an interrupt by index
 
-  void Iib::setintr (const long index, const Interrupt& intr) {
+  void Iib::setintr (const long index, const Interrupt& vi) {
     assert ((index >= 0) && (index < d_size));
     assert (p_vldb[index] == true);
-    p_intr[index] = intr;
+    p_intr[index] = vi;
+  }
+
+  // set an interrupt by index with an exec flag
+
+  void Iib::setintr (const long index, const Interrupt& vi, const bool flag) {
+    assert ((index >= 0) && (index < d_size));
+    assert (p_vldb[index] == true);
+    p_intr[index] = vi;
+    p_intr[index].setexec (flag);
   }
 }

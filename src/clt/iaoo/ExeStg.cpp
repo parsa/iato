@@ -34,6 +34,7 @@ namespace iato {
   // create a new execute stage by context and unit
 
   ExeStg::ExeStg (Stx* stx, t_unit unit): ResStg (stx, unit, RESOURCE_EXE) {
+    d_ibyp = stx->getbool ("INCOMPLETE-BYPASS-PREDICATE");
     p_exec = 0;
     p_bpn  = 0;
     p_bpe  = new Bpe (stx);
@@ -54,6 +55,7 @@ namespace iato {
 
   ExeStg::ExeStg (Stx* stx, t_unit unit, 
 		  const string& name) : ResStg (stx, unit, name) {
+    d_ibyp = stx->getbool ("INCOMPLETE-BYPASS-PREDICATE");
     p_exec = 0;
     p_bpn  = 0;
     p_bpe  = new Bpe (stx);
@@ -149,12 +151,17 @@ namespace iato {
 	  // preset the result with the port request if needed
 	  if (p_mli) p_mli->preset (d_inst, d_resl);
 	  // update the bpe (for bypass)
-	  p_bpe->update (d_resl);
+	  if (d_inst.getppfl () == true) {
+	    if (d_ibyp == false) p_bpe->update (d_resl);
+	  } else {
+	    p_bpe->update (d_resl);
+	  }
 	  // fix interrupt
 	  d_intr.reset ();
 	} catch (const Interrupt& vi) {
 	  d_resl.reset ();
 	  d_intr = vi;
+	  d_intr.setinst (d_inst);
 	}
       } else {
 	d_resl = d_inst.getresl ();

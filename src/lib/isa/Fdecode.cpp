@@ -35,19 +35,19 @@ namespace iato {
 
   // return the fclass9 value
   static t_octa get_fclass9 (const t_octa inst) {
-    t_octa result = ((inst >> 18) & 0x00000000000001FC);
-    return (result |=  ((inst >> 33) & 0x0000000000000003));
+    t_octa result = ((inst >> 18) & 0x00000000000001FCULL);
+    return (result |=  ((inst >> 33) & 0x0000000000000003ULL));
   }
 
   // return the omask7c immediate field for F12
   static t_octa get_omask7c (const t_octa inst) {
-    t_octa result = ((inst >> 20) & 0x000000000000007F);
+    t_octa result = ((inst >> 20) & 0x000000000000007F3ULL);
     return result;
   }
 
   // return the amask7b immediate field for F12
   static t_octa get_amask7b (const t_octa inst) {
-    t_octa result = ((inst >> 13) & 0x000000000000007F);
+    t_octa result = ((inst >> 13) & 0x000000000000007F3ULL);
     return result;
   }
 
@@ -470,7 +470,7 @@ namespace iato {
       d_immv[0] = get_omask7c (d_inst);
       d_immv[1] = get_amask7b (d_inst);
       d_fpcomp  = get_fpcomp  (d_inst);
-      d_group  = "F12";
+      d_group   = "F12";
       d_valid   = true;
       break;
       
@@ -498,7 +498,7 @@ namespace iato {
     case F_BREAK:
     case F_NOP:
       d_rprd.setlnum (PREG, get_pred (d_inst));
-      d_immv[0] = get_i20a (d_inst);
+      d_immv[0] = get_im21 (d_inst);
       d_group   = "F15";
       d_valid   = true;
       break;

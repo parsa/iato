@@ -92,6 +92,9 @@ namespace iato {
     case NR_EXIT:
       krn_exit (p_rse, p_rbk);
       break;
+    case NR_EXIT_GROUP:
+      krn_exit_group (p_rse, p_rbk);
+      break;
     case NR_BRK:
       krn_brk (p_rse, p_rbk, p_mem);
       break;

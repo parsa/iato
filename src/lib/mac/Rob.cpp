@@ -33,14 +33,18 @@ namespace iato {
     long   d_imob;
     // the iib index
     long   d_iiib;
+    // the interrupt bit
+    bool   d_intr;
     // the exec bit
     bool d_exec;
     // the cancel bit
     bool d_cnlf;
     // the irb index
     long d_iidx;
-    // the sip speculative bit
-    bool d_bsip;
+    /// the speculative bit
+    bool d_sbit;
+    // the branch speculative status
+    bool d_bbss;
     // the serialize bit
     bool d_srlz;
     //  the nop bit
@@ -49,8 +53,6 @@ namespace iato {
     t_octa d_ip;
     // the instruction slot
     long   d_slot;
-    // the interrupt record
-    Interrupt d_intr;
     // create a new rob entry
     t_rob (void) {
       reset ();
@@ -60,15 +62,27 @@ namespace iato {
       d_valid = false;
       d_imob  = -1;
       d_iiib  = -1;
+      d_intr  = false;
       d_exec  = false;
       d_cnlf  = false;
       d_iidx  = -1;
-      d_bsip  = false;
+      d_sbit  = false;
+      d_bbss  = false;
       d_srlz  = false;
       d_nopb  = false;
       d_ip    = OCTA_0;
       d_slot  = 0;
-      d_intr.reset ();
+    }
+    // partial flush this rob entry
+    void pflsh (void) {
+      if (d_exec == true) {
+	d_iiib = -1;
+	d_intr = false;
+	d_exec = false;
+      }
+      d_cnlf = false;
+      d_sbit = false;
+      d_bbss = false;
     }
   };
 
@@ -80,7 +94,7 @@ namespace iato {
     reset ();
   }
 
-  // create a new robwith a context
+  // create a new rob with a context
   
   Rob::Rob (Mtx* mtx) : Resource (RESOURCE_ROB) {
     d_size = mtx->getlong ("ROB-SIZE"); assert (d_size > 0);
@@ -101,6 +115,12 @@ namespace iato {
     d_rlen = 0;
     d_iptr = 0;
     d_optr = 0;
+  }
+
+  // partial flush this rob
+
+  void Rob::pflsh (void) {
+    for (long i = 0; i < d_size; i++) p_rbuf[i].pflsh ();
   }
 
   // report this resource
@@ -143,7 +163,7 @@ namespace iato {
     if (p_rbuf[d_optr].d_valid == false) return false;
     if (p_rbuf[d_optr].d_exec  == true)  return true;
     if (p_rbuf[d_optr].d_srlz  == true)  return true;
-    if (p_rbuf[d_optr].d_intr.isvalid () == true) return true;
+    if (p_rbuf[d_optr].d_intr  == true)  return true;
     return false;
   }
 
@@ -165,7 +185,7 @@ namespace iato {
   
   bool Rob::isintr (void) const {
     if (p_rbuf[d_optr].d_valid == false) return false;
-    return p_rbuf[d_optr].d_intr.isvalid ();
+    return p_rbuf[d_optr].d_intr;
   }
 
   // return true of the current rob entry has been cancelled
@@ -198,7 +218,7 @@ namespace iato {
 
   // allocate a new rob entry
 
-  long Rob::alloc (const Instr& inst, const long imob, const long iiib) {
+  long Rob::alloc (const Dsi& inst, const long imob, const long iiib) {
     assert (d_rlen < d_size);
     assert (p_rbuf[d_iptr].d_valid == false);
     assert (inst.isvalid () == true);
@@ -218,18 +238,16 @@ namespace iato {
 
   // allocate a new rob entry with an interrupt
 
-  long Rob::alloc (const Interrupt& vi) {
+  void Rob::alloc (const long iiib) {
     assert (d_rlen < d_size);
     assert (p_rbuf[d_iptr].d_valid == false);
-    assert (vi.isvalid () == true);
     // allocate the new rob entry
     p_rbuf[d_iptr].reset ();
     p_rbuf[d_iptr].d_valid = true;
-    p_rbuf[d_iptr].d_intr  = vi;
-    long result = d_iptr;
+    p_rbuf[d_iptr].d_intr  = true;
+    p_rbuf[d_iptr].d_iiib  = iiib;    
     d_iptr = ++d_iptr % d_size;
     d_rlen++;
-    return result;
   }
 
   // pop the latest irb index and clean
@@ -266,14 +284,14 @@ namespace iato {
 
   // pop the latest interrupt and clean
 
-  Interrupt Rob::ipop (void) {
+  long Rob::ipop (void) {
     assert (isintr () == true);
-    Interrupt vi = p_rbuf[d_optr].d_intr;
+    long result = p_rbuf[d_optr].d_iiib;
     // clean this entry
     p_rbuf[d_optr].reset ();
     d_optr = ++d_optr % d_size;
     d_rlen--;
-    return vi;
+    return result;
   }
 
   // return the latest instruction ip
@@ -290,6 +308,13 @@ namespace iato {
     return p_rbuf[d_optr].d_slot;
   }
 
+  // return the latest irb index
+
+  long Rob::getiidx (void) const {
+    assert (p_rbuf[d_optr].d_valid == true);
+    return p_rbuf[d_optr].d_iidx;
+  }
+
   // return the latest mob index
 
   long Rob::getimob (void) const {
@@ -304,11 +329,18 @@ namespace iato {
     return p_rbuf[d_optr].d_iiib;
   }
 
-  // return the latest sip speculative bit
+  // return the latest speculative bit
 
-  bool Rob::getbsip (void) const {
+  bool Rob::getsbit (void) const {
     assert (p_rbuf[d_optr].d_valid == true);
-    return p_rbuf[d_optr].d_bsip;
+    return p_rbuf[d_optr].d_sbit;
+  }
+
+  // return the latest branch speculative status
+
+  bool Rob::getbbss (void) const {
+    assert (p_rbuf[d_optr].d_valid == true);
+    return p_rbuf[d_optr].d_bbss;
   }
 
   // set the exec flag by index
@@ -337,17 +369,36 @@ namespace iato {
 
   // set the interrupt entry
 
-  void Rob::setintr (const long ridx, const Interrupt& vi) {
+  void Rob::setintr (const long ridx, const long iiib) {
     assert ((ridx >= 0) && (ridx < d_size));
     assert (p_rbuf[ridx].d_valid == true);
-    p_rbuf[ridx].d_intr = vi;
+    p_rbuf[ridx].d_intr = true;
+    p_rbuf[ridx].d_iiib = iiib;
   }
 
-  // set the sip speculative bit entry
+  // set the interrupt entry with the speculative bit
 
-  void Rob::setbsip (const long ridx, const bool bsip) {
+  void Rob::setintr (const long ridx, const long iiib, const bool sbit) {
     assert ((ridx >= 0) && (ridx < d_size));
     assert (p_rbuf[ridx].d_valid == true);
-    p_rbuf[ridx].d_bsip = bsip;
+    p_rbuf[ridx].d_intr = true;
+    p_rbuf[ridx].d_iiib = iiib;
+    p_rbuf[ridx].d_sbit = sbit;
+  }
+
+  // set the speculative bit
+
+  void Rob::setsbit (const long ridx, const bool sbit) {
+    assert ((ridx >= 0) && (ridx < d_size));
+    assert (p_rbuf[ridx].d_valid == true);
+    p_rbuf[ridx].d_sbit = sbit;
+  }
+
+  // set the branch speculative status
+
+  void Rob::setbbss (const long ridx, const bool bbss) {
+    assert ((ridx >= 0) && (ridx < d_size));
+    assert (p_rbuf[ridx].d_valid == true);
+    p_rbuf[ridx].d_bbss = bbss;
   }
 }

@@ -51,6 +51,8 @@ namespace iato {
   
   class RegStg : public DlyStg {
   private:
+    /// the global predicate prediction flag
+    bool d_gpp;
     /// the universal file
     Urf* p_urf;
     /// the bypass network

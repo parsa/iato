@@ -102,8 +102,8 @@ namespace iato {
 	  p_inst[i].setscfm (srs.getcfm ());
 	} catch (Interrupt& vi) {
 	  vi.setinst (p_inst[i]);
-	  long iidx = p_inst[i].getiib (); 
-	  p_iib->setintr (iidx, vi);
+	  long iiib = p_inst[i].getiib (); 
+	  p_iib->setintr (iiib, vi);
 	  p_inst[i].reset ();
 	}
       }

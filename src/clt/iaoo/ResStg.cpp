@@ -27,6 +27,7 @@ namespace iato {
 
   ResStg::ResStg (Stx* stx, t_unit unit, 
 		  const string& name) : Stage (stx, name) {
+    d_flsh = stx->getbool ("PARTIAL-FLUSH-MODE");
     d_unit = unit;
     reset ();
   }
@@ -44,6 +45,15 @@ namespace iato {
 
   void ResStg::flush (void) {
     Stage::flush ();
+    d_inst.reset ();
+    d_resl.reset ();
+    d_intr.reset ();
+  }
+
+  // partially flush this execute stage
+
+  void ResStg::pflsh (void) {
+    if (d_flsh == false) return;
     d_inst.reset ();
     d_resl.reset ();
     d_intr.reset ();

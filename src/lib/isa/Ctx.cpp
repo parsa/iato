@@ -243,13 +243,13 @@ namespace iato {
     return getlong ("ISSUE-WIDTH");
   }
 
-  // return the instruction window size in slots
+  // return the issue width in slots
 
   long Ctx::getswsz (void) const {
     return getiwsz () * BN_SLSZ;
   }
 
-  // return the instruction window size in bytes
+  // return the issue width in bytes
 
   long Ctx::getbwsz (void) const {
     return getiwsz () * BN_BYSZ;

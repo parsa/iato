@@ -30,6 +30,10 @@
 #include "Irb.hpp"
 #endif
 
+#ifndef  IATO_IIB_HPP
+#include "Iib.hpp"
+#endif
+
 #ifndef  IATO_ROB_HPP
 #include "Rob.hpp"
 #endif
@@ -64,6 +68,8 @@ namespace iato {
     t_unit d_unit;
     /// the irb
     Irb* p_irb;
+    /// the iib
+    Iib* p_iib;
     /// the rob
     Rob* p_rob;
     /// the urf

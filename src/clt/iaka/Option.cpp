@@ -41,6 +41,7 @@ namespace iato {
     cerr << "  -t:i                   set branch target tracing     " << endl;
     cerr << "  -t:o                   set branch tracing only       " << endl;
     cerr << "  -t:p                   set predicate tracing only    " << endl;
+    cerr << "  -t:g                   set predicate targets only    " << endl;
     cerr << "  -t:b #                 begin trace cycle number      " << endl;
     cerr << "  -t:e #                 end trace cycle number        " << endl;
     cerr << endl;
@@ -69,6 +70,7 @@ namespace iato {
     d_tvfl = false;
     d_tbof = EM_BOFL;
     d_tpof = EM_POFL;
+    d_tpgf = EM_PGFL;
     d_dflg = false;
     d_cflg = false;
     d_sflg = false;
@@ -139,6 +141,11 @@ namespace iato {
 	  if ((arg[2] == ':') && (arg[3] == 'p') && (arg[4] == '\0')) {
 	    d_tflg = true;
 	    d_tpof = true;
+	    break;
+	  }
+	  if ((arg[2] == ':') && (arg[3] == 'g') && (arg[4] == '\0')) {
+	    d_tflg = true;
+	    d_tpgf = true;
 	    break;
 	  }
 	  if ((arg[2] == ':') && (arg[3] == 'b') && (arg[4] == '\0')) {
@@ -228,16 +235,14 @@ namespace iato {
       count++;
     }
     // fix the record source according to flag
-    if (d_rsrc.size () == 0) {
-      if (d_tbof == true) {
-	if (d_tpof == true) {
-	  d_rsrc = "EBO,EPO";
-	} else {
-	  d_rsrc = "EBO";
-	}
-      } else {
-	if (d_tpof == true) d_rsrc = "EPO";
-      }
+    if (d_tbof == true) {
+      if (d_rsrc.size () == 0) d_rsrc = "EBO"; else d_rsrc += ",EBO";
+    }
+    if (d_tpof == true) {
+      if (d_rsrc.size () == 0) d_rsrc = "EPO"; else d_rsrc += ",EPO";
+    }
+    if (d_tpgf == true) {
+      if (d_rsrc.size () == 0) d_rsrc = "EPG"; else d_rsrc += ",EPG";
     }
   }
 }

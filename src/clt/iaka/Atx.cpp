@@ -33,12 +33,13 @@ namespace iato {
   // reset this context
 
   void Atx::reset (void) {
-    Mtx::reset ();
+    Utx::reset ();
     // set maximu cycle count and pipeline refill
-    setlong ("MAXIMUM-CYCLE-COUNT",    EM_MXCC);
-    setlong ("BRANCH-PIPELINE-REFILL", EM_PFIL);
+    setlong ("MAXIMUM-CYCLE-COUNT",      EM_MXCC);
+    setlong ("BRANCH-PIPELINE-REFILL",   EM_PFIL);
     // set tracer only mode
-    setbool ("TRACER-BRANCH-ONLY",     EM_BOFL);
-    setbool ("TRACER-PREDICATE-ONLY",  EM_POFL);
+    setbool ("TRACER-BRANCH-ONLY",       EM_BOFL);
+    setbool ("TRACER-PREDICATE-ONLY",    EM_POFL);
+    setbool ("TRACER-PREDICATE-TARGETS", EM_PGFL);
   }
 }

@@ -51,12 +51,14 @@ namespace iato {
     // check for alloc
     if (inst.getiopc () == M_ALLOC) {
       // get alloc arguments
-      t_byte sof = inst.getimmv (0);
-      t_byte sol = inst.getimmv (1);
-      t_byte sor = inst.getimmv (2);
+      long sof = inst.getimmv (0);
+      long sol = inst.getimmv (1);
+      long sor = inst.getimmv (2);
       // get the current cfm and update it
       Cfm cfm = d_state.getcfm ();
-      cfm.alloc (sof, sol, sor);
+      cfm.setfld (Cfm::SOF, sof);
+      cfm.setfld (Cfm::SOL, sol);
+      cfm.setfld (Cfm::SOR, sor);
       // update the rse state
       d_state.alloc (cfm);
     }
@@ -88,6 +90,10 @@ namespace iato {
 	cfm = resl.getoval (i);
 	d_state.call (cfm);
 	break;
+      case Result::RSE_RRB:
+	cfm = resl.getoval (i);
+	d_state.setcfm (cfm);
+	break;
       case Result::RSE_RET:
 	cfm = resl.getoval (i);
 	d_state.retn (cfm);
@@ -96,10 +102,6 @@ namespace iato {
       case Result::RSE_LOP:
 	cfm = resl.getoval (i);
 	d_state.loop (cfm);
-	break;
-      case Result::RSE_RRB:
-	cfm = resl.getoval (i);
-	d_state.setcfm (cfm);
 	break;
       default:
 	break;

@@ -42,6 +42,10 @@
 #include "Iib.hpp"
 #endif
 
+#ifndef  IATO_URF_HPP
+#include "Urf.hpp"
+#endif
+
 #ifndef  IATO_BPN_HPP
 #include "Bpn.hpp"
 #endif
@@ -54,7 +58,7 @@ namespace iato {
   using namespace std;
 
   /// The Resteer class is a derived class from the restart class. The
-  /// derived class implements the rsources that have to be flushed.
+  /// derived class implements the resources that have to be flushed.
 
   class Resteer : public Restart {
   private:
@@ -68,6 +72,8 @@ namespace iato {
     Mob* p_mob;
     /// the iib
     Iib* p_iib;
+    /// the urf
+    Urf* p_urf;
     /// the bpn
     Bpn* p_bpn;
 
@@ -81,6 +87,9 @@ namespace iato {
 
     /// flush all resource
     void flush (void);
+
+    /// partially flush all resources
+    void pflsh (void);
 
     /// bind the pipeline with this resteer engine
     /// @param pipe the pipeline to bind

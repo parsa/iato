@@ -91,5 +91,14 @@ namespace iato {
     long index = state.mapgr (argi +  GR_STBS, false);
     return rbk->getoval (GREG, index);
   }
+
+  // compare two arguments by index
+
+  bool sys_args_compare (const long argx, const long argy, Rse* rse, 
+			 Register* rbk) {
+    t_octa x = sys_args_getoval (argx, rse, rbk);
+    t_octa y = sys_args_getoval (argy, rse, rbk);
+    return (x == y);
+  }
 }
 

@@ -287,6 +287,9 @@ namespace iato {
     /// @return true if the instruction is predicated
     bool ispred (void) const;
 
+    /// @return true if the instruction generates predicates
+    bool ispgen (void) const;
+
     /// set and decode an instruction
     /// @param unit the instruction unit
     /// @param slot the instruction slot

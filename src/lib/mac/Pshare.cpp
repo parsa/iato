@@ -100,9 +100,9 @@ namespace iato {
   bool Pshare::isvalid (const t_octa ip, const long slot, 
 			const long pred) const {
     // compute hash address
-    t_octa addr = ip ^ p_htr->gethist ();
+    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
     // check for valid pht entry
-    return d_usec ? p_pht->isstrong (addr, slot) : true;
+    return d_usec ? p_pht->isstrong (addr) : true;
   }
 
   // compute the predicate value by index
@@ -112,9 +112,9 @@ namespace iato {
     // check for fixed predicate
     if (pred == 0) return true;
     // compute hash address
-    t_octa addr = ip ^ p_htr->gethist ();
+    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
     // get pht predicate
-    return p_pht->istrue (addr,slot);
+    return p_pht->istrue (addr);
   }
 
   // update the predicate system by ip, slot, predicate and value
@@ -124,10 +124,19 @@ namespace iato {
     // do nothing with fixed predicate
     if (pred == 0) return;
     // compute hash address
-    t_octa addr = ip ^ p_htr->gethist ();
-    // update the pht
-    p_pht->update (addr, slot, pval);
-    // update the history
-    if ((!d_bhuo | bflg) == true) p_htr->update (pval);
+    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
+    // update according to branch only flag
+    if (d_bhuo == true) {
+      if (bflg == true) {
+	p_htr->update (pval);
+      } else {
+	p_pht->update (addr, pval);
+      }
+    } else {
+      // update the pht
+      p_pht->update (addr, pval);
+      // update the history
+      p_htr->update (pval);
+    }
   }
 }

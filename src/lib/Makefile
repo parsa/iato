@@ -26,12 +26,14 @@ build:
 	${MAKE} -C elf all
 	${MAKE} -C krn all
 	${MAKE} -C mac all
+	${MAKE} -C ecu all
 
 install:
 	${MAKE} -C isa install
 	${MAKE} -C elf install
 	${MAKE} -C krn install
 	${MAKE} -C mac install
+	${MAKE} -C ecu install
 
 distri:
 	@/bin/rm -rf   ../../bld/src/lib
@@ -41,10 +43,12 @@ distri:
 	${MAKE} -C elf distri
 	${MAKE} -C krn distri
 	${MAKE} -C mac distri
+	${MAKE} -C ecu distri
 
 clean:
 	${MAKE} -C isa clean
 	${MAKE} -C elf clean
 	${MAKE} -C krn clean
 	${MAKE} -C mac clean
+	${MAKE} -C ecu clean
 	@/bin/rm -f *.o *.d *.a core *~

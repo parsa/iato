@@ -51,6 +51,8 @@ namespace iato {
     bool d_tbof;
     /// the tracer predicate only
     bool d_tpof;
+    /// the tracer predicate target only
+    bool d_tpgf;
     /// the tracer verbose flag
     bool d_tvfl;
     /// the disperse flag
@@ -124,6 +126,11 @@ namespace iato {
     /// @return the tracer predicate only
     bool gettpof (void) const {
       return d_tpof;
+    }
+
+    /// @return the tracer predicate generate only
+    bool gettpgf (void) const {
+      return d_tpgf;
     }
 
     /// @return the disperse flag

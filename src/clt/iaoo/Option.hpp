@@ -89,6 +89,8 @@ namespace iato {
     string d_bprd;
     /// the predicate predictor
     string d_pprd;
+    /// enable partial flushing
+    bool   d_pfls;
 
   public:
     /// create a new option from the argument list
@@ -227,6 +229,11 @@ namespace iato {
     /// @return the predicate predictor name
     string getapprd (void) const {
       return d_pprd;
+    }
+
+    /// @return the partial flushing flag
+    bool getapfls (void) const {
+      return d_pfls;
     }
   };
 }

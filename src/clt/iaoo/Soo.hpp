@@ -31,6 +31,11 @@ namespace iato {
 
   /// maximum cycle count (0 = infinite)
   const long   SM_MXCC = 0;
+
+  /// global predicate prediction
+  const bool   PP_FGPP = false;
+  /// incomplete bypassing with pp
+  const bool   PP_IBYP = false;
 }
 
 #endif

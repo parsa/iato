@@ -77,7 +77,7 @@ namespace iato {
   const long NR_GETTIMEOFDAY   = 1087;
   const long NR_SETTIMEOFDAY   = 1088;
   const long NR_UNAME          = 1130;
-  const long NR__SYSCTL        = 1150;
+  const long NR_SYSCTL         = 1150;
   const long NR_MMAP           = 1151;
   const long NR_MUNMAP         = 1152;
   const long NR_RT_SIGACTION   = 1177;
@@ -85,6 +85,7 @@ namespace iato {
   const long NR_STAT           = 1210;
   const long NR_LSTAT          = 1211;
   const long NR_FSTAT          = 1212;
+  const long NR_EXIT_GROUP     = 1236;
 }
 
 #endif

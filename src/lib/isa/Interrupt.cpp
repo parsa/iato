@@ -73,7 +73,7 @@ namespace iato {
   // create a default interrupt
 
   Interrupt::Interrupt (void) {
-    d_valid = false;
+    reset ();
   }
 
   // create an interrupt with a type and a reason
@@ -84,6 +84,7 @@ namespace iato {
     d_type   = "interrupt";
     d_reason = reason;
     d_ip     = OCTA_0;
+    d_slot   = 0;
   }
 
   // create an interrupt with a type, reason and ip
@@ -94,6 +95,19 @@ namespace iato {
     d_type   = "interrupt";
     d_reason = reason;
     d_ip     = ip;
+    d_slot   = 0;
+  }
+
+  // create an interrupt with a type, reason, ip and slot
+
+  Interrupt::Interrupt (t_icode code, const string& reason, const t_octa ip,
+			const long slot) {
+    d_valid  = true;
+    d_code   = code;
+    d_type   = "interrupt";
+    d_reason = reason;
+    d_ip     = ip;
+    d_slot   = slot;
   }
  
   // create an interrupt with a type and an instruction
@@ -104,7 +118,8 @@ namespace iato {
     d_inst   = inst;
     d_type   = "interrupt";
     d_reason = to_reason (code);
-    d_ip     = inst.isvalid () ? inst.getiip () : OCTA_0;
+    d_ip     = inst.isvalid () ? inst.getiip  () : OCTA_0;
+    d_slot   = inst.isvalid () ? inst.getslot () : 0;
   }
 
  
@@ -117,7 +132,8 @@ namespace iato {
     d_inst   = inst;
     d_type   = "interrupt";
     d_reason = reason;
-    d_ip     = inst.isvalid () ? inst.getiip () : OCTA_0;
+    d_ip     = inst.isvalid () ? inst.getiip  () : OCTA_0;
+    d_slot   = inst.isvalid () ? inst.getslot () : 0;
   }
 
   // copy construct this interrupt
@@ -127,6 +143,7 @@ namespace iato {
     d_code  = that.d_code;
     d_inst  = that.d_inst;
     d_ip    = that.d_ip;
+    d_slot  = that.d_slot;
   }
 
   // assign an interrupt to this one
@@ -137,6 +154,7 @@ namespace iato {
     d_code  = that.d_code;
     d_inst  = that.d_inst;
     d_ip    = that.d_ip;
+    d_slot  = that.d_slot;
     return *this;
   }
 
@@ -144,10 +162,11 @@ namespace iato {
 
   void Interrupt::reset (void) {
     d_valid = false;
-    d_inst.reset ();
     d_ip     = OCTA_0;
+    d_slot   = 0;
     d_type   = "interrupt";
     d_reason = "";
+    d_inst.reset ();
   }
 
   // return true if the interrupt is valid
@@ -188,6 +207,20 @@ namespace iato {
     return false;
   }
 
+  // return the interrupt execution bit
+
+  bool Interrupt::isexec (void) const {
+    if (d_valid == false) return false;
+    return d_exec;
+  }
+
+  // set the interrupt execution bit
+
+  void Interrupt::setexec (const bool flag) {
+    if (d_valid == false) return;
+    d_exec = flag;
+  }
+
   // get the interrupt code
 
   t_icode Interrupt::getcode (void) const {
@@ -200,6 +233,10 @@ namespace iato {
   void Interrupt::setinst (const Instr& inst) {
     assert (d_valid == true);
     d_inst = inst;
+    if (inst.isvalid () == true) {
+      d_ip   = inst.getiip  ();
+      d_slot = inst.getslot ();
+    }
   }
 
   // get the interrupt instruction
@@ -214,6 +251,21 @@ namespace iato {
   void Interrupt::setip (const t_octa ip) {
     assert (d_valid == true);
     d_ip = ip;
+    if (d_inst.isvalid () == true) {
+      if (d_inst.getiip () != ip) d_inst.reset ();
+    }
+  }
+
+  // set the offending ip and slot
+
+  void Interrupt::setip (const t_octa ip, const long slot) {
+    assert (d_valid == true);
+    d_ip   = ip;
+    d_slot = slot;
+    if (d_inst.isvalid () == true) {
+      if (d_inst.getiip  () != d_ip)   d_inst.reset ();
+      if (d_inst.getslot () != d_slot) d_inst.reset ();
+    }
   }
 
   // return the offending ip
@@ -227,8 +279,7 @@ namespace iato {
 
   long Interrupt::getslot (void) const {
     assert (d_valid == true);
-    if (d_inst.isvalid () == true) return d_inst.getslot ();
-    return 0;
+    return d_slot;
   }
 
   // return the interrupt immediate value

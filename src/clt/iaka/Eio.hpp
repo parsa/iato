@@ -22,8 +22,8 @@
 #ifndef  IATO_EIO_HPP
 #define  IATO_EIO_HPP
 
-#ifndef  IATO_MAC_HPP
-#include "Mac.hpp"
+#ifndef  IATO_ECU_HPP
+#include "Ecu.hpp"
 #endif
 
 namespace iato {
@@ -36,6 +36,8 @@ namespace iato {
   const bool EM_BOFL = false;
   /// default tracer predicate only flag
   const bool EM_POFL = false;
+  /// default tracer predicate targets only flag
+  const bool EM_PGFL = false;
 }
 
 #endif

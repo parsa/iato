@@ -185,7 +185,7 @@ namespace iato {
     p_vtrc = new t_trcd;
     d_tthr = ctx->getlong ("TRACER-THRESHOLD");
     d_rnam.clear ();
-    // reset file name and try to open it
+    // reset file name
     d_fd   = -1;
     setname (ctx->getstr ("TRACER-FILE-NAME"));
     // mark the record type we trace

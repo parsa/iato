@@ -57,6 +57,8 @@ namespace iato {
   private:
     /// the stage unit type
     t_unit   d_unit;
+    /// incomplete bypass with pp
+    bool     d_ibyp;
     /// the execution unit
     Executable* p_exec;
     /// the central station

@@ -83,9 +83,9 @@ namespace iato {
 
   bool Gshare::istaken (const t_octa cip, const long slot) const {
     // compute hash address
-    t_octa addr = cip ^ p_htr->gethist ();
+    t_octa addr = (cip >> 4) ^ p_htr->gethist ();
     // get the taken flag
-    return p_pht->istrue (addr, slot);
+    return p_pht->istrue (addr);
   }
 
   // return true if the branch can be predicted
@@ -112,9 +112,9 @@ namespace iato {
   void Gshare::update (const t_octa cip, const long slot, 
 			const bool btk, const t_octa nip) {
     // compute hash address
-    t_octa addr = cip ^ p_htr->gethist ();
+    t_octa addr = (cip >> 4) ^ p_htr->gethist ();
     // update the pht by address
-    p_pht->update (addr, slot, btk);
+    p_pht->update (addr, btk);
     // update the branch history
     p_htr->update (btk);
     // update the btb

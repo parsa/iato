@@ -50,10 +50,14 @@ namespace iato {
     for (long i = 0; i < ldnum; i++) { 
       // get a segment image
       Segment* seg = eld->getseg (i);
+      t_octa size = seg->getsize ();
+      t_octa base = seg->getbase ();
+      t_octa send = base + size;
       cout << "segment index   : " << i << endl;
-      cout << "segment size    : " << seg->getsize () << endl;
-      cout << "segment base    : " << hex << "0x" << seg->getbase () << dec;
-      cout << endl << endl;    
+      cout << "segment size    : " << size << endl;
+      cout << "segment base    : " << hex << "0x" << base << dec << endl;
+      cout << "segment end     : " << hex << "0x" << send << dec << endl;
+      cout << endl;    
     }
   }
 

@@ -89,6 +89,9 @@ namespace iato {
     /// @return true if the register is valid
     bool isvalid (void) const {return d_valid;}
 
+    /// @return true if the rid is a valid predicate
+    bool ispred (void) const;
+
     /// set the eval ready bit
     /// @param erdy the eval ready bit to set
     void seterdy (const bool erdy);

@@ -33,6 +33,7 @@ namespace iato {
     p_irb  = 0;
     p_mob  = 0;
     p_iib  = 0;
+    p_urf  = 0;
     p_bpn  = 0;
     reset ();
   }
@@ -45,6 +46,7 @@ namespace iato {
     p_irb  = 0;
     p_mob  = 0;
     p_iib  = 0;
+    p_urf  = 0;
     p_bpn  = 0;
     reset ();
   }
@@ -62,6 +64,23 @@ namespace iato {
     p_bpn->reset  ();
     p_rse->flush  ();
   }
+
+  // partially flush all resources
+
+  void Resteer::pflsh (void) {
+    // check for partial flush
+    if (d_pfls == false) return;
+    // partially flush the pipeline
+    p_pipe->pflsh ();
+    // partially flush resources
+    p_rob->pflsh  ();
+    p_irb->reset  ();
+    p_mob->pflsh  ();
+    p_iib->pflsh  ();
+    p_urf->pflsh  ();
+    p_bpn->reset  ();
+  }
+
 
   // bind the pipeline with this resource
 
@@ -96,6 +115,12 @@ namespace iato {
     p_iib = dynamic_cast <Iib*> (env->get (RESOURCE_IIB));
     if (!p_iib) {
       string msg = "cannot bind iib for resteer ";
+      throw Exception ("bind-error", msg + d_name);
+    }
+    // bind the urf
+    p_urf = dynamic_cast <Urf*> (env->get (RESOURCE_URF));
+    if (!p_urf) {
+      string msg = "cannot bind urf for resteer ";
       throw Exception ("bind-error", msg + d_name);
     }
     // bind the bpn

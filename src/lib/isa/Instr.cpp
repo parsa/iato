@@ -241,6 +241,16 @@ namespace iato {
     return true;
   }
 
+  // return true if the instruction generates predicates
+
+  bool Instr::ispgen (void) const {
+    if (d_valid == false) return false;
+    for (long i = 0; i < IA_MDST; i++) {
+      if (d_rdst[i].ispred () == true) return true;
+    }
+    return false;
+  }
+
   // set and decode this instruction
 
   void Instr::decode (t_unit unit, long slot, bool bstp, t_octa inst) {
@@ -284,7 +294,7 @@ namespace iato {
       os << hex << setw (16) << setfill ('0') << d_iip << dec;
       os << " slot "   << d_slot;
       os << " opcode 0x" << hex << setw (6) << setfill ('0') << d_inst;
-      throw Interrupt (FAULT_IT_OPER_LEGAL, os.str (), d_iip);
+      throw Interrupt (FAULT_IT_OPER_LEGAL, os.str (), d_iip, d_slot);
     }
   }
 

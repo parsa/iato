@@ -81,6 +81,7 @@ namespace iato {
     if ((p_nstg) && (p_nstg->isholding () == true)) return true;
     // check for local resources
     if ((p_iib) && (p_iib->isthr () == true)) return true;
+    if ((p_mob) && (p_mob->isthr () == true)) return true;    
     return false;
   }
 
@@ -109,7 +110,7 @@ namespace iato {
 	      bool srlz = p_pfr->getsrlz ();
 	      // check for restart
 	      if (p_pfr->check (ip, slot) == true) {
-		// eventually allocate the store buffer entry
+		// eventually allocate memory ordering buffer entry
 		bool ildb = p_inst[ipos].getldb ();
 		bool istb = p_inst[ipos].getstb ();
 		long imob = -1;
@@ -141,8 +142,16 @@ namespace iato {
 	    }
 	    ipos++;
 	  } catch (const Interrupt& vi) {
+	    // clean eventually allocated resources
+	    long imob = p_inst[ipos].getmob ();
+	    if (imob != -1) p_mob->clear (imob);
+	    long iiib = p_inst[ipos].getiib ();
+	    if (iiib == -1) iiib = p_iib->alloc ();
+	    // clean resource and mark interrupt
 	    p_inst[ipos].reset ();
-	    p_rob->alloc (vi);
+	    // set interrupt and mark rob
+	    p_iib->setintr (iiib, vi);
+	    p_rob->alloc (iiib);
 	  }
 	}
       } else {

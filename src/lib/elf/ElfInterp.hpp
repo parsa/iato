@@ -60,10 +60,17 @@ namespace iato {
     string d_interp;
     /// the kernel parameters
     ElfKernel* p_kernel;
+    /// the program header address
+    t_octa d_phdr;
+    /// the program header size
+    t_octa d_phent;
+    /// the number of program segments
+    t_octa d_phnum;
 
   public:
     /// create a default interpreter
     ElfInterp (void);
+
     /// create an interpreter by name
     /// @param name the emulated name
     ElfInterp (const string& name);
@@ -83,6 +90,12 @@ namespace iato {
 
     /// @return true if the interpreter is supported
     static bool isvalid (const string& interp);
+
+    /// set the program header info at once
+    /// @param phdr  the program header address
+    /// @param phent the program header size
+    /// @param phnum the number of program header
+    void setph (const t_octa phdr, const t_octa phent, const t_octa phnum);
 
   private:
     // make the copy constructor private

@@ -41,22 +41,31 @@ namespace iato {
 
   // this procedure allocate a new irb entry and update the rob with
   // the irb index
-  static void update_rob (const Dsi& dsi, const Result& resl, 
-			  const Interrupt& intr, Irb* irb, 
-			  Rob* rob, Detect* det) {
+  static void update_rob (const Dsi& dsi, const Result& resl, Irb* irb,
+			  const Interrupt& vi, Iib* iib, Rob* rob, 
+			  Detect* det) {
     // check for valid instruction
     if (dsi.isvalid () == false) return;
     // allocate a new irb entry and get rob index
     long index = irb->alloc  (dsi, resl); assert (index != -1);
     long ridx  = dsi.getrix  ();
     bool cnlf  = dsi.getcnlf ();
-    // update the rob with execution info
-    rob->setirb  (ridx, index);
-    rob->setexe  (ridx, true);
-    rob->setcnlf (ridx, cnlf);
-    rob->setintr (ridx, intr);
-    // call the detection logic to validate speculation
-    rob->setbsip (ridx, det->chksip (dsi, resl));
+    bool sbit  = dsi.getsfl  () || dsi.getppfl ();
+    // check the interrupt marking
+    if (vi.isvalid () == false) {
+      // update the rob with execution info
+      rob->setirb  (ridx, index);
+      rob->setexe  (ridx, true);
+      rob->setcnlf (ridx, cnlf);
+      rob->setsbit (ridx, sbit);
+      // call the detection logic to validate speculation
+      rob->setbbss (ridx, det->chksip (dsi, resl));
+    } else {
+      long iiib = dsi.getiib ();
+      iib->setintr (iiib, vi, true);
+      rob->setexe  (ridx, true);
+      rob->setintr (ridx, iiib, sbit);
+    }
   }
 
   // create a new write-back stage by context and unit
@@ -64,6 +73,7 @@ namespace iato {
   WbkStg::WbkStg (Stx* stx, t_unit unit): Stage (stx, RESOURCE_WBK) {
     d_unit = unit;
     p_irb  = 0;
+    p_iib  = 0;
     p_rob  = 0;
     p_urf  = 0;
     p_gcs  = 0;
@@ -77,6 +87,7 @@ namespace iato {
 		  const string& name) : Stage (stx, name) {
     d_unit = unit;
     p_irb  = 0;
+    p_iib  = 0;
     p_rob  = 0;
     p_urf  = 0;
     p_gcs  = 0;
@@ -111,12 +122,12 @@ namespace iato {
 	p_urf->reroute (resl);
       }
       // update the rob
-      update_rob (inst, resl, intr, p_irb, p_rob, p_det);
+      update_rob (inst, resl, p_irb, intr, p_iib, p_rob, p_det);
     }
     // broadcast tag for instruction cancellation
     p_gcs->setcnl (resl);
     // clear station entry
-    p_gcs->clear (inst);
+    //p_gcs->clear (inst);
     // clear bypass network entry
     p_bpn->clear (resl);
     // check if the previous stage is halted
@@ -140,7 +151,7 @@ namespace iato {
   void WbkStg::report (void) const {
     using namespace std;
     Resource::report ();
-    cout << "\tresource type\t\t: update stage" << endl;
+    cout << "\tresource type\t\t: write-back stage" << endl;
     cout << "\tdelayable latency  \t: " << getdlat () << endl;
   }
 
@@ -153,6 +164,12 @@ namespace iato {
     p_irb = dynamic_cast <Irb*> (env->get (RESOURCE_IRB));
     if (!p_irb) {
       string msg = "cannot bind instruction result buffer within stage ";
+      throw Exception ("bind-error", msg + d_name);
+    }
+    // bind the iib
+    p_iib = dynamic_cast <Iib*> (env->get (RESOURCE_IIB));
+    if (!p_iib) {
+      string msg = "cannot bind interrupt buffer within stage ";
       throw Exception ("bind-error", msg + d_name);
     }
     // bind the rob

@@ -78,6 +78,19 @@ namespace iato {
     }
   }
 
+  // partially flush this pipelane
+
+  void Pipelane::pflsh (void) {
+    long size = d_lane.size ();
+    for (long i = 0; i < size; i++) d_lane[i]->pflsh ();
+    if (p_rctrl) {
+      for (long i = 0; i < d_depth; i++) {
+	Runnable* ctrl = p_rctrl[i];
+	if (ctrl) ctrl->pflsh ();
+      }
+    }
+  }
+
   // return true if one stage is holding
 
   bool Pipelane::isholding (void) const {

@@ -29,7 +29,7 @@
 namespace iato {
   using namespace std;
 
-  /// The Pipeline class is a genric container class that holds the pipeline
+  /// The Pipeline class is a generic container class that holds the pipeline
   /// stages of the selected micro-architecture. Simply speaking, a pipeline
   /// is a vector of stages that would be run sequentially. When adding a
   /// new stage, the pipeline stage is added at the end of the vector. Once
@@ -62,6 +62,9 @@ namespace iato {
 
     /// flush this pipeline
     void flush (void);
+
+    /// partially flush this pipeline
+    void pflsh (void);
 
     /// return true if one stage is holding
     bool isholding (const long index) const;

@@ -26,13 +26,14 @@
 #include "Mtx.hpp"
 #endif
 
+#ifndef  IATO_DSI_HPP
+#include "Dsi.hpp"
+#endif
+
 #ifndef  IATO_RESOURCE_HPP
 #include "Resource.hpp"
 #endif
 
-#ifndef  IATO_INTERRUPT_HPP
-#include "Interrupt.hpp"
-#endif
 
 namespace iato {
   using namespace std;
@@ -71,6 +72,9 @@ namespace iato {
     /// reset this rob
     void reset (void);
 
+    /// partial flush this rob
+    void pflsh (void);
+
     /// report this resource
     void report (void) const;
 
@@ -101,6 +105,10 @@ namespace iato {
     /// @return true if the latest rob entry has been cancelled
     bool iscancel (void) const;
 
+    /// allocate a new rob entry with an interrupt index
+    /// @param iiib the interrupt index
+    void alloc (const long iiib);
+
     /// allocate a serialize rob entry with an ip and a slot
     /// @param ip    the ip to restart
     /// @param slot the slot to restart
@@ -113,11 +121,7 @@ namespace iato {
     /// @param inst the instruction
     /// @param imob the memory ordering buffer index
     /// @param iiib the instruction interrupt buffer index
-    long alloc (const Instr& inst, const long imob, const long iiib);
-
-    /// allocate a new rob entry with an interrupt
-    /// @param vi the virtual interrupt
-    long alloc (const Interrupt& vi);
+    long alloc (const Dsi& inst, const long imob, const long iiib);
 
     /// @return the latest irb and clean rob
     long pop (void);
@@ -128,8 +132,8 @@ namespace iato {
     /// pop the latest nop rob entry
     void npop (void);
 
-    /// @return the latest interrupt and clean rob
-    Interrupt ipop (void);
+    /// @return the latest interrupt index and clean rob
+    long ipop (void);
 
     /// @return the latest instruction ip
     t_octa getiip (void) const;
@@ -137,14 +141,20 @@ namespace iato {
     /// @return the latest instruction slot
     long getslot (void) const;
 
+    /// @return the latest irb index
+    long getiidx (void) const;
+
     /// @return the latest memory ordering index
     long getimob (void) const;
 
     /// @return the latest iib index
     long getiiib (void) const;
 
-    /// @return the latest sip speculative bit
-    bool getbsip (void) const;
+    /// @return the latest speculative bit
+    bool getsbit (void) const;
+
+    /// @return the latest branch speculative status
+    bool getbbss (void) const;
 
     /// set the execute flag
     /// @param ridx the rob index
@@ -163,13 +173,24 @@ namespace iato {
 
     /// set the interrupt entry
     /// @param ridx the rob index
-    /// @param vi   the virtual interrupt
-    void setintr (const long ridx, const Interrupt& vi);
+    /// @param iiib the interrupt index
+    void setintr (const long ridx, const long iiib);
 
-    /// set the sip speculative bit
+    /// set the interrupt entry with speculative info
     /// @param ridx the rob index
-    /// @param bsip the sip speculative bit
-    void setbsip (const long ridx, const bool bsip);
+    /// @param iiib the virtual interrupt
+    /// @param sbit the speculative bit
+    void setintr (const long ridx, const long iiib, const bool sbit);
+
+    /// set the speculative bit
+    /// @param ridx the rob index
+    /// @param sbit the speculative bit
+    void setsbit (const long ridx, const bool sbit);
+
+    /// set the bundle branch speculative status
+    /// @param ridx the rob index
+    /// @param bbss the speculative status
+    void setbbss (const long ridx, const bool bbss);
 
   private:
     // make the copy constructor private

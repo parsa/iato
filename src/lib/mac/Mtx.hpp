@@ -40,7 +40,8 @@ namespace iato {
     /// reset this context
     void reset (void);
 
-    /// reset this context with a particular architecture
+    /// update this contect with a particular archietcture
+    /// @param arch the archietcture used for update
     void update (const t_arch arch);
 
     /// @return the system bus size

@@ -83,6 +83,9 @@ namespace iato {
     /// reset the station table
     void reset (void);
 
+    /// partially flush this station
+    void pflsh (void) ;
+
     /// report this resource
     void report (void) const;
 

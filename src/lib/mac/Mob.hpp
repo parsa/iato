@@ -46,6 +46,8 @@ namespace iato {
   private:
     /// the buffer size
     long d_size;
+    /// the mob threshold
+    long d_bthr;
     /// the buffer array
     struct t_mobe* p_mobe;
     /// the alloc index 
@@ -65,11 +67,17 @@ namespace iato {
     /// reset this mob
     void reset (void);
 
+    /// partial flush this mob
+    void pflsh (void);
+
     /// report this resource
     void report (void) const;
 
     /// @return true if the mob is empty
     bool isempty (void) const;
+
+    /// @return true if the mob has reached the threshold
+    bool isthr (void) const;
 
     /// @return true if the mob entry is valid
     bool isvalid (const long index) const;

@@ -69,6 +69,9 @@ namespace iato {
     /// flush this result stage
     void flush (void);
 
+    /// partially flush this result stage
+    void pflsh (void);
+
     /// @return the executed instruction
     virtual Dsi getinst (void) const;
 

@@ -65,18 +65,29 @@ namespace iato {
     }
   }
 
-  // this procedure evaluate the instruction predicate across the bypass 
-  // network, urf and register bank.
-  static bool eval_pred (const Rid& pred, Bpn* bpn, Urf* urf, Register* rbk) {
+  // this procedure checks that an instruction is predicated and that the
+  // predicate is available in the in-flight resources only
+  static bool check_pred_inf (const Instr& inst, Bpn* bpn, Urf* urf) {
+    // check for valid
+    if (inst.isvalid () == false) return false;
+    if (inst.ispred  () == false) return false;
+    // get the predicate
+    Rid  prid = inst.getpnum ();
+    // check in the bypass
+    Uvr uvr = bpn->eval (prid);
+    if (uvr.isvalid () == true) return true;
+    // check in the urf
+    uvr = urf->eval (prid);
+    if (uvr.isvalid () == true) return true;
+    // only in the rbk
+    return false;
+  }
+
+  // this procedure evaluate the instruction predicate with the urf and rbk
+  static bool eval_pred (const Rid& pred, Urf* urf, Register* rbk) {
     assert (pred.isvalid () == true);
-    // evaluate in the bypass
-    Uvr uvr = bpn->eval (pred);
-    if (uvr.isvalid () == true) {
-      assert (uvr.gettype () == Uvr::BBV);
-      return uvr.getbval ();
-    }
     // evaluate in the urf
-    uvr = urf->eval (pred);
+    Uvr uvr = urf->eval (pred);
     if (uvr.isvalid () == true) {
       assert (uvr.gettype () == Uvr::BBV);
       return uvr.getbval ();
@@ -89,22 +100,24 @@ namespace iato {
   // create a new evaluation stage by context
 
   RegStg::RegStg (Stx* stx, t_unit unit) : DlyStg (stx, unit, RESOURCE_REG) {
-    p_urf = 0;
-    p_bpn = 0;
-    p_rbk = 0;
-    p_pps = 0;
-    reset ();
+    d_gpp  = stx->getbool ("GLOBAL-PREDICATE-PREDICTION");
+    p_urf  = 0;
+    p_bpn  = 0;
+    p_rbk  = 0;
+    p_pps  = 0;
+    reset  ();
   }
 
   // create a new evaluation stage by context and name
 
   RegStg::RegStg (Stx* stx, t_unit unit, 
 		  const string& name) : DlyStg (stx, unit, name) {
-    p_urf = 0;
-    p_bpn = 0;
-    p_rbk = 0;
-    p_pps = 0;
-    reset ();
+    d_gpp  = stx->getbool ("GLOBAL-PREDICATE-PREDICTION");
+    p_urf  = 0;
+    p_bpn  = 0;
+    p_rbk  = 0;
+    p_pps  = 0;
+    reset  ();
   }
 
   // activate this evaluation stage. The order of operand evaluation
@@ -120,32 +133,45 @@ namespace iato {
     d_inst = p_gcs->setrdy (inst);
     // evaluate the operands from a valid instruction
     if (d_inst.isvalid () == true) {
-      // evaluate first the predicate. if the predicate is not ready
-      // the instruction is rescheduled
+      // get predicate info
       Rid  pred = d_inst.getpnum ();
       bool prdy = true;
       // evaluate first in the bypass network
       Uvr uvr = p_bpn->eval (pred);
       if (uvr.isvalid () == true) {
-	bool bval = eval_pred (pred, p_bpn, p_urf, p_rbk);
+	assert (uvr.gettype () == Uvr::BBV);
+	bool bval = uvr.getbval ();
 	if (bval == false) d_inst.setcnlf (true);
       } else {
 	// check if we can evaluate the predicate in the urf or rbk
 	if (p_urf->isready (pred) == true) {
-	  bool bval = eval_pred (pred, p_bpn, p_urf, p_rbk);
+	  bool bval = eval_pred (pred, p_urf, p_rbk);
 	  if (bval == false) d_inst.setcnlf (true);
 	} else {
 	  prdy = false;
 	}
       }
       // check for consistency
-      assert (check_pred_cnlf (d_inst) == true);
+      assert (check_pred_cnlf (d_inst) == true);      
+      // if the global predicate prediction is active (for analysis purpose)
+      // the prediction is forced here and the predicate ready flag is set.
+      // this rule applies only to non branch instructions.
+      // carefull here since a deadlock can occur if the misprediction persit
+      // for this reason, we force the prediction with only in-flight
+      // predicate computation
+      if ((d_gpp == true) && (check_pred_inf (inst, p_bpn, p_urf) == true) &&
+	  (d_inst.isbr () == false) && (p_pps->ispredict (d_inst) == true)) {
+	bool pval = p_pps->predict (d_inst);
+	d_inst.setcnlf (!pval);
+	d_inst.setppfl (true);
+	prdy = true;
+      }
       // here the predicate has been evaluated or the predicate was not ready
       // if the predicate was evaluated, the instruction is marked
       // cancelled or not. If not ready, the instruction must be rescheduled
       // unless the instruction is a branch. In that case, the operation
       // continues but the predicate is marked not ready. Actually, if a 
-      // predicate predcition system is available, an attempt to predict the
+      // predicate prediction system is available, an attempt to predict the
       // predicate is made at this stage. If the predicate cannot be predicted,
       // the instruction is rescheduled. If not, the predicate is predicted and
       // the predicate predict flag along its value is set in the instruction.

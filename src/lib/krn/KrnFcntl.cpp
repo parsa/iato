@@ -23,11 +23,11 @@
 #include "KrnFcntl.hpp"
 #include "KrnFcntl.hxx"
 
-// declare this function to handle the meesy situation between the stat
-// structure qnd the C function stat. As far as gcc is concerned, between
+// declare this function to handle the messy situation between the stat
+// structure and the C function stat. As far as gcc is concerned, between
 // 2.95 and 3.0 there is a namespace conflict. This wrapper outside the
 // iato namespace provides a satisfactory fix (Uhhh...)
-static int wrap_stat (const char* file, struct stat* buf) {
+static int kstat (const char* file, struct stat* buf) {
   return stat (file, buf);
 }
 
@@ -197,87 +197,6 @@ namespace iato {
     }
   }
 
-  // stat system call
-
-  void krn_stat (Rse* rse, Register* rbk, ElfExec* mem) {
-    // the machine stat structure
-    struct stat mst; 
-    // grab the file name, so we can request the value
-    t_octa  addr = sys_args_getoval (0, rse, rbk);
-    t_byte* fn   = sys_args_getstr  (addr, mem);
-    int status   = wrap_stat ((const char*) fn, &mst);
-    if (status == -1) {
-      sys_args_seterrn (status, errno, rbk);
-      return;
-    }
-    // the kernel result structue
-    union {
-      t_byte    bst[sizeof(krn_sstat)];
-      krn_sstat kst;
-    };
-    // map to the kernel result structure
-    map_stat (kst, mst);
-    // get result address structure
-    t_octa sptr = sys_args_getoval (1, rse, rbk);
-    // copy structure, endianess is set before
-    sys_args_setdata (sptr, bst, sizeof (kst), mem);
-    // set syscall result
-    sys_args_setretn (OCTA_0, rbk);
-  }
-
-  void krn_lstat (Rse* rse, Register* rbk, ElfExec* mem) {
-    // the machine stat structure
-    struct stat mst; 
-    // grab the file name, so we can request the value
-    t_octa  addr = sys_args_getoval (0, rse, rbk);
-    t_byte* fn   = sys_args_getstr  (addr, mem);
-    int status = lstat ((const char*) fn, &mst);
-    if (status == -1) {
-      sys_args_seterrn (status, errno, rbk);
-      return;
-    }
-    // the kernel result structue
-    union {
-      t_byte   bst[sizeof(krn_sstat)];
-      krn_sstat kst;
-    };
-    // change to the kernel result structue
-    map_stat (kst, mst);
-    // get result address structure
-    t_octa sptr = sys_args_getoval (1, rse, rbk);
-    // copy structure, endianess is set before
-    sys_args_setdata (sptr, bst, sizeof (kst), mem);
-    // set syscall result
-    sys_args_setretn (OCTA_0, rbk);
-  }
-
-  // fstat system call
-  
-  void krn_fstat (Rse* rse, Register* rbk, ElfExec* mem) {
-    // the machine stat structure
-    struct stat mst; 
-    // grab the file id, so we can request the value
-    int fd = (int) sys_args_getoval (0, rse, rbk);
-    int status = fstat (fd, &mst);
-    if (status == -1) {
-      sys_args_seterrn (status, errno, rbk);
-      return;
-    }
-    // the kernel result structue
-    union {
-      t_byte    bst[sizeof(krn_sstat)];
-      krn_sstat kst;
-    };
-    // map to the kernel result structure
-    map_stat (kst, mst);
-    // get result address structure
-    t_octa sptr = sys_args_getoval (1, rse, rbk);
-    // copy structure, endianess is set before
-    sys_args_setdata (sptr, bst, sizeof (kst), mem);
-    // set syscall result
-    sys_args_setretn (OCTA_0, rbk);
-  }
-
   // unlink system call
   void krn_unlink (Rse* rse, Register* rbk, ElfExec* mem) {
     // get the string argument
@@ -383,5 +302,109 @@ namespace iato {
     } else {
       sys_args_seterrn (result, errno, rbk);
     }
+  }
+
+  // --------------------------------------------------------------------------
+  // - linux 2.6 new system calls                                             -
+  // --------------------------------------------------------------------------
+
+  // this section incorporates system call that requires some tweaks with
+  // the argument mapping as they were changed between 2.4 and 2.6. If the
+  // arguments are replicated then we have a new system call.
+
+  // stat system call
+
+  void krn_stat (Rse* rse, Register* rbk, ElfExec* mem) {
+    // check for new system call by comparing 1 with 3 and 2 with 4
+    bool nsys = sys_args_compare (1, 3, rse, rbk) && 
+                sys_args_compare (2, 4, rse, rbk);
+    // grab the file name, so we can request the value
+    long    aidx = nsys ? 1 : 0;
+    t_octa  addr = sys_args_getoval (aidx, rse, rbk);
+    t_byte* name = sys_args_getstr  (addr, mem);
+    // make local stat
+    struct stat mst; 
+    int status = kstat ((const char*) name, &mst);
+    if (status == -1) {
+      sys_args_seterrn (status, errno, rbk);
+      return;
+    }
+    // the kernel result structue
+    union {
+      t_byte    bst[sizeof(krn_sstat)];
+      krn_sstat kst;
+    };
+    // map to the kernel result structure
+    map_stat (kst, mst);
+    // get result address structure
+    long   sidx = nsys ? 2 : 1;
+    t_octa sptr = sys_args_getoval (sidx, rse, rbk);
+    // copy structure, endianess is set before
+    sys_args_setdata (sptr, bst, sizeof (kst), mem);
+    // set syscall result
+    sys_args_setretn (OCTA_0, rbk);
+  }
+
+  void krn_lstat (Rse* rse, Register* rbk, ElfExec* mem) {
+    // check for new system call by comparing 1 with 3 and 2 with 4
+    bool nsys = sys_args_compare (1, 3, rse, rbk) && 
+                sys_args_compare (2, 4, rse, rbk);
+    // grab the file name, so we can request the value
+    long    aidx = nsys ? 1 : 0;
+    t_octa  addr = sys_args_getoval (aidx, rse, rbk);
+    t_byte* name = sys_args_getstr  (addr, mem);
+    // the local stat
+    struct stat mst; 
+    int status = lstat ((const char*) name, &mst);
+    if (status == -1) {
+      sys_args_seterrn (status, errno, rbk);
+      return;
+    }
+    // the kernel result structue
+    union {
+      t_byte   bst[sizeof(krn_sstat)];
+      krn_sstat kst;
+    };
+    // change to the kernel result structue
+    map_stat (kst, mst);
+    // get result address structure
+    long   sidx = nsys ? 2 : 1;
+    t_octa sptr = sys_args_getoval (sidx, rse, rbk);
+    // copy structure, endianess is set before
+    sys_args_setdata (sptr, bst, sizeof (kst), mem);
+    // set syscall result
+    sys_args_setretn (OCTA_0, rbk);
+  }
+
+  // fstat system call
+  
+  void krn_fstat (Rse* rse, Register* rbk, ElfExec* mem) {
+    // check for new system call by comparing 1 with 3 and 2 with 4
+    bool nsys = sys_args_compare (1, 3, rse, rbk) && 
+                sys_args_compare (2, 4, rse, rbk);
+    // grab the file id, so we can request the value
+    long fi = nsys ? 1 : 0;
+    int  fd = (int) sys_args_getoval (fi, rse, rbk);
+    // the local call stat
+    struct stat mst; 
+    int status = fstat (fd, &mst);
+    if (status == -1) {
+      sys_args_seterrn (status, errno, rbk);
+      return;
+    }
+    // the kernel result structue
+    union {
+      t_byte    bst[sizeof(krn_sstat)];
+      krn_sstat kst;
+    };
+    // map to the kernel result structure
+    map_stat (kst, mst);
+    // get result address structure
+    long   sidx = nsys ? 2 : 1;
+    t_octa sptr = sys_args_getoval (sidx, rse, rbk);
+    // copy structure, endianess is set before
+    sys_args_setdata (sptr, bst, sizeof (kst), mem);
+    // set syscall result
+    sys_args_setretn (OCTA_0, rbk);
   }
 }

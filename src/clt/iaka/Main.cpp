@@ -35,6 +35,7 @@ int main (int argc, char** argv) {
     bool   tbfl = opt.gettbfl ();
     bool   tbof = opt.gettbof ();
     bool   tpof = opt.gettpof ();
+    bool   tpgf = opt.gettpgf ();
     bool   dflg = opt.getdflg ();
     bool   tvfl = opt.gettvfl ();
     bool   cflg = opt.getcflg ();
@@ -54,23 +55,24 @@ int main (int argc, char** argv) {
     
     // create a new context
     Atx* atx = new Atx;
-    atx->setbool  ("TRACER-FLAG",             tflg);
-    atx->setbool  ("TRACER-BRANCH-FLAG",      tbfl);
-    atx->setbool  ("TRACER-BRANCH-ONLY",      tbof);
-    atx->setbool  ("TRACER-PREDICATE-ONLY",   tpof);
-    atx->setbool  ("TRACER-VERBOSE-FLAG",     tvfl);
-    atx->setstr   ("TRACER-FILE-NAME",        tnam);
-    atx->setstr   ("TRACER-RECORD-TYPE",      rcty);
-    atx->setstr   ("TRACER-RECORD-NAME",      rsrc);
-    atx->setlong  ("TRACER-THRESHOLD",        tthr);
-    atx->setllong ("TRACER-BEGIN-INDEX",      btrc);
-    atx->setllong ("TRACER-END-INDEX",        etrc);
-    atx->setstr   ("TRACER-PROGRAM-NAME",     name);
-    atx->setbool  ("DISPERSE-FLAG",           dflg);
-    atx->setbool  ("CHECKER-FLAG",            cflg);
-    atx->setbool  ("STAT-FLAG",               sflg);
-    atx->setlong  ("MAXIMUM-CYCLE-COUNT",     mbnd);
-    atx->setlong  ("LR-GR-SIZE",              gnum);
+    atx->setbool  ("TRACER-FLAG",              tflg);
+    atx->setbool  ("TRACER-BRANCH-FLAG",       tbfl);
+    atx->setbool  ("TRACER-BRANCH-ONLY",       tbof);
+    atx->setbool  ("TRACER-PREDICATE-ONLY",    tpof);
+    atx->setbool  ("TRACER-PREDICATE-TARGETS", tpgf);
+    atx->setbool  ("TRACER-VERBOSE-FLAG",      tvfl);
+    atx->setstr   ("TRACER-FILE-NAME",         tnam);
+    atx->setstr   ("TRACER-RECORD-TYPE",       rcty);
+    atx->setstr   ("TRACER-RECORD-NAME",       rsrc);
+    atx->setlong  ("TRACER-THRESHOLD",         tthr);
+    atx->setllong ("TRACER-BEGIN-INDEX",       btrc);
+    atx->setllong ("TRACER-END-INDEX",         etrc);
+    atx->setstr   ("TRACER-PROGRAM-NAME",      name);
+    atx->setbool  ("DISPERSE-FLAG",            dflg);
+    atx->setbool  ("CHECKER-FLAG",             cflg);
+    atx->setbool  ("STAT-FLAG",                sflg);
+    atx->setlong  ("MAXIMUM-CYCLE-COUNT",      mbnd);
+    atx->setlong  ("LR-GR-SIZE",               gnum);
     
     // set special data for disperse mode
     if (dflg == true) {

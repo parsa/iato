@@ -34,12 +34,16 @@
 #include "Stat.hpp"
 #endif
 
-#ifndef  IATO_RENAME_HPP
-#include "Rename.hpp"
+#ifndef  IATO_RENAMER_HPP
+#include "Renamer.hpp"
 #endif
 
 #ifndef  IATO_BRANCH_HPP
 #include "Branch.hpp"
+#endif
+
+#ifndef  IATO_MAPPER_HPP
+#include "Mapper.hpp"
 #endif
 
 #ifndef  IATO_FETCHER_HPP
@@ -48,10 +52,6 @@
 
 #ifndef  IATO_REGISTER_HPP
 #include "Register.hpp"
-#endif
-
-#ifndef  IATO_MEMLOGIC_HPP
-#include "MemLogic.hpp"
 #endif
 
 #ifndef  IATO_EXECUTABLE_HPP
@@ -78,13 +78,13 @@ namespace iato {
     /// the elf executable image
     ElfExec*    p_mem;
     /// the rse
-    Rename*     p_rse;
+    Renamer*    p_rse;
     /// the irt
     Irt*        p_irt;
     /// the register bank
     Register*   p_rbk;
-    /// the memory logic
-    MemLogic*   p_meml;
+    /// the memory mapper
+    Mapper*     p_mmap;
     /// the fetch buffer
     Fetcher*    p_ftch;
     /// the branch predictor
@@ -107,6 +107,8 @@ namespace iato {
     bool d_boflg;
     /// the predicate only flag
     bool d_poflg;
+    /// the predicate targets flag
+    bool d_pgflg;
     /// the check flag
     bool d_cflag;
     /// the stat flag

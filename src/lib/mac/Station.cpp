@@ -48,6 +48,15 @@ namespace iato {
       d_schi  = -1;
       d_inst.reset ();
     }
+    // partial flush this station
+    void pflsh (void) {
+      if (d_valid == false) return;
+      if (d_wakup == true) {
+	d_wakup = false;
+	d_inst.setcnlf (false);
+	d_inst.setrsch (true);
+      }
+    }
     // insert a new instruction
     void insert (const Dsi& dsi, const long sidx, const long igcs, 
 		 const long schi) {
@@ -67,7 +76,8 @@ namespace iato {
       // ready for execution or has been scheduled
       if (d_valid == false) return false;
       // check the instruction
-      return d_inst.isready () && (d_wakup == false);
+      bool result = d_inst.isready () && (d_wakup == false);
+      return result;
     }
     // mark instruction operands ready by rid
     void setready (const Rid& rid) {
@@ -144,6 +154,14 @@ namespace iato {
     for (long  i = 0; i < d_size; i++) {
       p_stbl[i].reset ();
       p_rsst[i] = -1;
+    }
+  }
+
+  // partially flush this station
+
+  void Station::pflsh (void) {
+    for (long  i = 0; i < d_size; i++) {
+      p_stbl[i].pflsh ();
     }
   }
 

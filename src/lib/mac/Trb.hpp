@@ -67,6 +67,9 @@ namespace iato {
     /// reset this bank
     void reset (void);
 
+    /// partial flush this trb
+    void pflsh (void) ;
+
     /// report this resource
     void report (void) const;
 

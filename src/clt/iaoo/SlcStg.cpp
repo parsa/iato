@@ -109,6 +109,7 @@ namespace iato {
   // create a new select stage by context and unit
 
   SlcStg::SlcStg (Stx* stx, t_unit unit): Stage (stx, RESOURCE_SLC) {
+    d_flsh = stx->getbool ("PARTIAL-FLUSH-MODE");
     d_unit = unit;
     d_ulat = get_unit_latency (stx, unit);
     p_tsta = new Station (stx, unit);
@@ -121,6 +122,7 @@ namespace iato {
   // create a new select stage by context, unit and name
 
   SlcStg::SlcStg (Stx* stx,t_unit unit,const string& name) : Stage (stx,name) {
+    d_flsh = stx->getbool ("PARTIAL-FLUSH-MODE");
     d_unit = unit;
     d_ulat = get_unit_latency (stx, unit);
     p_tsta = new Station (stx, unit);
@@ -149,6 +151,14 @@ namespace iato {
   void SlcStg::flush (void) {
     Stage::flush  ();
     p_tsta->reset ();
+    d_inst.reset  ();
+  }
+
+  // partial flush this stage
+
+  void SlcStg::pflsh (void) {
+    if (d_flsh == false) return;
+    p_tsta->pflsh ();
     d_inst.reset  ();
   }
 

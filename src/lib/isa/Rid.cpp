@@ -83,6 +83,15 @@ namespace iato {
     d_erdy  = false;
   }
 
+  // return true if the rid is a predicate
+
+  bool Rid::ispred (void) const {
+    if (d_valid == false) return false;
+    if (d_type != PREG) return false;
+    if (d_pnum == 0) return false;
+    return true;
+  }
+
   // set the eval ready bit
 
   void Rid::seterdy (const bool erdy) {
@@ -93,7 +102,17 @@ namespace iato {
   // set the eval ready bit if both rid are equal
 
   void Rid::seterdy (const Rid& rid) {
-    if (*this == rid) seterdy (true);
+    if ((d_valid == false) || (rid.d_valid == false)) return;
+    // type and physical must match
+    if (d_type != rid.d_type) return;
+    if (d_pnum != rid.d_pnum) return;
+    // special case for virtual bits
+    if (d_vbit != rid.d_vbit) return;
+    if (d_vbit == true) {
+      if (d_vnum != rid.d_vnum) return;
+    }
+    // done
+    d_erdy = true;
   }
 
   // return true if the rid must be logicaly renamed

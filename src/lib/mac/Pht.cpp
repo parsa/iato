@@ -67,10 +67,10 @@ namespace iato {
     return d_size;
   }
 
-  // return a hashed index by address and slot
+  // return a hashed index by address
 
-  long Pht::hash (const t_octa ip, const long slot) const {
-    long result = (ip % (t_octa) d_size) + slot;
+  long Pht::hash (const t_octa addr) const {
+    long result = addr % (t_octa) d_size;
     return result;
   }
 
@@ -81,10 +81,10 @@ namespace iato {
     return p_vsct[index].isstrong ();
   }
 
-  // return true if the prediction is strong by address and slot
+  // return true if the prediction is strong by address
 
-  bool Pht::isstrong (const t_octa ip, const long slot) const {
-    long index = hash (ip, slot);
+  bool Pht::isstrong (const t_octa addr) const {
+    long index = hash (addr);
     return p_vsct[index].isstrong ();
   }
 
@@ -95,10 +95,10 @@ namespace iato {
     return p_vsct[index].isweak ();
   }
 
-  // return true if the prediction is weak by address and slot
+  // return true if the prediction is weak by address
 
-  bool Pht::isweak (const t_octa ip, const long slot) const {
-    long index = hash (ip, slot);
+  bool Pht::isweak (const t_octa addr) const {
+    long index = hash (addr);
     return p_vsct[index].isweak ();
   }
 
@@ -109,10 +109,10 @@ namespace iato {
     return p_vsct[index].istrue ();
   }
 
-  // return true if the prediction is true by address and slot
+  // return true if the prediction is true by address
 
-  bool Pht::istrue (const t_octa ip, const long slot) const {
-    long index = hash (ip, slot);
+  bool Pht::istrue (const t_octa addr) const {
+    long index = hash (addr);
     return p_vsct[index].istrue ();
   }
 
@@ -123,10 +123,10 @@ namespace iato {
     p_vsct[index].update (flag);
   }
 
-  // update the pht by address and slot
+  // update the pht by address
 
-  void Pht::update (const t_octa ip, const long slot, const bool flag) {
-    long index = hash (ip, slot);
+  void Pht::update (const t_octa addr, const bool flag) {
+    long index = hash (addr);
     p_vsct[index].update (flag);
   }
 }

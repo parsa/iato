@@ -22,8 +22,8 @@
 #ifndef  IATO_ATX_HPP
 #define  IATO_ATX_HPP
 
-#ifndef  IATO_MTX_HPP
-#include "Mtx.hpp"
+#ifndef  IATO_UTX_HPP
+#include "Utx.hpp"
 #endif
 
 namespace iato {
@@ -32,7 +32,7 @@ namespace iato {
   /// the library context. The application context holds additional parameters
   /// that are specific to the emulation environment.
 
-  class Atx : public Mtx {
+  class Atx : public Utx {
   public:
     /// create a new context
     Atx (void);

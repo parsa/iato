@@ -80,7 +80,7 @@ namespace iato {
   // return true if the branch is predicted taken
 
   bool Bimodal::istaken (const t_octa cip, const long slot) const {
-    return p_pht->istrue (cip, slot);
+    return p_pht->istrue (cip >> 4);
   }
 
   // return true if the branch can be predicted
@@ -107,7 +107,7 @@ namespace iato {
   void Bimodal::update (const t_octa cip, const long slot, 
 			const bool btk, const t_octa nip) {
     // update the pht by address
-    p_pht->update (cip, slot, btk);
+    p_pht->update (cip >> 4, btk);
     // update the btb
     if (btk == true) p_btb->update (cip, nip);
   }

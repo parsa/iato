@@ -81,15 +81,18 @@ namespace iato {
   }
 
   // this function fill an elf load array with load segment
-  static void fill_load_segs (ElfLoad* lseg, int fd, void* eptr, void* hptr,
-			      bool mode) {
+  static void fill_load_segs (ElfLoad* lseg, ElfInterp* interp,
+			      int fd, void* eptr, void* hptr, bool mode) {
     if ((!lseg) || (!eptr)) return;
     // remap to elf data and get number of headers
     Elf*         elf = reinterpret_cast <Elf*> (eptr);
     Elf64_Ehdr* ehdr = reinterpret_cast <Elf64_Ehdr*> (hptr);
-    long phnum = ehdr->e_phnum;
-    // get the segment array and loop
+    long   phnum = ehdr->e_phnum;
+    t_octa phoff = ehdr->e_phoff;
+    t_octa phent = ehdr->e_phentsize;
+    // get the segment array and mark the interpreter
     Elf64_Phdr* phdr = elf64_getphdr (elf);
+    interp->setph (phdr->p_vaddr + phoff, phent, phnum);
     // loop in the segment array
     for (long i = 0; i < phnum; i++) {
       Elf64_Phdr* sh = &(phdr[i]);
@@ -389,7 +392,7 @@ namespace iato {
     // create an elf load array
     ElfLoad* lseg = new ElfLoad;
     // fill in segments
-    fill_load_segs (lseg, d_fd, p_elf, p_hdr, ismsb ());
+    fill_load_segs (lseg, p_interp, d_fd, p_elf, p_hdr, ismsb ());
     return lseg;  
   }
 
@@ -399,7 +402,7 @@ namespace iato {
     // create an elf break array
     ElfBrk* brk = new ElfBrk (p_kernel);
     // fill in segments
-    fill_load_segs (brk, d_fd, p_elf, p_hdr, ismsb ());
+    fill_load_segs (brk, p_interp, d_fd, p_elf, p_hdr, ismsb ());
     return brk;
   }
 

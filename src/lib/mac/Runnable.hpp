@@ -35,6 +35,10 @@ namespace iato {
   /// The difference is interface dependent.
 
   class Runnable : public Resource {
+  protected:
+    /// the partial flush bit
+    bool d_flsh;
+
   public:
     /// create a default runnable
     Runnable (void);
@@ -45,6 +49,9 @@ namespace iato {
 
     /// flush this runnable interface
     virtual void flush (void) =0;
+
+    /// partialy flush this runnable
+    virtual void pflsh (void);
 
     /// run this runnable object
     virtual void run (void) =0;

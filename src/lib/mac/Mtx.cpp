@@ -44,6 +44,10 @@ namespace iato {
   void Mtx::update (const t_arch arch) {
     // update base system
     Etx::update (arch);
+
+    // set global resource modes
+    d_bmap["PARTIAL-FLUSH-MODE"]         = RM_PFLS;
+
     // set default architecture info
     d_lmap["BDB-SIZE"]                   = DB_SIZE;
     d_lmap["RST-SIZE"]                   = RS_TBSZ;
@@ -54,6 +58,7 @@ namespace iato {
     d_lmap["IRB-SIZE"]                   = IR_SIZE;
     d_lmap["MOB-SIZE"]                   = OB_SIZE;
     d_lmap["STB-SIZE"]                   = SB_SIZE;
+    d_lmap["RIB-SIZE"]                   = RI_SIZE;
 
     // global prediction parameters
     d_lmap["HTR-SIZE"]                   = PS_HTRS;

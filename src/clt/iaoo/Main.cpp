@@ -39,6 +39,7 @@ int main (int argc, char** argv) {
     bool   cflag = opt.getcflag ();
     bool   sflag = opt.getsflag ();
     bool   inops = opt.getinops ();
+    bool   apfls = opt.getapfls ();
     long   winsz = opt.getwinsz ();
     long   munit = opt.getmunit ();
     long   iunit = opt.getiunit ();
@@ -81,6 +82,7 @@ int main (int argc, char** argv) {
     stx->setlong  ("LR-GR-SIZE",               grnum);
     stx->setstr   ("BRANCH-PREDICTOR-TYPE",    abprd);
     stx->setstr   ("PREDICATE-PREDICTOR-TYPE", apprd);
+    stx->setbool  ("PARTIAL-FLUSH-MODE",       apfls);
     
     // update the context with a vector of parameters
     stx->parse (opt.getcprm ());
