@@ -160,6 +160,10 @@ namespace iato {
 	    d_oprd.reset ();
 	  }
 	}
+      } else {
+	// cancel the prediction - this permits to check
+	// that the predicate was available
+	d_inst.setppfl (false);
       }
       // here the predicate is ready - the operand is evaluated as long as
       // the instruction is not cancelled

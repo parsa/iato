@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// - Mspp.hpp                                                                -
-// - iato:mac library - master-slave predicate predictor definition          -
+// - Pskew.hpp                                                               -
+// - iato:mac library - skewed predicate predictor class definition          -
 // ---------------------------------------------------------------------------
 // - (c) inria 2002-2004                                                     -
 // ---------------------------------------------------------------------------
@@ -18,8 +18,16 @@
 // - See the GNU General Public License version 2 for more details           -
 // ---------------------------------------------------------------------------
 
-#ifndef  IATO_MSPP_HPP
-#define  IATO_MSPP_HPP
+#ifndef  IATO_PSKEW_HPP
+#define  IATO_PSKEW_HPP
+
+#ifndef  IATO_HTR_HPP
+#include "Htr.hpp"
+#endif
+
+#ifndef  IATO_PHT_HPP
+#include "Pht.hpp"
+#endif
 
 #ifndef  IATO_PREDICATE_HPP
 #include "Predicate.hpp"
@@ -28,32 +36,35 @@
 namespace iato {
   using namespace std;
 
-  /// The Mspp class is a combined master-slave predicate predictor that is 
-  /// built with two predictors. The confidence is obtained by comparing for
-  /// differences the two predictors.
+  /// The Pskew class is a global history predicate prediction system. Given
+  /// an address, this address is combined (xor) with the global history
+  /// register value (and eventually the predicate number) to produce an 
+  /// entry into the pht. The pht value is the predicate prediction value.
 
-  class Mspp : public Predicate {
+  class Pskew : public Predicate {
   private:
-    /// the master predictor
-    Predicate* p_mpp;
-    /// the slave predictor
-    Predicate* p_spp;
+    /// the use confidence flag
+    bool d_usec;
+    /// the predictor htr
+    Htr* p_htr;
+    /// the predictor pht
+    Pht* p_pht;
 
   public:
-    /// create a default hybrid predictor
-    Mspp (void);
+    /// create a default pshare predictor
+    Pskew (void);
 
-    /// create a new hybrid predictor by context
+    /// create a new pshare predictor by context
     /// @param mtx  the architectural context
-    Mspp (Mtx* mtx);
+    Pskew (Mtx* mtx);
 
-    /// create a new bybrid predictor by context and name
+    /// create a new pshare predictor by context and name
     /// @param mtx  the architectural context
     /// @param name the branch resource name
-    Mspp (Mtx* mtx, const string& name);
+    Pskew (Mtx* mtx, const string& name);
 
     /// destroy this predictor
-    ~Mspp (void);
+    ~Pskew (void);
 
     /// reset this predictor
     void reset (void);
@@ -63,6 +74,13 @@ namespace iato {
 
     /// @return true if the predicate can be predicted
     bool isvalid (const t_octa ip, const long slot, const long pred) const;
+
+    /// @return the predictor history
+    t_octa getphst (void) const;
+
+    /// set the predictor history
+    /// @param phst the history to set
+    void setphst (const t_octa phst);
 
     /// compute the predicate value
     /// @param ip   the instruction ip
@@ -75,15 +93,15 @@ namespace iato {
     /// @param slot the instruction slot
     /// @param pred the predicate index
     /// @param pval the predicate value
-    /// @param bflg the branch flag
+    /// @param phst the predictor history
     void update (const t_octa ip, const long slot, const long pred, 
-		 const bool pval, const bool bflg);
+		 const bool pval, const t_octa phst);
 
   private:
     // make the copy constructor private
-    Mspp (const Mspp&);
+    Pskew (const Pskew&);
     // make the assignment oerator private
-    Mspp& operator = (const Mspp&);
+    Pskew& operator = (const Pskew&);
   };
 }
 

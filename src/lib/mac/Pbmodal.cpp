@@ -35,7 +35,7 @@ namespace iato {
 
   // create a pbmodal predictor by context
 
-  Pbmodal::Pbmodal (Mtx* mtx) : Predicate (mtx,RESOURCE_PPS) {
+  Pbmodal::Pbmodal (Mtx* mtx) : Predicate (mtx, RESOURCE_PPS) {
     d_type = "pbmodal";
     d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
     p_pht  = new Pht;
@@ -98,7 +98,7 @@ namespace iato {
   // update the predicate system by ip, slot, predicate and value
 
   void Pbmodal::update (const t_octa ip, const long slot, const long pred, 
-			const bool pval, const bool bflg) {
+			const bool pval, const t_octa phst) {
     // do nothing with fixed predicate
     if (pred == 0) return;
     // update the pht

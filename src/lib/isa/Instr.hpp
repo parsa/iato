@@ -69,8 +69,10 @@ namespace iato {
     t_octa d_sip;
     /// the speculative flag
     bool   d_sfl;
-    /// the predictor history
+    /// the branch history
     t_octa d_hist;
+    /// the predicate history
+    t_octa d_phst;
     /// instruction bundle unit
     t_unit d_bunit;
     /// instruction functional unit
@@ -183,12 +185,19 @@ namespace iato {
     /// @return the speculative flag
     bool getsfl (void) const;
 
-    /// set the predictor history
+    /// set the branch history
     /// @param hist the history to set
     void sethist (const t_octa hist);
     
-    /// @return the predictor history
+    /// @return the branch history
     t_octa gethist (void) const;
+
+    /// set the predicate history
+    /// @param phst the history to set
+    void setphst (const t_octa phst);
+    
+    /// @return the predicate history
+    t_octa getphst (void) const;
 
     /// @return the instruction slot
     long getslot (void) const;

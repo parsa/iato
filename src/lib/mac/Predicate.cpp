@@ -21,8 +21,8 @@
 
 #include "Mac.hpp"
 #include "Prn.hpp"
-#include "Mspp.hpp"
-#include "Hypp.hpp"
+#include "Pskew.hpp"
+#include "Pforce.hpp"
 #include "Pshare.hpp"
 #include "Pimodal.hpp"
 #include "Pbmodal.hpp"
@@ -34,16 +34,16 @@ namespace iato {
   Predicate* Predicate::mkpr (const string& name) {
     // check for default
     if ((name.length () == 0) || (name == "none")) return new Predicate;
+    // check for pforce
+    if (name == "pforce") return new Pforce;
     // check for pimodal
     if (name == "pimodal") return new Pimodal;
     // check for pimodal
     if (name == "pbmodal") return new Pbmodal;
     // check for pshare
     if (name == "pshare") return new Pshare;
-    // check for mspp
-    if (name == "mspp") return new Mspp;
-    // check for hypp
-    if (name == "hypp") return new Hypp;
+    // check for pskew
+    if (name == "pskew") return new Pskew;
     // not found
     string msg = "invalid predicate predictor name ";
     throw Exception ("context-error", msg + name);
@@ -53,16 +53,16 @@ namespace iato {
   Predicate* Predicate::mkpr (const string& name, Mtx* mtx) {
     // check for default
     if ((name.length () == 0) || (name == "none")) return new Predicate (mtx);
+    // check for pforce
+    if (name == "pforce") return new Pforce (mtx);
     // check for pimodal
     if (name == "pimodal") return new Pimodal (mtx);
     // check for pbmodal
     if (name == "pbmodal") return new Pbmodal (mtx);
     // check for pshare
     if (name == "pshare") return new Pshare (mtx);
-    // check for mspp
-    if (name == "mspp") return new Mspp (mtx);
-    // check for hypp
-    if (name == "hypp") return new Hypp (mtx);
+    // check for pskew
+    if (name == "pskew") return new Pskew (mtx);
     // not found
     string msg = "invalid predicate predictor name ";
     throw Exception ("context-error", msg + name);
@@ -79,7 +79,6 @@ namespace iato {
 
   Predicate::Predicate (void) : Resource (RESOURCE_PPS) {
     d_type = "none";
-    d_bupd = PP_BUPD;
     reset ();
   }
 
@@ -87,7 +86,6 @@ namespace iato {
 
   Predicate::Predicate (const string& name) : Resource (name) {
     d_type = "none";
-    d_bupd = PP_BUPD;
     reset ();
   }
 
@@ -95,7 +93,6 @@ namespace iato {
 
   Predicate::Predicate (Mtx* mtx) : Resource (RESOURCE_PPS) {
     d_type = "none";
-    d_bupd = mtx->getbool ("PREDICATE-BRANCH-UPDATE");
     reset ();
   }
   
@@ -103,13 +100,13 @@ namespace iato {
 
   Predicate::Predicate (Mtx* mtx, const string& name) : Resource (name) {
     d_type = "none";
-    d_bupd = mtx->getbool ("PREDICATE-BRANCH-UPDATE");
     reset ();
   }
 
   // reset this predicate prediction
 
   void Predicate::reset (void) {
+    d_phst = OCTA_0;
   }
 
   // return the predictor name
@@ -125,10 +122,6 @@ namespace iato {
     Resource::report ();
     cout << "\tresource type\t\t: predicate predictor" << endl;
     cout << "\tpredictor type \t\t: " << "default" << endl;
-    if (d_bupd == true)
-      cout << "\tuse br update  \t\t: " << "true" << endl;
-    else
-      cout << "\tuse br update  \t\t: " << "false" << endl;
   }
 
   // return true if the predicate can be predicted
@@ -147,6 +140,18 @@ namespace iato {
     Rid  prid = inst.getpnum (); assert (prid.isvalid () == true);
     long pred = prid.getpnum ();
     return (pred == 0) ? false : isvalid (ip, slot, pred);
+  }
+
+  // set the predictor history
+
+  void Predicate::setphst (const t_octa phst) {
+    d_phst = phst;
+  }
+
+  // return the predictor history
+
+  t_octa Predicate::getphst (void) const {
+    return d_phst;
   }
 
   // predict the predicate value by index
@@ -176,8 +181,8 @@ namespace iato {
 
   // update the predicate system by ip, slot, predicate and value
 
-  void Predicate::update (const t_octa ip, const long slot, const long pred,
-			  const bool pval, const bool bflg) {
+  void Predicate::update (const t_octa ip, const long slot,const long pred,
+			  const bool pval, const t_octa phst) {
     // do nothing with fixed predicate
     if (pred == 0) return;
   }
@@ -187,15 +192,15 @@ namespace iato {
   void Predicate::markpp (const Instr& inst, const bool pval) {
     // check for valid instruction
     if (inst.isvalid () == false) return;
-    // check for branch update
-    if ((d_bupd == false) && (inst.isbr () == true)) return;
     // grab instruction info
     t_octa ip = inst.getiip  ();
     long slot = inst.getslot ();
     Rid  prid = inst.getpnum ();
     long pred = prid.getpnum ();
+    // get the predicate history
+    t_octa phst = inst.getphst ();
     // and now update the system
-    update (ip, slot, pred, pval, inst.isbr ());
+    update (ip, slot, pred, pval, phst);
   }
 
   // update the prediction system by instruction and result
@@ -205,8 +210,6 @@ namespace iato {
     if (inst.isvalid () == false) return;
     // check for valid result
     if (resl.isvalid () == false) return;
-    // check for branch update
-    if ((d_bupd == false) && (inst.isbr () == true)) return;
     // grab instruction info
     t_octa ip = inst.getiip  ();
     long slot = inst.getslot ();
@@ -218,8 +221,10 @@ namespace iato {
       Rid  prid = resl.getrid  (i);
       long pred = prid.getpnum ();
       bool pval = resl.getbval (i);
+      // get the predicate history
+      t_octa phst = inst.getphst ();
       // and now update the system
-      update (ip, slot, pred, pval, inst.isbr ());
+      update (ip, slot, pred, pval, phst);
     }
   }
 }

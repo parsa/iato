@@ -30,7 +30,6 @@ namespace iato {
   Pshare::Pshare (void) : Predicate (RESOURCE_PPS) {
     d_type = "pshare";
     d_usec = PP_UCFG;
-    d_bhuo = PP_BHUO;
     p_htr  = new Htr;
     p_pht  = new Pht;
     reset ();
@@ -41,7 +40,6 @@ namespace iato {
   Pshare::Pshare (Mtx* mtx) : Predicate (mtx,RESOURCE_PPS) {
     d_type = "pshare";
     d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
-    d_bhuo = mtx->getbool ("BRANCH-HISTORY-UPDATE-ONLY");
     p_htr  = new Htr (mtx);
     p_pht  = new Pht (mtx);
     reset ();
@@ -52,7 +50,6 @@ namespace iato {
   Pshare::Pshare (Mtx* mtx, const string& name) : Predicate (mtx, name) {
     d_type = "pshare";
     d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
-    d_bhuo = mtx->getbool ("BRANCH-HISTORY-UPDATE-ONLY");
     p_htr  = new Htr (mtx);
     p_pht  = new Pht (mtx);
     reset ();
@@ -85,22 +82,6 @@ namespace iato {
       cout << "  using confidence             : true"  << endl;
     else
       cout << "  using confidence             : false" << endl;
-    if (d_bupd == true)
-      cout << "  using branch update          : true"  << endl;
-    else
-      cout << "  using branch update          : false" << endl;
-    if (d_bhuo == true)
-      cout << "  branch history update only   : true"  << endl;
-    else
-      cout << "  branch history update only   : false" << endl;
-  }
-
-  // compute the hash address for this predictor
-
-  t_octa Pshare::hash (const t_octa ip, const long slot, 
-		       const long pred) const {
-    t_octa addr = (ip >> 4) ^ p_htr->gethist ();
-    return addr;
   }
 
   // return true if the predicate can be predicted
@@ -108,9 +89,21 @@ namespace iato {
   bool Pshare::isvalid (const t_octa ip, const long slot, 
 			const long pred) const {
     // compute hash address
-    t_octa addr = hash (ip, slot, pred);
+    t_octa addr = (ip + slot) ^ p_htr->gethist ();
     // check for valid pht entry
     return d_usec ? p_pht->isstrong (addr) : true;
+  }
+
+  // set the predictor history
+
+  void Pshare::setphst (const t_octa phst) {
+    p_htr->sethist (d_phst = phst);
+  }
+  
+  // return the predictor history
+
+  t_octa Pshare::getphst (void) const {
+    return p_htr->gethist ();
   }
 
   // compute the predicate value by index
@@ -120,31 +113,24 @@ namespace iato {
     // check for fixed predicate
     if (pred == 0) return true;
     // compute hash address
-    t_octa addr = hash (ip, slot, pred);
+    t_octa addr = (ip + slot) ^ p_htr->gethist ();
     // get pht predicate
-    return p_pht->istrue (addr);
+    bool result = p_pht->istrue (addr);
+    // update the speculative history
+    p_htr->update (result);
+    // return prediction
+    return result;
   }
 
   // update the predicate system by ip, slot, predicate and value
 
   void Pshare::update (const t_octa ip, const long slot, const long pred, 
-		       const bool pval, const bool bflg) {
+		       const bool pval, const t_octa phst) {
     // do nothing with fixed predicate
     if (pred == 0) return;
     // compute hash address
-    t_octa addr = hash (ip, slot, pred);
-    // update according to branch only flag
-    if (d_bhuo == true) {
-      if (bflg == true) {
-	p_htr->update (pval);
-      } else {
-	p_pht->update (addr, pval);
-      }
-    } else {
-      // update the pht
-      p_pht->update (addr, pval);
-      // update the history
-      p_htr->update (pval);
-    }
+    t_octa addr = (ip + slot) ^ phst;
+    // update the pht
+    p_pht->update (addr, pval);
   }
 }

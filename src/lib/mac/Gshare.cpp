@@ -103,7 +103,7 @@ namespace iato {
   // set the predictor history
 
   void Gshare::sethist (const t_octa hist) {
-    p_htr->sethist (d_hist);
+    p_htr->sethist (d_hist = hist);
   }
   
   // return the predictor history

@@ -81,9 +81,9 @@ namespace iato {
     /// @param slot the instruction slot
     /// @param pred the predicate index
     /// @param pval the predicate value
-    /// @param bflg the branch flag
+    /// @param phst the predictor history
     void update (const t_octa ip, const long slot, const long pred, 
-		 const bool pval, const bool bflg);
+		 const bool pval, const t_octa phst);
 
   private:
     // make the copy constructor private

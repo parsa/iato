@@ -46,8 +46,6 @@ namespace iato {
   private:
     /// the use confidence flag
     bool d_usec;
-    /// branch history update only
-    bool d_bhuo;
     /// the predictor htr
     Htr* p_htr;
     /// the predictor pht
@@ -75,12 +73,15 @@ namespace iato {
     /// report some resource information
     void report (void) const;
 
-    /// @return the predictor hash address by address, slot and predicate
-    virtual t_octa hash (const t_octa ip, const long slot, 
-			 const long pred) const;
-
     /// @return true if the predicate can be predicted
     bool isvalid (const t_octa ip, const long slot, const long pred) const;
+
+    /// @return the predictor history
+    t_octa getphst (void) const;
+
+    /// set the predictor history
+    /// @param phst the history to set
+    void setphst (const t_octa phst);
 
     /// compute the predicate value
     /// @param ip   the instruction ip
@@ -93,9 +94,9 @@ namespace iato {
     /// @param slot the instruction slot
     /// @param pred the predicate index
     /// @param pval the predicate value
-    /// @param bflg the branch flag
+    /// @param phst the predictor history
     void update (const t_octa ip, const long slot, const long pred, 
-		 const bool pval, const bool bflg);
+		 const bool pval, const t_octa phst);
 
   private:
     // make the copy constructor private

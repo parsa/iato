@@ -88,6 +88,7 @@ namespace iato {
     d_sip     = that.d_sip;
     d_sfl     = that.d_sfl;
     d_hist    = that.d_hist;
+    d_phst    = that.d_phst;
     d_rprd    = that.d_rprd;
     d_bunit   = that.d_bunit;
     d_funit   = that.d_funit;
@@ -128,6 +129,7 @@ namespace iato {
     d_sip     = that.d_sip;
     d_sfl     = that.d_sfl;
     d_hist    = that.d_hist;
+    d_phst    = that.d_phst;
     d_rprd    = that.d_rprd;
     d_bunit   = that.d_bunit;
     d_funit   = that.d_funit;
@@ -168,6 +170,7 @@ namespace iato {
     d_sip     = OCTA_0;
     d_sfl     = false;
     d_hist    = OCTA_0;
+    d_phst    = OCTA_0;
     d_bunit   = AUNIT;
     d_funit   = AUNIT;
     d_slot    = 0;
@@ -238,18 +241,30 @@ namespace iato {
     return d_sfl;
   }
 
-  // set the predictor history
+  // set the branch history
 
   void Instr::sethist (const t_octa hist) {
     d_hist = hist;
   }
   
-  // return the predictor history
+  // return the branch history
 
   t_octa Instr::gethist (void) const {
     return d_hist;
   }
 
+  // set the predicate history
+  
+  void Instr::setphst (const t_octa phst) {
+    d_phst = phst;
+  }
+  
+  // return the predicate history
+  
+  t_octa Instr::getphst (void) const {
+    return d_phst;
+  }
+  
   // return the instruction slot
     
   long Instr::getslot (void) const {

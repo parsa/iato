@@ -65,7 +65,7 @@ namespace iato {
     /// the iib
     Iib* p_iib;
     /// the predicate predictor
-    Predicate* p_pps;
+    Predicate* p_ppr;
 
   public:
     /// create a new logical rename stage by context

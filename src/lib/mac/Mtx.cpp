@@ -68,13 +68,8 @@ namespace iato {
 
     // predicate predictions parameters
     d_smap["PREDICATE-PREDICTOR-TYPE"]   = PP_TYPE;
-    d_bmap["PREDICATE-BRANCH-UPDATE"]    = PP_BUPD;
     d_bmap["USE-CONFIDENCE-FLAG"]        = PP_UCFG;
-    d_bmap["BRANCH-HISTORY-UPDATE-ONLY"] = PP_BHUO;
-
-    d_smap["HYBRID-MASTER-PREDICTOR"]    = PP_HYPM;
-    d_smap["HYBRID-SLAVE-PREDICTOR"]     = PP_HYPS;
-    d_smap["HYBRID-META-PREDICTOR"]      = PP_HYMP;
+    d_bmap["PREDICATE-FORCE-VALUE"]      = PP_FVAL;
 
     // set register file parameters
     d_lmap["PR-UR-SIZE"]                 = UR_PRSZ;

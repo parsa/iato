@@ -68,9 +68,9 @@ namespace iato {
   // create a branch prediction by context
 
   Gskew::Gskew (Mtx* mtx) : Branch (mtx,RESOURCE_BPS) {
-    p_htr = new Htr   (mtx);
-    p_btb = new Btb   (mtx);
-    p_pht = new Pht[3](mtx);
+    p_htr = new Htr    (mtx);
+    p_btb = new Btb    (mtx);
+    p_pht = new Pht[3] (mtx);
     reset ();
   }
   
@@ -146,7 +146,7 @@ namespace iato {
   // set the predictor history
 
   void Gskew::sethist (const t_octa hist) {
-    p_htr->sethist (d_hist);
+    p_htr->sethist (d_hist = hist);
   }
   
   // return the predictor history

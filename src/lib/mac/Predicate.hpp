@@ -55,8 +55,8 @@ namespace iato {
   protected:
     /// the predictor type
     string d_type;
-    /// use branch for update
-    bool   d_bupd;
+    /// the predictor history
+    t_octa d_phst;
 
   public:
     /// create a default predictor
@@ -91,6 +91,13 @@ namespace iato {
     /// @return true if the instruction predicate can be predicted
     virtual bool ispredict (const Instr& inst) const;
 
+    /// @return the predictor history
+    virtual t_octa getphst (void) const;
+
+    /// set the predictor history
+    /// @param phst the history to set
+    virtual void setphst (const t_octa phst);
+
     /// compute the predicate value
     /// @param ip   the instruction ip
     /// @param slot the instruction slot
@@ -107,9 +114,9 @@ namespace iato {
     /// @param slot the instruction slot
     /// @param pred the predicate index
     /// @param pval the predicate value
-    /// @param bflg the branch flag
-    virtual void update (const t_octa ip, const long slot,
-			 const long pred, const bool pval, const bool bflg);
+    /// @param phst the predictor history
+    virtual void update (const t_octa ip, const long slot, const long pred, 
+			 const bool pval, const t_octa phst); 
 
     /// update the predicate prediction by instruction and value
     /// @param inst the instruction used for update

@@ -50,13 +50,13 @@ SOURCES 	= Mtx.cpp         \
 		  Hma.cpp         \
 		  Rib.cpp         \
 		  Slot.cpp        \
-		  Mspp.cpp        \
-		  Hypp.cpp        \
 		  Stage.cpp       \
 		  Cache.cpp       \
 		  Gskew.cpp       \
+		  Pskew.cpp       \
 		  Branch.cpp      \
 		  Gshare.cpp      \
+		  Pforce.cpp      \
 		  Pshare.cpp      \
 		  Detect.cpp      \
 		  Hazard.cpp      \

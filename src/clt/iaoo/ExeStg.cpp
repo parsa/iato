@@ -120,10 +120,17 @@ namespace iato {
 	  d_inst.setpnrd (false);
 	  d_inst.setcnlf (!bval);
 	} else {
-	  // reschedule the instruction
-	  p_gcs->resched (d_inst);
-	  d_inst.reset ();
-	  d_resl.reset ();
+	  // check if the predicate speculation is active
+	  if ((d_inst.getppfl () == true) && (d_inst.getsfl () == true)) {
+	    d_inst.setpnrd (false);
+	    d_inst.setppvl (true);
+	    d_inst.setcnlf (false);
+	  } else {
+	    // reschedule the instruction
+	    p_gcs->resched (d_inst);
+	    d_inst.reset ();
+	    d_resl.reset ();
+	  }
 	}
       }
       // evaluate the operands in the bypass

@@ -82,19 +82,10 @@ namespace iato {
   /// default predicate predictor type
   const string PP_TYPE = "none";
 
-  /// use branch for update
-  const bool   PP_BUPD = true;
   /// use confidence flag
-  const bool   PP_UCFG = true;
-  /// branch history update only
-  const bool   PP_BHUO = false;
-
-  /// the master hybrid predictor
-  const string PP_HYPM = "pshare";
-  /// the slave hybrid predictor
-  const string PP_HYPS = "pbmodal";
-  /// the hybrid meta predictor
-  const string PP_HYMP = "pimodal";
+  const bool PP_UCFG = true;
+  /// force predication value
+  const bool PP_FVAL = true;
 
   // -------------------------------------------------------------------------
   // - register file                                                         -

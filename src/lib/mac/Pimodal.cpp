@@ -101,7 +101,7 @@ namespace iato {
   // update the predicate system by ip, slot, predicate and value
 
   void Pimodal::update (const t_octa ip, const long slot, const long pred, 
-			const bool pval, const bool bflg) {
+			const bool pval, const t_octa phst) {
     // do nothing with fixed predicate
     if (pred == 0) return;
     // update the pht
