@@ -38,7 +38,7 @@ namespace iato {
       reset ();
     }
     // reset the alat structure
-    void t_alat::reset (void) {
+    void reset (void) {
       d_tag   = WORD_0;
       d_addr  = OCTA_0;
       d_ldsz  = BYTE_0;

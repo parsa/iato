@@ -195,7 +195,7 @@ namespace iato {
     long pd = pipe->depth ();
     if (pd > d_depth) {
       // copy old resource controler
-      Runnable** rctrl = new (Runnable*)[pd];
+      Runnable** rctrl = new Runnable*[pd];
       for (long i = 0; i < pd; i++) rctrl[i] = 0;
       for (long i = 0; i < d_depth; i++) rctrl[i] = p_rctrl[i];
       delete [] p_rctrl;

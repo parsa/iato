@@ -32,39 +32,30 @@ int main () {
   bundle.setsip (OCTA_1, 0);
   assert (bundle.getsip () == OCTA_1);
 
-  // test copy construct a bundle
-  Bundle bundle2 = bundle ;
-  assert (bundle2.getsip() == OCTA_1);
+  {
+      // test copy construct a bundle
+      Bundle bundle2 = bundle ;
+      assert (bundle2.getsip() == OCTA_1);
 
-  // test destroy this bundle
-  bundle2.~Bundle ();
+      // test destroy this bundle
+  }
 
-  // test assign a bundle 
-  Bundle bundle3;
-  bundle3 = bundle;
-  assert (bundle3.getsip () == OCTA_1);
-  
-  // test reset a bundle
-  bundle3.reset();
-  assert (bundle3.getsip() == OCTA_0);
+  {
+      // test assign a bundle 
+      Bundle bundle3;
+      bundle3 = bundle;
+      assert (bundle3.getsip () == OCTA_1);
+      
+      // test reset a bundle
+      bundle3.reset();
+      assert (bundle3.getsip() == OCTA_0);
+  }
 
   // test push a byte in this bundle field
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
-  bundle.push (0x01U);
+  for (size_t i = 0; i < 16; ++i)
+  {
+      bundle.push (0x01U);
+  }
 
   // check bundle content
   assert (bundle.length ()   == 16);

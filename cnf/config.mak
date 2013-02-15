@@ -92,8 +92,8 @@ LKFLAGS		= -pg
 CCDEFINES	= $(PLTDEFS)
 XCCDEFINES	= $(XPLTDEFS)
 else
-CCFLAGS	 	= -Wall -Wswitch -Woverloaded-virtual -Werror -g -MMD -fPIC
-XCCFLAGS	= -Wall -Wswitch -Werror -g -MMD
+CCFLAGS	 	= -Wall -Wswitch -Woverloaded-virtual -Wno-error -g -MMD -fPIC
+XCCFLAGS	= -Wall -Wswitch -Wno-error -g -MMD
 CCDEFINES	= -DDEBUG $(PLTDEFS)
 XCCDEFINES	= -DDEBUG $(XPLTDEFS)
 endif

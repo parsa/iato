@@ -84,7 +84,7 @@ namespace iato {
   // return the tag13 value
   static t_octa get_tag13 (const t_octa inst) {
     t_octa result = (inst >> 24) & 0x00000000000000FFLL;
-    bool      s = ((t_byte) (inst >> 32) & 0x01 == 0x01);
+    bool      s = ((t_byte) (inst >> 32) & 0x01) == 0x01;
     if (s) result |= ~0x00000000000000FF;
     return (result << 4);
   }

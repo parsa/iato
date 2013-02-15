@@ -101,19 +101,19 @@ namespace iato {
 
   // get the instruction immediate sign bit
   static inline bool get_sbit (const t_octa inst) {
-    bool result = ((t_byte) (inst >> 36)) & 0x01 == 0x01;
+    bool result = (((t_byte) (inst >> 36)) & 0x01) == 0x01;
     return result;
   }
 
   // get the instruction immediate bit
   static inline bool get_ibit (const t_octa inst, const long pos) {
-    bool result = ((t_byte) (inst >> pos)) & 0x01 == 0x01;
+    bool result = (((t_byte) (inst >> pos)) & 0x01) == 0x01;
     return result;
   }
 
   // get the instruction immediate sign bit at position 15
   static inline bool get_sbit15 (const t_octa inst) {
-    bool result = ((t_byte) (inst >> 15)) & 0x01 == 0x01;
+    bool result = (((t_byte) (inst >> 15)) & 0x01) == 0x01;
     return result;
   }
   // get the instruction immediate (2) value for M39

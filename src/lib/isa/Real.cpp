@@ -245,11 +245,19 @@ namespace iato {
     t_quad exp  = ia_get_exp  (buffer);
     if (ia_isint (buffer) == true) return false;
     if (ia_get_sgfd (buffer) == OCTA_0)
+    {
       if (exp != QUAD_0)
+      {
 	if (exp < EXP_BOR)
+	{
 	  return true;
+	}
 	else if ((exp == EXP_BOR) && (ia_get_sign (buffer) == true))
+	{
 	  return true;
+	}
+      }
+    }
     return false;
   }
 

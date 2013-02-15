@@ -29,7 +29,7 @@ namespace iato {
   Gcs::Gcs (Mtx* mtx) : Resource (RESOURCE_GCS) {
     d_size = mtx->gettusz (); assert (d_size > 0);
     d_slen = 0;
-    p_vsta = new (Station*)[d_size];
+    p_vsta = new Station*[d_size];
     for (long i = 0; i < d_size; i++) p_vsta[i] = 0;
     reset ();
   }
