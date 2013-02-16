@@ -63,7 +63,11 @@ namespace iato {
     d_type = "pskew";
     d_usec = PP_UCFG;
     p_htr  = new Htr;
-    p_pht  = new Pht[3];
+    p_pht.reserve(3);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      p_pht.emplace_back(new Pht());
+    }
     reset ();
   }
 
@@ -73,7 +77,11 @@ namespace iato {
     d_type = "pskew";
     d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
     p_htr  = new Htr    (mtx);
-    p_pht  = new Pht[3] (mtx);
+    p_pht.reserve(3);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      p_pht.emplace_back(new Pht(mtx));
+    }
     reset ();
   }
   
@@ -83,7 +91,11 @@ namespace iato {
     d_type = "pskew";
     d_usec = mtx->getbool ("USE-CONFIDENCE-FLAG");
     p_htr  = new Htr    (mtx);
-    p_pht  = new Pht[3] (mtx);
+    p_pht.reserve(3);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      p_pht.emplace_back(new Pht(mtx));
+    }
     reset ();
   }
 
@@ -91,16 +103,19 @@ namespace iato {
 
   Pskew::~Pskew (void) {
     delete    p_htr;
-    delete [] p_pht;
+    for (Pht* i : p_pht)
+    {
+      delete i;
+    }
   }
 
   // reset this branch predictor
 
   void Pskew::reset (void) {
     p_htr->reset   ();
-    p_pht[0].reset ();
-    p_pht[1].reset ();
-    p_pht[2].reset ();
+    p_pht[0]->reset ();
+    p_pht[1]->reset ();
+    p_pht[2]->reset ();
   }
 
   // report some resource information
@@ -111,7 +126,7 @@ namespace iato {
     cout << "  resource type                : predicate predictor" << endl;
     cout << "  predictor type               : pskew" << endl;
     cout << "  htr size                     : " << p_htr->getsize () << endl;
-    cout << "  pht size                     : " << p_pht->getsize () << endl;
+    cout << "  pht size                     : " << p_pht[0]->getsize () << endl;
     if (d_usec == true)
       cout << "  using confidence             : true"  << endl;
     else
@@ -130,9 +145,9 @@ namespace iato {
     t_octa A1 = F1 (addr, hist);
     t_octa A2 = F2 (addr, hist);
     // get pht flags
-    bool p0 = d_usec ? p_pht[0].isstrong (A0) : true;
-    bool p1 = d_usec ? p_pht[1].isstrong (A1) : true;
-    bool p2 = d_usec ? p_pht[2].isstrong (A2) : true;
+    bool p0 = d_usec ? p_pht[0]->isstrong (A0) : true;
+    bool p1 = d_usec ? p_pht[1]->isstrong (A1) : true;
+    bool p2 = d_usec ? p_pht[2]->isstrong (A2) : true;
     // compute majority
     return majority (p0, p1, p2);
   }
@@ -163,9 +178,9 @@ namespace iato {
     t_octa A1 = F1 (addr, hist);
     t_octa A2 = F2 (addr, hist);
     // get pht flags
-    bool p0 = d_usec ? p_pht[0].istrue (A0) : true;
-    bool p1 = d_usec ? p_pht[1].istrue (A1) : true;
-    bool p2 = d_usec ? p_pht[2].istrue (A2) : true;
+    bool p0 = d_usec ? p_pht[0]->istrue (A0) : true;
+    bool p1 = d_usec ? p_pht[1]->istrue (A1) : true;
+    bool p2 = d_usec ? p_pht[2]->istrue (A2) : true;
     // compute majority
     bool result = majority (p0, p1, p2);
     // update speculative history
@@ -187,8 +202,8 @@ namespace iato {
     t_octa A1 = F1 (addr, phst);
     t_octa A2 = F2 (addr, phst);    
     // update the pht
-    p_pht[0].update (A0, pval);
-    p_pht[1].update (A1, pval);
-    p_pht[2].update (A2, pval);
+    p_pht[0]->update (A0, pval);
+    p_pht[1]->update (A1, pval);
+    p_pht[2]->update (A2, pval);
   }
 }

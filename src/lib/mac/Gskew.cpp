@@ -61,7 +61,11 @@ namespace iato {
   Gskew::Gskew (void) : Branch (RESOURCE_BPS) {
     p_htr = new Htr;
     p_btb = new Btb;
-    p_pht = new Pht[3];
+    p_pht.reserve(3);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      p_pht.emplace_back(new Pht());
+    }
     reset ();
   }
 
@@ -70,7 +74,11 @@ namespace iato {
   Gskew::Gskew (Mtx* mtx) : Branch (mtx,RESOURCE_BPS) {
     p_htr = new Htr    (mtx);
     p_btb = new Btb    (mtx);
-    p_pht = new Pht[3] (mtx);
+    p_pht.reserve(3);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      p_pht.emplace_back(new Pht(mtx));
+    }
     reset ();
   }
   
@@ -79,7 +87,11 @@ namespace iato {
   Gskew::Gskew (Mtx* mtx, const string& name) : Branch (mtx, name) {
     p_htr = new Htr    (mtx);
     p_btb = new Btb    (mtx);
-    p_pht = new Pht[3] (mtx);
+    p_pht.reserve(3);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      p_pht.emplace_back(new Pht(mtx));
+    }
     reset ();
   }
 
@@ -88,7 +100,10 @@ namespace iato {
   Gskew::~Gskew (void) {
     delete    p_htr;
     delete    p_btb;
-    delete [] p_pht;
+    for (Pht* i : p_pht)
+    {
+      delete i;
+    }
   }
 
   // reset this branch predictor
@@ -96,9 +111,9 @@ namespace iato {
   void Gskew::reset (void) {
     p_htr->reset   ();
     p_btb->reset   ();
-    p_pht[0].reset ();
-    p_pht[1].reset ();
-    p_pht[2].reset ();
+    p_pht[0]->reset ();
+    p_pht[1]->reset ();
+    p_pht[2]->reset ();
   }
 
   // report some resource information
@@ -110,7 +125,7 @@ namespace iato {
     cout << "\tpredictor type \t\t: " << "gskew" << endl;
     cout << "\thtr size       \t\t: " << p_htr->getsize   () << endl;
     cout << "\tbtb size       \t\t: " << p_btb->getsize   () << endl;
-    cout << "\tpht size       \t\t: " << p_pht[0].getsize () << endl;
+    cout << "\tpht size       \t\t: " << p_pht[0]->getsize () << endl;
   }
 
   // return true if the branch is predicted taken
@@ -124,9 +139,9 @@ namespace iato {
     t_octa A1 = F1 (addr, hist);
     t_octa A2 = F2 (addr, hist);
     // get pht flags
-    bool p0 = p_pht[0].istrue (A0);
-    bool p1 = p_pht[1].istrue (A1);
-    bool p2 = p_pht[2].istrue (A2);
+    bool p0 = p_pht[0]->istrue (A0);
+    bool p1 = p_pht[1]->istrue (A1);
+    bool p2 = p_pht[2]->istrue (A2);
     // compute majority
     return majority (p0, p1, p2);
   }
@@ -178,9 +193,9 @@ namespace iato {
     t_octa A1 = F1 (addr, hst);
     t_octa A2 = F2 (addr, hst);
     // update the pht by address
-    p_pht[0].update (A0, btk);
-    p_pht[1].update (A1, btk);
-    p_pht[2].update (A2, btk);
+    p_pht[0]->update (A0, btk);
+    p_pht[1]->update (A1, btk);
+    p_pht[2]->update (A2, btk);
     // update the btb
     if (btk == true) p_btb->update (cip, nip);
   }

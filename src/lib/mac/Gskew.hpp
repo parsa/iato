@@ -37,6 +37,8 @@
 #include "Branch.hpp"
 #endif
 
+#include <vector>
+
 namespace iato {
   using namespace std;
 
@@ -53,7 +55,7 @@ namespace iato {
     /// the predictor btb
     Btb* p_btb;
     /// the pht tables
-    Pht* p_pht;
+    std::vector<Pht*> p_pht;
 
   public:
     /// create a default gskew predictor

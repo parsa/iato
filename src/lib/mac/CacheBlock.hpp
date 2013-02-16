@@ -26,6 +26,8 @@
 #include "Types.hpp"
 #endif
 
+#include <vector>
+
 namespace iato {
 
   /// The CacheBlock class is a simple class that implements the functionality
@@ -43,7 +45,7 @@ namespace iato {
     /// the tag mask
     t_octa d_mask;
     /// the block data structure
-    struct s_block* p_blok;
+    std::vector<struct s_block*> p_blok;
 
   public:
     /// create a cache block by size and mask

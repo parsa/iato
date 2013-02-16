@@ -33,6 +33,8 @@
 #include "Predicate.hpp"
 #endif
 
+#include <vector>
+
 namespace iato {
   using namespace std;
 
@@ -48,7 +50,7 @@ namespace iato {
     /// the predictor htr
     Htr* p_htr;
     /// the predictor pht
-    Pht* p_pht;
+    std::vector<Pht*> p_pht;
 
   public:
     /// create a default pshare predictor

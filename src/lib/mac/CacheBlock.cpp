@@ -82,26 +82,33 @@ namespace iato {
     d_size = size; assert (d_size > 0);
     d_blsz = blsz; assert (d_blsz > 0);
     d_mask = getsmsk (d_size * d_blsz);
-    p_blok = new s_block[size](d_blsz);
+    p_blok.reserve(size);
+    for (size_t i = 0; i < size; ++i)
+    {
+      p_blok.emplace_back(new s_block(d_blsz));
+    }
   }
 
   // destroy this cache block
 
   CacheBlock::~CacheBlock (void) {
-    delete [] p_blok;
+    for (s_block* b : p_blok)
+    {
+      delete b;
+    }
   }
 
   // reset this cache block
 
   void CacheBlock::reset (void) {
-    for (long i = 0; i < d_size; i++) p_blok[i].reset ();
+    for (long i = 0; i < d_size; i++) p_blok[i]->reset ();
   }
 
   // check if a cache line is valid
 
   bool CacheBlock::isvalid (const long index, const t_octa addr) const {
     assert ((index >= 0) && (index < d_size));
-    return p_blok[index].isvalid (addr & d_mask);
+    return p_blok[index]->isvalid (addr & d_mask);
   }
 
   // read a byte line at a certain address
@@ -112,7 +119,7 @@ namespace iato {
       throw Exception ("block-error", "invalid byte read with invalid line");
     // compute offset from address
     long offset = addr % (t_octa) d_blsz;
-    return p_blok[index].readbyte (offset);
+    return p_blok[index]->readbyte (offset);
   }
 
   // write a byte line at a certain address
@@ -124,7 +131,7 @@ namespace iato {
       throw Exception ("block-error", "invalid byte write with invalid line");
     // compute offset from address
     long offset = addr % (t_octa) d_blsz;
-    p_blok[index].writebyte (offset, byte);
+    p_blok[index]->writebyte (offset, byte);
   }
 
   // update a cache block line by index
@@ -133,6 +140,6 @@ namespace iato {
 			   const t_byte* line) {
     assert ((index >= 0) && (index < d_size));
     // update the line
-    p_blok[index].update (addr & d_mask, line);
+    p_blok[index]->update (addr & d_mask, line);
   }
 }
