@@ -42,10 +42,10 @@ endif
 # process solaris options
 ifeq ($(OSNAME),SunOS)
 CC     		= g++
-XAS		= ia64-pc-linux-gnu-as -x
-XCC		= ia64-pc-linux-gnu-gcc
-XLD		= ia64-pc-linux-gnu-ld
-XLK		= ia64-pc-linux-gnu-gcc -static
+XAS		= ia64-linux-gnu-as -x
+XCC		= ia64-linux-gnu-gcc
+XLD		= ia64-linux-gnu-ld
+XLK		= ia64-linux-gnu-gcc -static
 PLTDEFS		= -DIATO -DOS_SOLARIS -D_REENTRANT -DHAS_PTHREAD
 XPLTDEFS	= -DIATO -DOS_SOLARIS
 PLTINCS		=
@@ -64,10 +64,10 @@ XLD		= ld
 XLK		= gcc -static
 endif
 ifeq ($(MANAME),i686)
-XCC		= ia64-pc-linux-gnu-gcc
-XAS		= ia64-pc-linux-gnu-as -x
-XLD		= ia64-pc-linux-gnu-ld
-XLK		= ia64-pc-linux-gnu-gcc -static
+XCC		= ia64-linux-gnu-gcc
+XAS		= ia64-linux-gnu-as -x
+XLD		= ia64-linux-gnu-ld
+XLK		= ia64-linux-gnu-gcc -static
 endif
 PLTDEFS		= -DIATO -DOS_LINUX -D_REENTRANT -DHAS_PTHREAD
 XPLTDEFS	= -DIATO -DOS_LINUX
