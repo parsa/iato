@@ -718,6 +718,38 @@ namespace iato {
   /// floating-point status field completer
   enum t_fpcomp  {S0, S1, S2, S3};
   /// floating point classes
+  ///
+  /// glibc math headers define short macros (NAT, NEG, ZERO, etc.) that clash
+  /// with these historical enumerators when included before this header on
+  /// non-IA64 builds.  Undefine them locally so the toolkit builds with modern
+  /// host toolchains.
+#ifdef NAT
+#undef NAT
+#endif
+#ifdef QNAN
+#undef QNAN
+#endif
+#ifdef SNAN
+#undef SNAN
+#endif
+#ifdef POS
+#undef POS
+#endif
+#ifdef NEG
+#undef NEG
+#endif
+#ifdef ZERO
+#undef ZERO
+#endif
+#ifdef UNORM
+#undef UNORM
+#endif
+#ifdef NORM
+#undef NORM
+#endif
+#ifdef INF
+#undef INF
+#endif
   enum t_fpclass {NAT, QNAN, SNAN, POS, NEG, ZERO, UNORM, NORM, INF};
   /// floating point instruction precision control completer
   enum t_fpipc   {NONEPC, S, D};
