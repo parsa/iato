@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.3)
 project(iato CXX)
 
+enable_testing()
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(Elf)

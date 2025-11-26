@@ -7,5 +7,6 @@ foreach(test_file ${TEST_CASES})
   add_executable(${test_target} ${test_file})
   target_compile_definitions(${test_target} PUBLIC $<$<CONFIG:Debug>:DEBUG> IATO OS_LINUX _REENTRANT HAS_PTHREAD)
   target_link_libraries(${test_target} PUBLIC iaelf Elf::elf)
+  add_test(NAME tst.lib.elf.${test_target} COMMAND ${test_target})
 endforeach()
 
