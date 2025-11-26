@@ -115,6 +115,14 @@ namespace iato {
     return bspva;
   }
 
+  // return the current break value
+
+  t_octa System::getbrkva (void) const {
+    if (!p_mem) return OCTA_0;
+    ElfBrk* brk = p_mem->getbrkm ();
+    return (brk == 0) ? OCTA_0 : brk->getheaplimit ();
+  }
+
   // return the elf image checker
 
   Checker* System::getchecker (void) const {

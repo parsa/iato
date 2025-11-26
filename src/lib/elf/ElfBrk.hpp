@@ -47,6 +47,10 @@ namespace iato {
     bool   d_mode;
     /// the break limit address
     t_octa d_brkta;
+    /// first byte past the loaded program image (heap base)
+    t_octa d_heapb;
+    /// first unmapped page after the current heap (guard page start)
+    t_octa d_guard;
 
   public:
     /// create a new breakable memory
@@ -66,6 +70,21 @@ namespace iato {
 
     /// @return the break limit address
     t_octa getbrkta (void) const;
+
+    /// extend the heap by a minimum number of pages (defaults to one)
+    void bootstrap (const long pages = 1);
+
+    /// @return the heap base (first free byte after loaded segments)
+    t_octa getheapbase (void) const;
+
+    /// @return the current heap limit (same as getbrkta)
+    t_octa getheaplimit (void) const;
+
+    /// @return the current guard page start
+    t_octa getguard (void) const;
+
+    /// @return the kernel page size
+    t_octa getpgsz (void) const;
 
   private:
     // make the copy constructor private

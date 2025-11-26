@@ -40,6 +40,8 @@ namespace iato {
     d_psize = ekp.getpgsz ();
     d_mode  = ekp.getmode ();
     d_brkta = OCTA_0;
+    d_heapb = OCTA_0;
+    d_guard = OCTA_0;
   }
 
   // create a breakable array by parameters
@@ -49,6 +51,8 @@ namespace iato {
     d_psize = ekp->getpgsz ();
     d_mode  = ekp->getmode ();
     d_brkta = OCTA_0;
+    d_heapb = OCTA_0;
+    d_guard = OCTA_0;
   }
 
   // add a segment to this elf breakable array
@@ -59,36 +63,70 @@ namespace iato {
     ElfLoad::addseg (seg);
     // compute upper limit
     t_octa segta = seg->getbase () + (t_octa) seg->getsize ();
-    if (segta > d_brkta) d_brkta = page_align (d_psize, segta);
+    if (segta > d_brkta) {
+      d_brkta = page_align (d_psize, segta);
+      d_heapb = d_brkta;
+      d_guard = d_brkta + d_psize;
+    }
   }
 
   // set a new break value
 
   void ElfBrk::setbrkta (const t_octa addr) {
-    // do nothing if null
     if (addr == OCTA_0) return;
-    // realign the address
-    t_octa brk = page_align (d_psize, addr);
-    // check that it is not equal
-    if (brk == d_brkta) return;
-    // first case, the current break limit is not valid - we just have
-    // to create a segment with the appropriate size
-    if ((isvalid (d_brkta) == false) && (brk > d_brkta)) {
-      t_long size = brk - d_brkta;
-      ElfSegment* seg = new ElfSegment (size, d_brkta);
-      seg->setprot (PROT_FU);
-      seg->setmode (d_mode);
-      // add segment and update break limit
-      addseg (seg);
-      d_brkta = brk;
+    // make sure we know where the heap starts
+    if (d_heapb == OCTA_0) d_heapb = d_brkta;
+    // align the requested break
+    t_octa want = page_align (d_psize, addr);
+    // never shrink below the heap base
+    if (want < d_heapb) want = d_heapb;
+    // if we already have enough space, just update the guard
+    if (want <= d_brkta) {
+      d_brkta = want;
+      d_guard = d_brkta + d_psize;
       return;
     }
-    assert (false);
+    // extend page by page so we keep a guard immediately after the heap
+    t_octa cur = d_brkta;
+    if (cur == OCTA_0) cur = d_heapb;
+    while (cur < want) {
+      t_octa next = cur + d_psize;
+      t_long size = static_cast<t_long> (next - cur);
+      ElfSegment* seg = new ElfSegment (size, cur);
+      seg->setmode (d_mode);
+      seg->setprot (Memory::PROT_RW);
+      ElfLoad::addseg (seg);
+      cur = next;
+    }
+    d_brkta = cur;
+    d_guard = d_brkta + d_psize;
   }
 
   // return the current break value
 
   t_octa ElfBrk::getbrkta (void) const {
     return d_brkta;
+  }
+
+  void ElfBrk::bootstrap (const long pages) {
+    long count = (pages <= 0) ? 1 : pages;
+    t_octa extra = d_psize * static_cast<t_octa> (count);
+    setbrkta (d_brkta + extra);
+  }
+
+  t_octa ElfBrk::getheapbase (void) const {
+    return d_heapb;
+  }
+
+  t_octa ElfBrk::getheaplimit (void) const {
+    return d_brkta;
+  }
+
+  t_octa ElfBrk::getguard (void) const {
+    return d_guard;
+  }
+
+  t_octa ElfBrk::getpgsz (void) const {
+    return d_psize;
   }
 }

@@ -419,7 +419,9 @@ namespace iato {
     // create an elf exec image
     ElfExec* exim = new ElfExec (p_kernel);
     // add the break array
-    exim->setbrkm (getbrkm ());
+    ElfBrk* brkm = getbrkm ();
+    exim->setbrkm (brkm);
+    if (brkm) brkm->bootstrap ();
     // bind the arguments
     p_interp->bind (p_args, p_envp, exim->getstkm ());
     return exim;  

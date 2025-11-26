@@ -97,6 +97,9 @@ namespace iato {
     /// @return the backing store base
     t_octa getbspva (void) const;
 
+    /// @return the current break value exposed by the loader
+    t_octa getbrkva (void) const;
+
     /// @return the elf image checker
     Checker* getchecker (void) const;
 
