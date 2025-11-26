@@ -143,6 +143,8 @@ namespace iato {
       int               d_fd;
       /// the file header
       struct t_theader* p_hd;
+      /// true if the file had a formal header
+      bool              d_has_header;
       /// the record queue
       queue<Record>     d_rqueue;
 

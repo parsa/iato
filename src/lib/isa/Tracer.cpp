@@ -400,9 +400,12 @@ namespace iato {
     }
     // check the header
     p_hd = new t_theader ();
+    d_has_header = true;
     if (check_trace_header (p_hd, d_fd) == false) {
-      string msg = "invalid trace header from file ";
-      throw Exception ("tracer-error", msg + name);
+      // rewind to the beginning so readers can consume legacy traces
+      (void) lseek (d_fd, 0, SEEK_SET);
+      *p_hd = t_theader ();
+      d_has_header = false;
     }
     // save trace name
     d_name = name;
@@ -468,6 +471,13 @@ namespace iato {
   void Tracer::Reader::hdinfo (void) {
     // the file descriptor should be ready
     assert (d_fd != -1);
+    if (d_has_header == false) {
+      cout << "trace version                  : legacy (no header)" << endl;
+      cout << "program name                   : unknown" << endl;
+      cout << "cycle start                    : beginning of program" << endl;
+      cout << "cycle end                      : end of program" << endl;
+      return;
+    }
     // header version
     cout << "trace version                  : ";
     cout << (long) p_hd->d_major << "." << (long) p_hd->d_minor << endl;
