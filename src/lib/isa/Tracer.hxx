@@ -26,7 +26,7 @@
 // - linux configuration                                                     -
 // ---------------------------------------------------------------------------
 
-#ifdef   OS_LINUX
+#if defined(OS_LINUX) || defined(OS_DARWIN)
 #ifndef  _GNU_SOURCE
 #define  _GNU_SOURCE
 #endif
@@ -44,6 +44,11 @@
 // ---------------------------------------------------------------------------
 
 namespace iato {
+#ifdef OS_DARWIN
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
+#endif
+#endif
   // default file open mode
   const long TRACER_OPEN_MODE = O_WRONLY|O_CREAT|O_LARGEFILE|O_TRUNC;
   const long TRACER_FILE_MODE = S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH;

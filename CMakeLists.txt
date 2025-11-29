@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
 project(iato CXX)
 
 enable_testing()
@@ -8,7 +8,11 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 # --- Platform Detection & Global Definitions ---
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_compile_definitions(OS_LINUX IATO _REENTRANT HAS_PTHREAD)
+elseif(APPLE)
+    add_compile_definitions(OS_DARWIN IATO _REENTRANT HAS_PTHREAD)
 endif()
+
+find_package(Threads REQUIRED)
 
 # --- Compiler Flags ---
 add_compile_options(-Wall -Wswitch -Woverloaded-virtual)

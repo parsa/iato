@@ -104,7 +104,7 @@ namespace iato {
 // - linux based mapping                                                     -
 // ---------------------------------------------------------------------------
 
-#ifdef   OS_LINUX
+#if defined(OS_LINUX) || defined(OS_DARWIN)
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <errno.h>
@@ -121,7 +121,12 @@ namespace iato {
     kt.d_oflag = lfixocta (ut.c_iflag);
     kt.d_cflag = lfixocta (ut.c_iflag);
     kt.d_lflag = lfixocta (ut.c_iflag);
+#ifdef OS_LINUX
     kt.d_line  = ut.c_line;
+#else
+    kt.d_line  = 0;
+#endif
+
     for (long i = 0; i < NCCS; i++) kt.d_cc[i] = ut.c_cc[i];
     kt.d_ispeed = lfixocta (ut.c_ispeed);
     kt.d_ospeed = lfixocta (ut.c_ospeed);

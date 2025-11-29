@@ -147,4 +147,63 @@ namespace iato {
 
 #endif
 
+#ifdef   OS_DARWIN
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdio.h>
+
+namespace iato {
+  static t_octa map_fcntl_cmd (const t_octa cmd) {
+      if (cmd == KRN_F_DUPFD) return F_DUPFD;
+      if (cmd == KRN_F_GETFD) return F_GETFD;
+      if (cmd == KRN_F_SETFD) return F_SETFD;
+      if (cmd == KRN_F_GETFL) return F_GETFL;
+      if (cmd == KRN_F_SETFL) return F_SETFL;
+      if (cmd == KRN_F_GETLK) return F_GETLK;
+      if (cmd == KRN_F_SETLK) return F_SETLK;
+      if (cmd == KRN_F_SETLKW) return F_SETLKW;
+      return cmd;
+  }
+  static t_octa map_open_flags (const t_octa flags) {
+    t_octa res = 0;
+    t_octa acc = flags & 3;
+    if (acc == KRN_O_RDONLY) res |= O_RDONLY;
+    else if (acc == KRN_O_WRONLY) res |= O_WRONLY;
+    else if (acc == KRN_O_RDWR) res |= O_RDWR;
+
+    if (flags & KRN_O_CREAT) res |= O_CREAT;
+    if (flags & KRN_O_EXCL) res |= O_EXCL;
+    if (flags & KRN_O_NOCTTY) res |= O_NOCTTY;
+    if (flags & KRN_O_TRUNC) res |= O_TRUNC;
+    if (flags & KRN_O_APPEND) res |= O_APPEND;
+    if (flags & KRN_O_NONBLOCK) res |= O_NONBLOCK;
+    // O_SYNC might be O_FSYNC on mac?
+    if (flags & KRN_O_SYNC) res |= O_SYNC;
+#ifdef O_DIRECTORY
+    if (flags & KRN_O_DIRECTORY) res |= O_DIRECTORY;
+#endif
+#ifdef O_NOFOLLOW
+    if (flags & KRN_O_NOFOLLOW) res |= O_NOFOLLOW;
+#endif
+#ifdef O_LARGEFILE
+    if (flags & KRN_O_LARGEFILE) res |= O_LARGEFILE;
+#endif
+    
+    return res;
+  }
+  static t_octa map_lseek_whence (const t_octa whence) {
+    return whence;
+  }
+  static t_octa map_access_mod (const t_octa arg) {
+    return arg;
+  }
+  static t_octa map_perm_mod (const t_octa arg) {
+    return arg;
+  }
+}
+#endif
+
 #endif

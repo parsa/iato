@@ -31,7 +31,7 @@ namespace iato {
     int fd  = (int) sys_args_getoval (0, rse, rbk);
     // prepare for local call
     termios ut;
-    int status = ioctl (fd, TCGETS, &ut);
+    int status = tcgetattr (fd, &ut);
     if (status != 0) return status;
     // map to memory data
     union {
@@ -58,7 +58,7 @@ namespace iato {
     t_octa ctl = map_ioctl_request (req);
     // process the request
     switch (ctl) {
-    case TCGETS:
+    case KRN_TCGETS:
       result = ioctl_tcgets (rse, rbk, mem);
       break;
     default:

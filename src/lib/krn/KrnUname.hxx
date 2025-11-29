@@ -52,7 +52,7 @@ namespace iato {
 // - linux based mapping                                                     -
 // ---------------------------------------------------------------------------
 
-#ifdef   OS_LINUX
+#if defined(OS_LINUX) || defined(OS_DARWIN)
 #include <sys/utsname.h>
 #include <errno.h>
 #endif
