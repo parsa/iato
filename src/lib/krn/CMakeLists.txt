@@ -37,6 +37,11 @@ set(HEADERS
 
 add_library(iakrn ${SOURCES} ${HEADERS})
 target_include_directories(iakrn PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(iakrn PUBLIC $<$<CONFIG:Debug>:DEBUG> IATO OS_LINUX _REENTRANT HAS_PTHREAD)
 target_link_libraries(iakrn PUBLIC iaisa iaelf Elf::elf)
 
+install(TARGETS iakrn
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+install(FILES ${HEADERS} DESTINATION include/iato)

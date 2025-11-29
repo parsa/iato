@@ -53,26 +53,4 @@ namespace iato {
 }
 #endif
 
-// ---------------------------------------------------------------------------
-// - solaris base mapping                                                    -
-// ---------------------------------------------------------------------------
-
-#ifdef   OS_SOLARIS
-#include <errno.h>
-#include <signal.h>
-#include <sys/types.h>
-
-namespace iato {
-  
-  inline static int map_sigprocmask_request (const int req) {
-    int result = 0;
-    if (req == SIG_BLOCK) result = KRN_SIG_BLOCK;
-    else if (req == SIG_UNBLOCK) result = KRN_SIG_UNBLOCK;
-    else if (req == SIG_SETMASK) result = KRN_SIG_SETMASK;
-    else throw Exception ("syscall-error", "unexisting sigprocmask request");
-    return result;
-  }
-}
-#endif
-
 #endif

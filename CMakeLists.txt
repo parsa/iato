@@ -5,6 +5,20 @@ enable_testing()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+# --- Platform Detection & Global Definitions ---
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_compile_definitions(OS_LINUX IATO _REENTRANT HAS_PTHREAD)
+endif()
+
+# --- Compiler Flags ---
+add_compile_options(-Wall -Wswitch -Woverloaded-virtual)
+
+# Ensure -fPIC is enabled globally
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Define DEBUG macro for Debug builds
+add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
+
 find_package(Elf)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -15,4 +29,3 @@ add_subdirectory(src/lib)
 add_subdirectory(src/clt)
 
 add_subdirectory(tst)
-

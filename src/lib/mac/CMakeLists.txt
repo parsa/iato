@@ -129,6 +129,11 @@ set(HEADERS
 
 add_library(iamac ${SOURCES} ${HEADERS})
 target_include_directories(iamac PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(iamac PUBLIC $<$<CONFIG:Debug>:DEBUG> IATO OS_LINUX _REENTRANT HAS_PTHREAD)
 target_link_libraries(iamac PUBLIC iaisa iaelf iakrn Elf::elf)
 
+install(TARGETS iamac
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+install(FILES ${HEADERS} DESTINATION include/iato)

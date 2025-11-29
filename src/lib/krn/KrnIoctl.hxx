@@ -130,39 +130,4 @@ namespace iato {
 
 #endif
 
-// ---------------------------------------------------------------------------
-// - solaris base mapping                                                    -
-// ---------------------------------------------------------------------------
-
-#ifdef   OS_SOLARIS
-#include <termio.h>
-#include <unistd.h>
-
-namespace iato {
-  // the ioctl request mapping with solaris
-  static t_octa map_ioctl_request (const t_octa req) {
-    t_octa result = OCTA_0;
-    switch (req) {
-    case KRN_TCGETS:
-      result = TCGETS;
-      break;
-    default:
-      throw Exception ("syscall-error", "unimplemented ioctl request");
-      break;
-    }
-    return result;
-  }
-  // map the system termios to kernel termios
-  static void map_termios (krn_termios& kt, const termios& ut) {
-    kt.reset ();
-    kt.d_iflag = lfixocta (ut.c_iflag);
-    kt.d_oflag = lfixocta (ut.c_iflag);
-    kt.d_cflag = lfixocta (ut.c_iflag);
-    kt.d_lflag = lfixocta (ut.c_iflag);
-    for (long i = 0; i < NCCS; i++) kt.d_cc[i] = ut.c_cc[i];
-  }
-}
-
-#endif
-
 #endif

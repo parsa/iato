@@ -117,6 +117,11 @@ set(HEADERS
 
 add_library(iaisa ${SOURCES} ${HEADERS})
 target_include_directories(iaisa PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(iaisa PUBLIC $<$<CONFIG:Debug>:DEBUG> IATO OS_LINUX _REENTRANT HAS_PTHREAD)
 target_link_libraries(iaisa Elf::elf)
 
+install(TARGETS iaisa
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+install(FILES ${HEADERS} DESTINATION include/iato)

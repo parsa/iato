@@ -42,6 +42,8 @@ set(HEADERS
 
 add_executable(iaoo ${SOURCES} ${HEADERS})
 target_include_directories(iaoo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} /usr/include/libelf)
-target_compile_definitions(iaoo PUBLIC $<$<CONFIG:Debug>:DEBUG> IATO OS_LINUX _REENTRANT HAS_PTHREAD)
 target_link_libraries(iaoo PUBLIC iaisa iaelf iakrn iamac iaecu Elf::elf)
 
+install(TARGETS iaoo
+    RUNTIME DESTINATION bin
+)

@@ -31,13 +31,4 @@
 #include <sys/types.h>
 #endif
 
-// ---------------------------------------------------------------------------
-// - solaris base mapping                                                    -
-// ---------------------------------------------------------------------------
-
-#ifdef   OS_SOLARIS
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
 #endif

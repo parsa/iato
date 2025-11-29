@@ -57,13 +57,4 @@ namespace iato {
 #include <errno.h>
 #endif
 
-// ---------------------------------------------------------------------------
-// - solaris base mapping                                                    -
-// ---------------------------------------------------------------------------
-
-#ifdef   OS_SOLARIS
-#include <sys/utsname.h>
-#include <errno.h>
-#endif
-
 #endif

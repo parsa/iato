@@ -16,6 +16,8 @@ set(HEADERS
 
 add_executable(iaos ${SOURCES} ${HEADERS})
 target_include_directories(iaos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(iaos PUBLIC $<$<CONFIG:Debug>:DEBUG> IATO OS_LINUX _REENTRANT HAS_PTHREAD)
 target_link_libraries(iaos PUBLIC iaisa iaelf iakrn iamac iaecu Elf::elf)
 
+install(TARGETS iaos
+    RUNTIME DESTINATION bin
+)

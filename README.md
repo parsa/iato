@@ -6,7 +6,7 @@ Project contacts: [Amaury Darsch](http://www.irisa.fr/caps/people/darsch/index_e
 ### Latest news
 This is revision 1.5 of the **IAOO Toolkit**. This release incorporates severalfixes within the in-order simulator. This version is backward compatible with the release 1.5.
 ### Distribution
-**IATO** is supported on various UNIX platforms, including the Linux IA32, IA64 and Solaris. **IATO** is distributed as a compressed tar file. **IATO** has been successfully tested with the GCC 3 compiler. **IATO** is completely written in C++ and uses the STL. The following table provides the pointer to the distribution and the associated documentation.
+**IATO** is supported on various UNIX platforms, including the Linux IA32 and IA64. **IATO** is distributed as a compressed tar file. **IATO** has been successfully tested with the GCC 3 compiler. **IATO** is completely written in C++ and uses the STL. The following table provides the pointer to the distribution and the associated documentation.
 
 File | Description | Last update
 --- | --- | ---

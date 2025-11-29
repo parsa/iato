@@ -115,25 +115,6 @@ namespace iato {
 #endif
 
 // ---------------------------------------------------------------------------
-// - sparc/solaris configuration                                             -
-// ---------------------------------------------------------------------------
-
-#ifdef   OS_SOLARIS
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
-#include <string>
-#include <algorithm>
-#include <set>
-#include <map>
-#include <queue>
-#include <vector>
-#include <cassert>
-#include <cmath>
-#endif
-
-// ---------------------------------------------------------------------------
 // - pthread extension                                                       -
 // ---------------------------------------------------------------------------
 

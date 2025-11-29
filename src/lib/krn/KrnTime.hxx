@@ -54,14 +54,5 @@ namespace iato {
 #include <sys/times.h>
 #endif
 
-// ---------------------------------------------------------------------------
-// - solaris base mapping                                                    -
-// ---------------------------------------------------------------------------
-
-#ifdef   OS_SOLARIS
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/times.h>
-#endif
 }
 #endif
