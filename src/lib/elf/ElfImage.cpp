@@ -103,6 +103,24 @@ namespace iato {
     }
   }
 
+  // helper to read an octa value with respect to file endianness
+  static t_octa read_octa (const t_byte* data, const bool msb) {
+    if (!data) return OCTA_0;
+    t_octa result = OCTA_0;
+    if (msb == true) {
+      for (size_t i = 0; i < sizeof (t_octa); i++) {
+	result <<= 8;
+	result |= static_cast<t_octa> (data[i]);
+      }
+    } else {
+      for (int i = sizeof (t_octa) - 1; i >= 0; i--) {
+	result <<= 8;
+	result |= static_cast<t_octa> (data[i]);
+      }
+    }
+    return result;
+  }
+
   // create a new elf image by name
   
   ElfImage::ElfImage (const string& name) {
@@ -117,6 +135,8 @@ namespace iato {
     p_hdr    = NULL;
     p_interp = NULL;
     d_static = false;
+    d_gpcalc = false;
+    d_entrygp = OCTA_0;
     reset ();
     // initialize the image
     initialize ();
@@ -136,6 +156,8 @@ namespace iato {
     p_hdr    = NULL;
     p_interp = NULL;
     d_static = false;
+    d_gpcalc = false;
+    d_entrygp = OCTA_0;
     reset ();
     // initialize the image
     initialize ();
@@ -156,6 +178,8 @@ namespace iato {
     p_hdr    = NULL;
     p_interp = NULL;
     d_static = false;
+    d_gpcalc = false;
+    d_entrygp = OCTA_0;
     reset ();
     // initialize the image
     initialize ();
@@ -174,6 +198,8 @@ namespace iato {
     p_elf    = NULL;
     p_hdr    = NULL;
     p_interp = NULL;
+    d_gpcalc = false;
+    d_entrygp = OCTA_0;
     reset ();
     // initialize the image
     initialize ();
@@ -200,6 +226,8 @@ namespace iato {
     p_hdr    = NULL;
     p_interp = NULL;
     d_static = false;
+    d_gpcalc = false;
+    d_entrygp = OCTA_0;
   }
 
   // initialize the elf image
@@ -348,6 +376,97 @@ namespace iato {
     if (isvalid () == false) return 0;
     Elf64_Ehdr* ehdr = reinterpret_cast <Elf64_Ehdr*> (p_hdr);
     return ehdr->e_entry;
+  }
+
+  // return the entry global pointer extracted from .opd
+
+  t_octa ElfImage::getentrygp (void) const {
+    if (d_gpcalc == true) return d_entrygp;
+    d_gpcalc = true;
+    d_entrygp = OCTA_0;
+    if (isvalid () == false) return d_entrygp;
+    const bool msb = ismsb ();
+    const t_octa entryip = getentry ();
+    // first try to locate a matching function descriptor in .opd
+    if (entryip != OCTA_0) {
+      Elf_Scn* scn = get_section (".opd", p_elf, p_hdr);
+      if (scn != NULL) {
+	Elf_Data* data = elf_getdata (scn, NULL);
+	if ((data != NULL) && (data->d_buf != NULL)) {
+	  const t_byte* buf = reinterpret_cast<const t_byte*> (data->d_buf);
+	  const size_t step = sizeof (t_octa) * 2;
+	  const size_t count = (step == 0) ? 0 : (data->d_size / step);
+	  for (size_t i = 0; i < count; i++) {
+	    const t_byte* base = buf + (i * step);
+	    t_octa ip = read_octa (base, msb);
+	    if (ip == entryip) {
+	      d_entrygp = read_octa (base + sizeof (t_octa), msb);
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+    // fall back to the GOT base if no descriptor matches
+    if (d_entrygp == OCTA_0) {
+      Elf_Scn* got = get_section (".got", p_elf, p_hdr);
+      if (got != NULL) {
+	Elf64_Shdr* shdr = elf64_getshdr (got);
+	if (shdr != NULL) d_entrygp = shdr->sh_addr;
+      }
+    }
+    return d_entrygp;
+  }
+
+  // return the address of a named symbol if present
+
+  t_octa ElfImage::getsymaddr (const string& name) const {
+    if (isvalid () == false) return OCTA_0;
+    if (name.empty () == true) return OCTA_0;
+    Elf_Scn* sym = get_section (".symtab", p_elf, p_hdr);
+    if (sym == NULL) return OCTA_0;
+    Elf_Data* symdata = elf_getdata (sym, NULL);
+    Elf64_Shdr* symhdr = elf64_getshdr (sym);
+    if ((symdata == NULL) || (symhdr == NULL) || (symdata->d_buf == NULL))
+      return OCTA_0;
+    Elf_Scn* strscn = elf_getscn ((Elf*) p_elf, symhdr->sh_link);
+    Elf_Data* strdata = (strscn == NULL) ? NULL : elf_getdata (strscn, NULL);
+    if ((strdata == NULL) || (strdata->d_buf == NULL)) return OCTA_0;
+    const char* strtab = reinterpret_cast<const char*> (strdata->d_buf);
+    const size_t count = symdata->d_size / sizeof (Elf64_Sym);
+    Elf64_Sym* stab = reinterpret_cast<Elf64_Sym*> (symdata->d_buf);
+    for (size_t i = 0; i < count; i++) {
+      Elf64_Sym& symrec = stab[i];
+      const char* sname = (symrec.st_name == 0) ? "" : strtab + symrec.st_name;
+      if (name == sname) return symrec.st_value;
+    }
+    return OCTA_0;
+  }
+
+  // helper to locate an .opd descriptor for a given ip
+
+  static t_octa find_opd_entry (Elf_Scn* scn, const bool msb, const t_octa target) {
+    if (scn == NULL) return OCTA_0;
+    Elf_Data* data = elf_getdata (scn, NULL);
+    Elf64_Shdr* shdr = elf64_getshdr (scn);
+    if ((data == NULL) || (data->d_buf == NULL) || (shdr == NULL)) return OCTA_0;
+    const t_byte* buf = reinterpret_cast<const t_byte*> (data->d_buf);
+    const size_t step = sizeof (t_octa) * 2;
+    const size_t count = (step == 0) ? 0 : (data->d_size / step);
+    t_octa base = shdr->sh_addr;
+    for (size_t i = 0; i < count; i++) {
+      const t_byte* base_ptr = buf + (i * step);
+      t_octa ip = read_octa (base_ptr, msb);
+      if (ip == target) return base + static_cast<t_octa> (i * step);
+    }
+    return OCTA_0;
+  }
+
+  t_octa ElfImage::getopdaddr (const string& name) const {
+    t_octa ip = getsymaddr (name);
+    if (ip == OCTA_0) return OCTA_0;
+    Elf_Scn* scn = get_section (".opd", p_elf, p_hdr);
+    return find_opd_entry (scn, ismsb (), ip);
   }
 
   // return the elf interpreter name

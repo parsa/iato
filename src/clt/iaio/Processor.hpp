@@ -75,6 +75,12 @@ namespace iato {
     t_octa d_stkva;
     /// the backing store
     t_octa d_bspva;
+    /// pointer to argc/argv block
+    t_octa d_argva;
+    /// pointer to TLS/TCB blob
+    t_octa d_tlsva;
+    /// initial global pointer value
+    t_octa d_gpva;
     
   public:
     /// create a new processor by context

@@ -46,6 +46,23 @@ namespace iato {
   private:
     /// the initialized sp
     t_octa d_stkva;
+    /// kernel-provided top-of-stack before layout
+    t_octa d_initva;
+    /// address of argc/argv block (for r11)
+    t_octa d_argva;
+    /// base address of the TLS/TCB blob
+    t_octa d_tlsva;
+    /// reserved TLS size
+    long   d_tlssz;
+    /// argc value installed on the stack
+    long   d_argc;
+    /// pointer to argv vector on the stack
+    t_octa d_argvp;
+    /// pointer to envp vector on the stack
+    t_octa d_envpp;
+    
+    /// reserve/zero the TLS region and adjust the initial SP
+    void inittls (void);
 
   public:
     /// create a new default stack
@@ -60,6 +77,39 @@ namespace iato {
 
     /// @return the elf stack address
     t_octa getstkva (void) const;
+
+    /// set the argument vector base pointer (argc slot)
+    void setargva (const t_octa addr);
+
+    /// @return the argument vector base pointer
+    t_octa getargva (void) const;
+
+    /// @return the TLS base pointer reserved for r13
+    t_octa gettlsva (void) const;
+
+    /// record the argc value
+    void setargc (const long argc);
+
+    /// @return the argc value
+    long getargc (void) const;
+
+    /// record the argv vector pointer
+    void setargv (const t_octa addr);
+
+    /// @return the argv vector pointer
+    t_octa getargv (void) const;
+
+    /// record the envp vector pointer
+    void setenvp (const t_octa addr);
+
+    /// @return the envp vector pointer
+    t_octa getenvp (void) const;
+
+    /// @return the kernel-provided initial stack address
+    t_octa getinitva (void) const;
+
+    /// @return the address where argc lives (`sp + VSTK_PPAD`)
+    t_octa getstackend (void) const;
 
     /// print the stack arguments after initialization
     void pargs (void) const;

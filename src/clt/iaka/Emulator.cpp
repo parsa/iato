@@ -157,6 +157,15 @@ namespace iato {
     // set the stack pointer with its default
     ElfStack* stk = p_mem->getstkm ();
     p_rbk->write (GREG, ABI_SP, stk->getstkva ());
+    t_octa argva = stk->getargva ();
+    if (argva != OCTA_0) p_rbk->write (GREG, ABI_ARG, argva);
+    t_octa tlsva = stk->gettlsva ();
+    if (tlsva != OCTA_0) p_rbk->write (GREG, ABI_TP, tlsva);
+    t_octa gpva = p_elf->getentrygp ();
+    if (gpva != OCTA_0) {
+      p_rbk->write (GREG, ABI_GP, gpva);
+      p_rbk->write (GREG, ABI_GP_ALIAS, gpva);
+    }
     // set the backing store pointer
     ElfBsa* bsa = p_mem->getbsam ();
     assert ((bsa->getbase () & 0x00000000000001FFULL) == OCTA_0);

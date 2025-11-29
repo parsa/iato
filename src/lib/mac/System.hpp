@@ -94,6 +94,15 @@ namespace iato {
     /// @return the top of stack
     t_octa getstkva (void) const;
 
+    /// @return the argument block pointer installed on the stack
+    t_octa getargva (void) const;
+
+    /// @return the TLS base pointer reserved by the loader
+    t_octa gettlsva (void) const;
+
+    /// @return the initial global pointer value
+    t_octa getgpva (void) const;
+
     /// @return the backing store base
     t_octa getbspva (void) const;
 
@@ -108,6 +117,8 @@ namespace iato {
     System (const System&);
     // make the assignment operator private
     System& operator = (const System&);
+    /// seed libc small-data globals with runtime values
+    void patchsdata (void);
   };
 }
 

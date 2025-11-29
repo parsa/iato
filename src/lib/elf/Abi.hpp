@@ -38,6 +38,10 @@ namespace iato {
   const long ABI_SP = 12;
   /// abi thread pointer mapping
   const long ABI_TP = 13;
+  /// abi argument block pointer register (Linux/IA64 passes r11)
+  const long ABI_ARG = 11;
+  /// abi gp mirror used by early crt (r32)
+  const long ABI_GP_ALIAS = 32;
 
   /// ------------------------------------------------------------------------
   /// - type alignment                                                       -
@@ -77,6 +81,10 @@ namespace iato {
   const long   VSTK_PPAD = 16;
   /// default backing store size
   const long   VBSA_SIZE = 1024 * 1024;
+  /// default TLS alignment
+  const long   VTLS_ALIGN = 16;
+  /// default TLS payload reserved on the stack
+  const long   VTLS_SIZE  = 4096;
 
   /// ------------------------------------------------------------------------
   /// - hardware configuration - for auxilliary vector                       -

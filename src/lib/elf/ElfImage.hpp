@@ -77,6 +77,9 @@ namespace iato {
     ElfInterp* p_interp;
     /// the elf kernel parameters
     ElfKernel* p_kernel;
+    /// cached entry global pointer (mutable for lazy init)
+    mutable bool   d_gpcalc;
+    mutable t_octa d_entrygp;
 
   public:
     /// create a new elf image by name
@@ -138,6 +141,15 @@ namespace iato {
 
     /// @return the elf entry point
     t_octa getentry (void) const;
+    
+    /// @return the entry global pointer extracted from the opd descriptor
+    t_octa getentrygp (void) const;
+
+    /// @return the virtual address of the named symbol or 0 if absent
+    t_octa getsymaddr (const string& name) const;
+
+    /// @return the .opd descriptor address for a named function (or 0)
+    t_octa getopdaddr (const string& name) const;
 
     /// @return the elf interpreter name
     string getinterpname (void) const;

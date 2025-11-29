@@ -169,10 +169,12 @@ namespace iato {
     // relocate the environment array
     t_octa* envv = envp->getargv (estk);
     set_elf_vec (stk, envv, envc + 1);
+    if (stk) stk->setenvp (stk->getstkva ());
     delete [] envv;
     // relocate the argument array
     t_octa* argv = args->getargv (astk);
     set_elf_vec (stk, argv, argc + 1);
+    if (stk) stk->setargv (stk->getstkva ());
     delete [] argv;
     // copy the argv pointer and argc
     t_octa  cstk = stk->getstkva ();
@@ -180,6 +182,8 @@ namespace iato {
     // pad the stack with abi call displacement
     cstk -= VSTK_PPAD;
     stk->setstkva (cstk);
+    stk->setargc (argc);
+    stk->setargva (cstk + VSTK_PPAD);
     assert ((cstk % ABI_VSTK_ALIGN) == OCTA_0);
   }
 

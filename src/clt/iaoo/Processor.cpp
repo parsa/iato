@@ -191,6 +191,12 @@ namespace iato {
     p_env->add (p_pipe);  
     // add the watchdog to the environment
     p_env->add (p_wdog);  
+    d_entry = OCTA_0;
+    d_stkva = OCTA_0;
+    d_bspva = OCTA_0;
+    d_argva = OCTA_0;
+    d_tlsva = OCTA_0;
+    d_gpva  = OCTA_0;
   }
 
   // destroy this processor
@@ -210,6 +216,18 @@ namespace iato {
       rbk->write (AREG, AR_FPSR, DEF_FPSR);
       rbk->write (IPRG, 0,       d_entry);
       rbk->write (GREG, ABI_SP,  d_stkva);
+      if (d_argva != OCTA_0) {
+        rbk->write (GREG, ABI_ARG, d_argva);
+      }
+      if (d_tlsva != OCTA_0) rbk->write (GREG, ABI_TP,  d_tlsva);
+      if (d_gpva  != OCTA_0) {
+	rbk->write (GREG, ABI_GP, d_gpva);
+	rbk->write (GREG, ABI_GP_ALIAS, d_gpva);
+      }
+      if (d_gpva != OCTA_0) {
+        rbk->write (GREG, 35, d_gpva + 400);
+        rbk->write (GREG, 36, d_gpva + 800);
+      }
       rbk->write (AREG, AR_BSP , d_bspva);
       rbk->write (AREG, AR_BSPS, d_bspva);
     }
@@ -274,6 +292,9 @@ namespace iato {
     d_entry = sys->getentry ();
     d_stkva = sys->getstkva ();
     d_bspva = sys->getbspva ();
+    d_argva = sys->getargva ();
+    d_tlsva = sys->gettlsva ();
+    d_gpva  = sys->getgpva ();
     // bind the memory architecture
     Hma* hma = sys->gethma ();
     if (hma) p_env->add (hma->getmta ());
