@@ -2627,6 +2627,45 @@ namespace iato {
     return result;
   }
 
+  static Result exec_xchg (const Instr& inst, const Operand& oprd, int size) {
+    Result result = inst.getresl ();
+    bool nat1 = oprd.getbval (1);
+    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    t_octa addr = oprd.getoval (1);
+    t_octa wval = oprd.getoval (0);
+    
+    Result::t_rop ld_op = Result::ROP_NOP;
+    Result::t_rop st_op = Result::ROP_NOP;
+    switch(size) {
+      case 1: ld_op = Result::REG_LD1; st_op = Result::REG_ST1; break;
+      case 2: ld_op = Result::REG_LD2; st_op = Result::REG_ST2; break;
+      case 4: ld_op = Result::REG_LD4; st_op = Result::REG_ST4; break;
+      case 8: ld_op = Result::REG_LD8; st_op = Result::REG_ST8; break;
+    }
+    
+    result.setaddr (0, ld_op, addr);
+    result.setaddr (1, st_op, addr);
+    result.setimmv (1, wval);
+    return result;
+  }
+
+  static Result exec_fetchadd (const Instr& inst, const Operand& oprd, int size) {
+    Result result = inst.getresl ();
+    bool nat1 = oprd.getbval (1);
+    if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    t_octa addr = oprd.getoval (1);
+    
+    Result::t_rop ld_op = Result::ROP_NOP;
+    Result::t_rop st_op = Result::ROP_NOP;
+    switch(size) {
+      case 4: ld_op = Result::REG_LD4; st_op = Result::REG_ST4; break;
+      case 8: ld_op = Result::REG_LD8; st_op = Result::REG_ST8; break;
+    }
+    
+    result.setaddr (0, ld_op, addr);
+    result.setaddr (1, st_op, addr);
+    return result;
+  }
 
   // ------------------------------------------------------------------------
   // - M18 instruction group                                                -
@@ -2905,6 +2944,87 @@ namespace iato {
     return result;
   }
 
+  // M_FLUSHRS
+  static Result exec_flushrs (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid (true);
+    return result;
+  }
+  // M_LOADRS
+  static Result exec_loadrs (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid (true);
+    return result;
+  }
+  
+  // M_FC
+  static Result exec_fc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid (true);
+    return result;
+  }
+  // M_PTC_E
+  static Result exec_ptc_e (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid (true);
+    return result;
+  }
+  
+  // M_MOV_TO_PSR
+  static Result exec_mov_to_psr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa val = oprd.getoval(0);
+    result.setoval(0, val);
+    return result;
+  }
+  
+  // M_MOV_FROM_PSR
+  static Result exec_mov_from_psr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa psr = oprd.getoval(0);
+    result.setoval(0, psr);
+    result.setbval(0, false);
+    return result;
+  }
+  
+  // M_PROBE
+  static Result exec_probe (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setoval(0, 1);
+    result.setbval(0, false);
+    return result;
+  }
+  // M_PROBE_FAULT
+  static Result exec_probe_fault (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid(true);
+    return result;
+  }
+  
+  // M_ITC
+  static Result exec_itc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid(true);
+    return result;
+  }
+  
+  
+  // M_PTC
+  static Result exec_ptc (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setvalid(true);
+    return result;
+  }
+  
+  // M_TRANS
+  static Result exec_trans (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa val = oprd.getoval(1);
+    result.setoval(0, val);
+    result.setbval(0, false);
+    return result;
+  }
+
   // ------------------------------------------------------------------------
   // - M29 instruction group                                                -
   // ------------------------------------------------------------------------
@@ -3026,6 +3146,47 @@ namespace iato {
     if  (bsetget (value, 5) == true)
       bsetocta (rval, 5, true);
     // update result
+    result.setoval (0, rval);
+    return result;
+  }
+
+  static Result exec_rum (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa value  = inst.getimmv (0);
+    Psr    psr    = oprd.getoval (0);
+    // check reserved field
+    if (psr.isrvfd (Psr::UMB, value) == true)
+      throw Interrupt (FAULT_IT_RESV_RGFD, inst);
+    // compute result
+    t_octa rval = psr.getpsr ();
+    if (bsetget (value, 1) == true) bsetocta (rval, 1, false);
+    if (bsetget (value, 2) == true) bsetocta (rval, 2, false);
+    if (bsetget (value, 3) == true) bsetocta (rval, 3, false);
+    if (bsetget (value, 4) == true) bsetocta (rval, 4, false);
+    if (bsetget (value, 5) == true) bsetocta (rval, 5, false);
+    // update result
+    result.setoval (0, rval);
+    return result;
+  }
+
+  static Result exec_ssm (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa value  = inst.getimmv (0);
+    Psr    psr    = oprd.getoval (0);
+    // compute result (simplified)
+    t_octa rval = psr.getpsr ();
+    rval |= value; // naive OR
+    result.setoval (0, rval);
+    return result;
+  }
+
+  static Result exec_rsm (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa value  = inst.getimmv (0);
+    Psr    psr    = oprd.getoval (0);
+    // compute result
+    t_octa rval = psr.getpsr ();
+    rval &= ~value; // naive AND NOT
     result.setoval (0, rval);
     return result;
   }
@@ -3524,6 +3685,28 @@ namespace iato {
     case M_CMPXCHG8_ACQ:
       result = exec_cmpxchg8(inst, oprd);
       break;
+    case M_XCHG1:
+      result = exec_xchg(inst, oprd, 1);
+      break;
+    case M_XCHG2:
+      result = exec_xchg(inst, oprd, 2);
+      break;
+    case M_XCHG4:
+      result = exec_xchg(inst, oprd, 4);
+      break;
+    case M_XCHG8:
+      result = exec_xchg(inst, oprd, 8);
+      break;
+
+      // M17 instruction group
+    case M_FETCHADD4_ACQ:
+    case M_FETCHADD4_REL:
+      result = exec_fetchadd(inst, oprd, 4);
+      break;
+    case M_FETCHADD8_ACQ:
+    case M_FETCHADD8_REL:
+      result = exec_fetchadd(inst, oprd, 8);
+      break;
 
       // M18 instruction group
     case M_SETF_SIG:
@@ -3591,6 +3774,22 @@ namespace iato {
     case M_INVALA:
       result = exec_invala (inst, oprd);
       break;
+    
+      // M25 instruction group
+    case M_FLUSHRS:
+      result = exec_flushrs (inst, oprd);
+      break;
+    case M_LOADRS:
+      result = exec_loadrs (inst, oprd);
+      break;
+
+      // M28 instruction group
+    case M_FC:
+      result = exec_fc (inst, oprd);
+      break;
+    case M_PTC_E:
+      result = exec_ptc_e (inst, oprd);
+      break;
 
       // M29 instruction group
     case M_MOV_TO_AR_R:
@@ -3630,9 +3829,72 @@ namespace iato {
       result = exec_alloc (inst, oprd);
       break;
 
+      // M35
+    case M_MOV_TO_PSR_L:
+    case M_MOV_TO_PSR_UM:
+      result = exec_mov_to_psr (inst, oprd);
+      break;
+
+      // M36
+    case M_MOV_FROM_PSR:
+    case M_MOV_FROM_PSR_UM:
+      result = exec_mov_from_psr (inst, oprd);
+      break;
+
+      // M38
+    case M_PROBE_R_R:
+    case M_PROBE_W_R:
+      result = exec_probe (inst, oprd);
+      break;
+
+      // M39
+    case M_PROBE_R_I:
+    case M_PROBE_W_I:
+      result = exec_probe (inst, oprd);
+      break;
+
+      // M40
+    case M_PROBE_RW_FAULT:
+    case M_PROBE_R_FAULT:
+    case M_PROBE_W_FAULT:
+      result = exec_probe_fault (inst, oprd);
+      break;
+
+      // M41
+    case M_ITC_D:
+    case M_ITC_I:
+      result = exec_itc (inst, oprd);
+      break;
+
       // M44 instruction group
     case M_SUM:
       result = exec_sum (inst, oprd);
+      break;
+    case M_RUM:
+      result = exec_rum (inst, oprd);
+      break;
+    case M_SSM:
+      result = exec_ssm (inst, oprd);
+      break;
+    case M_RSM:
+      result = exec_rsm (inst, oprd);
+      break;
+
+      // M45
+    case M_PTC_L:
+    case M_PTC_G:
+    case M_PTC_GA:
+    case M_PTR_D:
+    case M_PTR_I:
+      result = exec_ptc (inst, oprd);
+      break;
+
+      // M46
+    case M_THASH:
+    case M_TTAG:
+    case M_TPA:
+    case M_TAK:
+      result = exec_trans (inst, oprd);
       break;
 
     default:

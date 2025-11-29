@@ -786,6 +786,89 @@ namespace iato {
     return result;
   }
 
+  static bool do_rcpa_step(t_real f0, t_real f1, t_real& fr) {
+    fr = f0 / f1;
+    if (fr.isnan () || fr.isinf ()) {
+      return false;
+    }
+    if (f0.isinf () && f1.isfinite ()) {
+      bool sign = f0.getsign () ^ f1.getsign ();
+      if (sign  == true) 
+	fr.setninf ();
+      else
+	fr.setpinf ();
+      return false;
+    }
+    if (f0.isfinite () && f1.isinf ()) {
+      bool sign = f0.getsign () ^ f1.getsign ();
+      fr = 0.0;
+      fr.setsign (sign);
+      return false;
+    }
+    if ((f0 == 0.0L) && f1.isfinite ()) {
+      bool sign = f0.getsign () ^ f1.getsign ();
+      fr = 0.0;
+      fr.setsign (sign);
+      return false;
+    }
+    // compute reciprocal
+    fr = f1.rcpa ();
+    return true;
+  }
+
+  // F_FPRCPA
+  static Result exec_fprcpa (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    // check first predicate value
+    bool pred = oprd.getbval (2);
+    if (pred == false) {
+      result.setrrt  (0, false);
+      result.setbval (1, false);
+      return result;
+    }
+    // compute nat value
+    t_real f0 = oprd.getrval (0);
+    t_real f1 = oprd.getrval (1);
+    bool natr = (f0.isnat () || f1.isnat ());
+    // set to natval if nat bit is set
+    if (natr == true) {
+      t_real fr;
+      fr.setnat ();
+      result.setrval (0, fr);
+      result.setbval (1, false);
+      return result;
+    }
+    
+    union {
+      t_octa d_sgfd;
+      t_byte d_bval[8];
+    } src0, src1, res;
+    src0.d_sgfd = lfixocta (f0.getsgfd ());
+    src1.d_sgfd = lfixocta (f1.getsgfd ());
+    
+    t_real f0_lo, f0_hi, f1_lo, f1_hi;
+    f0_lo.singleld (src0.d_bval);
+    f0_hi.singleld (&src0.d_bval[4]);
+    f1_lo.singleld (src1.d_bval);
+    f1_hi.singleld (&src1.d_bval[4]);
+    
+    f0_lo.normalize(); f0_hi.normalize();
+    f1_lo.normalize(); f1_hi.normalize();
+    
+    t_real fr_lo, fr_hi;
+    bool ok_lo = do_rcpa_step(f0_lo, f1_lo, fr_lo);
+    bool ok_hi = do_rcpa_step(f0_hi, f1_hi, fr_hi);
+    
+    fr_lo.singlest (res.d_bval);
+    fr_hi.singlest (&res.d_bval[4]);
+    
+    t_real fr;
+    fr.setinteger (lfixocta (res.d_sgfd));
+    result.setrval (0, fr);
+    result.setbval (1, ok_lo && ok_hi);
+    return result;
+  }
+
   // ------------------------------------------------------------------------
   // - F07 instruction group                                                -
   // ------------------------------------------------------------------------
@@ -1816,6 +1899,51 @@ namespace iato {
     return result;
   }
 
+  // F_FCLRF
+  static Result exec_fclrf (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    // get fpsr
+    Fpsr fpsr = oprd.getoval (0);
+    // clear flags in status field
+    t_fpcomp fpcomp = inst.getfpcomp ();
+    Fpsr::t_mfield field = tofpcomp(fpcomp);
+    fpsr.setfld(field, Fpsr::V, false);
+    fpsr.setfld(field, Fpsr::D, false);
+    fpsr.setfld(field, Fpsr::Z, false);
+    fpsr.setfld(field, Fpsr::O, false);
+    fpsr.setfld(field, Fpsr::U, false);
+    fpsr.setfld(field, Fpsr::I, false);
+    
+    result.setoval(0, fpsr.getfpsr());
+    return result;
+  }
+
+  // F_FCHKF
+  static Result exec_fchkf (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    // get fpsr
+    Fpsr fpsr = oprd.getoval (0);
+    t_fpcomp fpcomp = inst.getfpcomp ();
+    Fpsr::t_mfield field = tofpcomp(fpcomp);
+    
+    bool fault = false;
+    if (fpsr.getbfld(field, Fpsr::V)) fault = true;
+    if (fpsr.getbfld(field, Fpsr::D)) fault = true;
+    if (fpsr.getbfld(field, Fpsr::Z)) fault = true;
+    if (fpsr.getbfld(field, Fpsr::O)) fault = true;
+    if (fpsr.getbfld(field, Fpsr::U)) fault = true;
+    if (fpsr.getbfld(field, Fpsr::I)) fault = true;
+    
+    if (fault) {
+       // For simulator, we throw an interrupt.
+       // Using FAULT_IT_OPER_LEGAL as a placeholder or specific fault if available.
+       // In Intcode.hpp, there is no specific FAULT_IT_SW_ASSIST.
+       // We might use INTER_INT or just throw a generic one with reason.
+       throw Interrupt (FAULT_IT_OPER_LEGAL, inst, "fchkf software assistance fault"); 
+    }
+    return result;
+  }
+
   // execute a F unit instruction with operands
 
   Result Fexecute::exec (const Instr& inst, const Operand& oprd) const {
@@ -1906,6 +2034,9 @@ namespace iato {
       // F06 instruction group
     case F_FRCPA:
       result = exec_frcpa (inst, oprd);
+      break;
+    case F_FPRCPA:
+      result = exec_fprcpa (inst, oprd);
       break;
 
       // F07 instruction group
@@ -2005,6 +2136,16 @@ namespace iato {
       // F12 instruction group
     case F_FSETC:
       result = exec_fsetc (inst, oprd);
+      break;
+
+      // F13 instruction group
+    case F_FCLRF:
+      result = exec_fclrf (inst, oprd);
+      break;
+
+      // F14 instruction group
+    case F_FCHKF:
+      result = exec_fchkf (inst, oprd);
       break;
 
       // F15 instruction group

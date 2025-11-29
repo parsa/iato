@@ -612,6 +612,7 @@ namespace iato {
     F_FCLASS_M,                // F05 : fclass.m         p1, p2 = f2, fclass9
     F_FCLASS_M_UNC,            // F05 : fclass.m.unc     p1, p2 = f2, fclass9
     F_FRCPA,                   // F06 : frcpa            f1, p2 = f2, f3
+    F_FPRCPA,                  // F06 : fprcpa           f1, p2 = f2, f3
     F_FRSQRTA,                 // F07 : frsqrta          f1, p2 = f3
     F_FPRSQRTA,                // F07 : fprsqrta         f1, p2 = f3
     F_FMIN,                    // F08 : fmin             f1 = f2, f3 

@@ -122,6 +122,7 @@ namespace iato {
     if ((x == false) && (x6 == 0x1B)) return F_FPCVT_FXU_TRUNC;
     // decode floating point reciprocal square root approximation
     if ((x == true) && (q == true))   return F_FPRSQRTA;
+    if ((x == true) && (q == false))  return F_FPRCPA;
     // decode floatin point parallel min, max and compare
     if ((x == false) && (x6 == 0x14)) return F_FPMIN;
     if ((x == false) && (x6 == 0x15)) return F_FPMAX;
@@ -356,6 +357,7 @@ namespace iato {
       
       // F06 instruction group
     case F_FRCPA:
+    case F_FPRCPA:
       d_rprd.setlnum (PREG, 0);
       d_rdst[0].setlnum (FREG, get_dst0    (d_inst));   
       d_rdst[1].setlnum (PREG, get_dst_pr1 (d_inst));   
