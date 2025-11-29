@@ -1,0 +1,83 @@
+{
+  "iaos": {
+    "description": "Static analyzer / disassembler",
+    "required_flags": [
+      "-e"
+    ],
+    "success_conditions": [
+      "Process completes with exit status 0",
+      "No 'error' or 'unable to' strings in log"
+    ],
+    "failure_conditions": [
+      "Non-zero exit status",
+      "Missing ELF metadata or truncated disassembly output"
+    ],
+    "notes": "Runs on every IA64 binary; logs stored under build/logs/iaos/<name>.log"
+  },
+  "iaka": {
+    "description": "Functional emulator & trace producer",
+    "required_flags": [
+      "-s",
+      "-m 100000"
+    ],
+    "success_conditions": [
+      "Exit status 0",
+      "Stats table present (number of bundles/instructions)"
+    ],
+    "failure_conditions": [
+      "Fatal checker/trace errors",
+      "Early termination before reaching min bundle count (default 10k) unless binary is tiny"
+    ],
+    "notes": "Adjust -m per binary category; emits optional trace via -t options when requested."
+  },
+  "iaio": {
+    "description": "In-order simulator",
+    "required_flags": [
+      "-s",
+      "-m:i 200000",
+      "-m:c 200000"
+    ],
+    "success_conditions": [
+      "Exit status 0 *or* graceful trap with stats header",
+      "Stats output includes IPC and instruction counts"
+    ],
+    "failure_conditions": [
+      "Simulator aborts before printing stats",
+      "Unhandled exceptions (asserts, aborts)"
+    ],
+    "notes": "Treat architectural traps (e.g., OS syscall faults) as expected but record them."
+  },
+  "iaoo": {
+    "description": "Out-of-order simulator",
+    "required_flags": [
+      "-m:i 200000",
+      "-m:c 200000",
+      "-s"
+    ],
+    "success_conditions": [
+      "Exit status 0 with stats OR known fault signature recorded",
+      "Log contains resource stats or explicit fault reason"
+    ],
+    "failure_conditions": [
+      "Crash without diagnostics",
+      "Hang/timeout with no output"
+    ],
+    "notes": "Many bare-metal binaries fault on missing OS services; capture the fault but consider it a soft pass."
+  },
+  "iata": {
+    "description": "Trace analyzer / generator",
+    "required_flags": [
+      "-s"
+    ],
+    "success_conditions": [
+      "Successfully parses a trace emitted by IAKA/IAIO/IAOO",
+      "Outputs statistics table or confirmation message"
+    ],
+    "failure_conditions": [
+      "Cannot open trace generated moments earlier",
+      "Trace parsing errors (corruption, unsupported version)"
+    ],
+    "notes": "Only run when a trace is available; skip/mark N/A when upstream tool did not produce one."
+  }
+}
+
