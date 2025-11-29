@@ -23,6 +23,7 @@
 #include "LrnStg.hpp"
 #include "PrnStg.hpp"
 #include "Interrupt.hpp"
+#include <iostream>
 
 namespace iato {
   using namespace std;
@@ -56,6 +57,9 @@ namespace iato {
 	long vnum = rat->getmap (sreg);
 	assert (vnum != -1);
 	sreg.setvnum (vnum);
+    if (sreg.gettype() == GREG && sreg.getlnum() == 15) {
+        cerr << "PRN: IP=" << hex << dsi.getiip() << " src r15 -> vnum " << vnum << dec << endl;
+    }
       } else {
 	sreg.seterdy (true);
       }
@@ -71,6 +75,9 @@ namespace iato {
       long onum = rat->setmap (dreg, vnum);
       // update the rid
       dreg.setvnum (vnum, onum);
+    if (dreg.gettype() == GREG && dreg.getlnum() == 15) {
+        cerr << "PRN: IP=" << hex << dsi.getiip() << " dst r15 -> vnum " << vnum << " (old " << onum << ")" << dec << endl;
+    }
       dsi.setdnum  (i, dreg);
     }
     return true;
