@@ -59,6 +59,7 @@ set(SOURCES
   Scoreboard.cpp
   CacheBlock.cpp
   CacheDirect.cpp
+  TestFixture.cpp
 )
 set(HEADERS
   Bdb.hpp
@@ -125,6 +126,7 @@ set(HEADERS
   Urf.hpp
   Watchdog.hpp
   Weakable.hpp
+  TestFixture.hpp
 )
 
 add_library(iamac ${SOURCES} ${HEADERS})

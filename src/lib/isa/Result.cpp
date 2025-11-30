@@ -652,7 +652,7 @@ namespace iato {
       case REG_CX2:
       case REG_CX4:
       case REG_CX8:
-	assert (false);
+	// handled directly by MemLogic, no explicit mrt
 	break;
       default:
 	break;

@@ -38,6 +38,10 @@
 #include "Register.hpp"
 #endif
 
+#ifndef  IATO_TESTFIXTURE_HPP
+#include "TestFixture.hpp"
+#endif
+
 #ifndef  IATO_WATCHDOG_HPP
 #include "Watchdog.hpp"
 #endif
@@ -52,6 +56,8 @@
 
 namespace iato {
   using namespace std;
+
+  class Mta;
 
   /// The Processor class is the architectural processor class. All processor
   /// components are defined here to build a detailed out of order 
@@ -82,6 +88,14 @@ namespace iato {
     t_octa d_tlsva;
     /// initial global pointer value
     t_octa d_gpva;
+    /// optional fixture file path
+    string d_fixture_path;
+    /// cached fixture content
+    TestFixture d_fixture;
+    /// true once the fixture was parsed
+    bool d_fixture_loaded;
+    /// cached pointer to the memory adapter
+    Mta* p_mta;
     
   public:
     /// create a new processor by context

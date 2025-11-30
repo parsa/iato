@@ -30,12 +30,22 @@ namespace iato {
   // create a new default register bank
 
   Register::Register (void) : Resource (RESOURCE_RBK) {
-    d_gnum = GR_LRSZ;
-    d_fnum = FR_LRSZ;
-    d_pnum = PR_LRSZ;
-    d_bnum = BR_LRSZ;
-    d_anum = AR_LRSZ;
-    d_cnum = CR_LRSZ;
+    d_gnum    = GR_LRSZ;
+    d_fnum    = FR_LRSZ;
+    d_pnum    = PR_LRSZ;
+    d_bnum    = BR_LRSZ;
+    d_anum    = AR_LRSZ;
+    d_cnum    = CR_LRSZ;
+    d_rrnum   = RR_LRSZ;
+    d_dbrnum  = DBR_LRSZ;
+    d_ibrnum  = IBR_LRSZ;
+    d_pkrnum  = PKR_LRSZ;
+    d_pmcnum  = PMC_LRSZ;
+    d_pmdnum  = PMD_LRSZ;
+    d_cpuidnum= CPUID_LRSZ;
+    d_msrnum  = MSR_LRSZ;
+    d_dtrnum  = DTR_LRSZ;
+    d_itrnum  = ITR_LRSZ;
     p_greg = new t_octa[d_gnum];
     p_gbnk = new t_octa[GR_BKSZ];
     p_nreg = new bool[d_gnum];
@@ -45,18 +55,38 @@ namespace iato {
     p_breg = new t_octa[d_bnum];
     p_areg = new t_octa[d_anum];
     p_creg = new t_octa[d_cnum];
+    p_rrrg = new t_octa[d_rrnum];
+    p_dbrg = new t_octa[d_dbrnum];
+    p_ibrg = new t_octa[d_ibrnum];
+    p_pkrg = new t_octa[d_pkrnum];
+    p_pmcg = new t_octa[d_pmcnum];
+    p_pmdg = new t_octa[d_pmdnum];
+    p_cpuid = new t_octa[d_cpuidnum];
+    p_msrg = new t_octa[d_msrnum];
+    p_dtrg = new t_octa[d_dtrnum];
+    p_itrg = new t_octa[d_itrnum];
     reset ();
   }
 
   // create a register bank with a context
 
   Register::Register (Ctx* ctx) : Resource (RESOURCE_RBK) {
-    d_gnum = ctx->getlong ("LR-GR-SIZE"); assert (d_gnum > 0);
-    d_fnum = ctx->getlong ("LR-FR-SIZE"); assert (d_fnum > 0);
-    d_pnum = ctx->getlong ("LR-PR-SIZE"); assert (d_pnum > 0);
-    d_bnum = ctx->getlong ("LR-BR-SIZE"); assert (d_bnum > 0);
-    d_anum = ctx->getlong ("LR-AR-SIZE"); assert (d_anum > 0);
-    d_cnum = ctx->getlong ("LR-CR-SIZE"); assert (d_cnum > 0);
+    d_gnum    = ctx->getlong ("LR-GR-SIZE"); assert (d_gnum > 0);
+    d_fnum    = ctx->getlong ("LR-FR-SIZE"); assert (d_fnum > 0);
+    d_pnum    = ctx->getlong ("LR-PR-SIZE"); assert (d_pnum > 0);
+    d_bnum    = ctx->getlong ("LR-BR-SIZE"); assert (d_bnum > 0);
+    d_anum    = ctx->getlong ("LR-AR-SIZE"); assert (d_anum > 0);
+    d_cnum    = ctx->getlong ("LR-CR-SIZE"); assert (d_cnum > 0);
+    d_rrnum   = ctx->getlong ("LR-RR-SIZE"); assert (d_rrnum > 0);
+    d_dbrnum  = ctx->getlong ("LR-DBR-SIZE"); assert (d_dbrnum > 0);
+    d_ibrnum  = ctx->getlong ("LR-IBR-SIZE"); assert (d_ibrnum > 0);
+    d_pkrnum  = ctx->getlong ("LR-PKR-SIZE"); assert (d_pkrnum > 0);
+    d_pmcnum  = ctx->getlong ("LR-PMC-SIZE"); assert (d_pmcnum > 0);
+    d_pmdnum  = ctx->getlong ("LR-PMD-SIZE"); assert (d_pmdnum > 0);
+    d_cpuidnum= ctx->getlong ("LR-CPUID-SIZE"); assert (d_cpuidnum > 0);
+    d_msrnum  = ctx->getlong ("LR-MSR-SIZE"); assert (d_msrnum > 0);
+    d_dtrnum  = ctx->getlong ("LR-DTR-SIZE"); assert (d_dtrnum > 0);
+    d_itrnum  = ctx->getlong ("LR-ITR-SIZE"); assert (d_itrnum > 0);
     p_greg = new t_octa[d_gnum];
     p_gbnk = new t_octa[GR_BKSZ];
     p_nreg = new bool[d_gnum];
@@ -66,18 +96,38 @@ namespace iato {
     p_breg = new t_octa[d_bnum];
     p_areg = new t_octa[d_anum];
     p_creg = new t_octa[d_cnum];
+    p_rrrg = new t_octa[d_rrnum];
+    p_dbrg = new t_octa[d_dbrnum];
+    p_ibrg = new t_octa[d_ibrnum];
+    p_pkrg = new t_octa[d_pkrnum];
+    p_pmcg = new t_octa[d_pmcnum];
+    p_pmdg = new t_octa[d_pmdnum];
+    p_cpuid = new t_octa[d_cpuidnum];
+    p_msrg = new t_octa[d_msrnum];
+    p_dtrg = new t_octa[d_dtrnum];
+    p_itrg = new t_octa[d_itrnum];
     reset ();
   }
 
   // create a register bank with a context and name
 
   Register::Register (Ctx* ctx, const string& name) : Resource (name) {
-    d_gnum = ctx->getlong ("LR-GR-SIZE"); assert (d_gnum > 0);
-    d_fnum = ctx->getlong ("LR-FR-SIZE"); assert (d_fnum > 0);
-    d_pnum = ctx->getlong ("LR-PR-SIZE"); assert (d_pnum > 0);
-    d_bnum = ctx->getlong ("LR-BR-SIZE"); assert (d_bnum > 0);
-    d_anum = ctx->getlong ("LR-AR-SIZE"); assert (d_anum > 0);
-    d_cnum = ctx->getlong ("LR-CR-SIZE"); assert (d_cnum > 0);
+    d_gnum    = ctx->getlong ("LR-GR-SIZE"); assert (d_gnum > 0);
+    d_fnum    = ctx->getlong ("LR-FR-SIZE"); assert (d_fnum > 0);
+    d_pnum    = ctx->getlong ("LR-PR-SIZE"); assert (d_pnum > 0);
+    d_bnum    = ctx->getlong ("LR-BR-SIZE"); assert (d_bnum > 0);
+    d_anum    = ctx->getlong ("LR-AR-SIZE"); assert (d_anum > 0);
+    d_cnum    = ctx->getlong ("LR-CR-SIZE"); assert (d_cnum > 0);
+    d_rrnum   = ctx->getlong ("LR-RR-SIZE"); assert (d_rrnum > 0);
+    d_dbrnum  = ctx->getlong ("LR-DBR-SIZE"); assert (d_dbrnum > 0);
+    d_ibrnum  = ctx->getlong ("LR-IBR-SIZE"); assert (d_ibrnum > 0);
+    d_pkrnum  = ctx->getlong ("LR-PKR-SIZE"); assert (d_pkrnum > 0);
+    d_pmcnum  = ctx->getlong ("LR-PMC-SIZE"); assert (d_pmcnum > 0);
+    d_pmdnum  = ctx->getlong ("LR-PMD-SIZE"); assert (d_pmdnum > 0);
+    d_cpuidnum= ctx->getlong ("LR-CPUID-SIZE"); assert (d_cpuidnum > 0);
+    d_msrnum  = ctx->getlong ("LR-MSR-SIZE"); assert (d_msrnum > 0);
+    d_dtrnum  = ctx->getlong ("LR-DTR-SIZE"); assert (d_dtrnum > 0);
+    d_itrnum  = ctx->getlong ("LR-ITR-SIZE"); assert (d_itrnum > 0);
     p_greg = new t_octa[d_gnum];
     p_gbnk = new t_octa[GR_BKSZ];
     p_nreg = new bool[d_gnum];
@@ -87,6 +137,16 @@ namespace iato {
     p_breg = new t_octa[d_bnum];
     p_areg = new t_octa[d_anum];
     p_creg = new t_octa[d_cnum];
+    p_rrrg = new t_octa[d_rrnum];
+    p_dbrg = new t_octa[d_dbrnum];
+    p_ibrg = new t_octa[d_ibrnum];
+    p_pkrg = new t_octa[d_pkrnum];
+    p_pmcg = new t_octa[d_pmcnum];
+    p_pmdg = new t_octa[d_pmdnum];
+    p_cpuid = new t_octa[d_cpuidnum];
+    p_msrg = new t_octa[d_msrnum];
+    p_dtrg = new t_octa[d_dtrnum];
+    p_itrg = new t_octa[d_itrnum];
     reset ();
   }
 
@@ -102,6 +162,16 @@ namespace iato {
     delete [] p_breg;
     delete [] p_areg;
     delete [] p_creg;
+    delete [] p_rrrg;
+    delete [] p_dbrg;
+    delete [] p_ibrg;
+    delete [] p_pkrg;
+    delete [] p_pmcg;
+    delete [] p_pmdg;
+    delete [] p_cpuid;
+    delete [] p_msrg;
+    delete [] p_dtrg;
+    delete [] p_itrg;
   }
 
   // reset the register bank
@@ -132,6 +202,36 @@ namespace iato {
     }
     for (long i = 0; i < d_cnum; i++) {
       p_creg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_rrnum; i++) {
+      p_rrrg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_dbrnum; i++) {
+      p_dbrg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_ibrnum; i++) {
+      p_ibrg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_pkrnum; i++) {
+      p_pkrg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_pmcnum; i++) {
+      p_pmcg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_pmdnum; i++) {
+      p_pmdg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_cpuidnum; i++) {
+      p_cpuid[i] = 0;
+    }
+    for (long i = 0; i < d_msrnum; i++) {
+      p_msrg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_dtrnum; i++) {
+      p_dtrg[i] = OCTA_0;
+    }
+    for (long i = 0; i < d_itrnum; i++) {
+      p_itrg[i] = OCTA_0;
     }
     d_ip.reset  ();
     d_cfm.reset ();
@@ -182,6 +282,46 @@ namespace iato {
     case CREG:
       assert (index < d_cnum);
       p_creg[index] = value;
+      break;
+    case RRRG:
+      assert (index < d_rrnum);
+      p_rrrg[index] = value;
+      break;
+    case DBRG:
+      assert (index < d_dbrnum);
+      p_dbrg[index] = value;
+      break;
+    case IBRG:
+      assert (index < d_ibrnum);
+      p_ibrg[index] = value;
+      break;
+    case PKRG:
+      assert (index < d_pkrnum);
+      p_pkrg[index] = value;
+      break;
+    case PMCR:
+      assert (index < d_pmcnum);
+      p_pmcg[index] = value;
+      break;
+    case PMDR:
+      assert (index < d_pmdnum);
+      p_pmdg[index] = value;
+      break;
+    case CPIDR:
+      assert (index < d_cpuidnum);
+      p_cpuid[index] = value;
+      break;
+    case MSRG:
+      assert (index < d_msrnum);
+      p_msrg[index] = value;
+      break;
+    case DTRG:
+      assert (index < d_dtrnum);
+      p_dtrg[index] = value;
+      break;
+    case ITRG:
+      assert (index < d_itrnum);
+      p_itrg[index] = value;
       break;
     case IPRG:
       assert (index == 0);
@@ -292,6 +432,36 @@ namespace iato {
       case CREG:
 	write (CREG, pnum, resl.getoval (i));
 	break;
+      case RRRG:
+	write (RRRG, pnum, resl.getoval (i));
+	break;
+      case DBRG:
+	write (DBRG, pnum, resl.getoval (i));
+	break;
+      case IBRG:
+	write (IBRG, pnum, resl.getoval (i));
+	break;
+      case PKRG:
+	write (PKRG, pnum, resl.getoval (i));
+	break;
+      case PMCR:
+	write (PMCR, pnum, resl.getoval (i));
+	break;
+      case PMDR:
+	write (PMDR, pnum, resl.getoval (i));
+	break;
+      case CPIDR:
+	write (CPIDR, pnum, resl.getoval (i));
+	break;
+      case MSRG:
+	write (MSRG, pnum, resl.getoval (i));
+	break;
+      case DTRG:
+	write (DTRG, pnum, resl.getoval (i));
+	break;
+      case ITRG:
+	write (ITRG, pnum, resl.getoval (i));
+	break;
       case IPRG:
 	write (IPRG, 0, resl.getoval (i));
 	break;
@@ -362,6 +532,46 @@ namespace iato {
     case CREG:
       assert (index < d_cnum);
       result = p_creg[index];
+      break;
+    case RRRG:
+      assert (index < d_rrnum);
+      result = p_rrrg[index];
+      break;
+    case DBRG:
+      assert (index < d_dbrnum);
+      result = p_dbrg[index];
+      break;
+    case IBRG:
+      assert (index < d_ibrnum);
+      result = p_ibrg[index];
+      break;
+    case PKRG:
+      assert (index < d_pkrnum);
+      result = p_pkrg[index];
+      break;
+    case PMCR:
+      assert (index < d_pmcnum);
+      result = p_pmcg[index];
+      break;
+    case PMDR:
+      assert (index < d_pmdnum);
+      result = p_pmdg[index];
+      break;
+    case CPIDR:
+      assert (index < d_cpuidnum);
+      result = p_cpuid[index];
+      break;
+    case MSRG:
+      assert (index < d_msrnum);
+      result = p_msrg[index];
+      break;
+    case DTRG:
+      assert (index < d_dtrnum);
+      result = p_dtrg[index];
+      break;
+    case ITRG:
+      assert (index < d_itrnum);
+      result = p_itrg[index];
       break;
     case PRRG:
       for (long i = 0; i < PR_LRSZ; i++) 
@@ -510,6 +720,36 @@ namespace iato {
 	break;
       case CREG:
 	oprd.setoval (i, getoval (CREG, pnum));
+	break;
+      case RRRG:
+	oprd.setoval (i, getoval (RRRG, pnum));
+	break;
+      case DBRG:
+	oprd.setoval (i, getoval (DBRG, pnum));
+	break;
+      case IBRG:
+	oprd.setoval (i, getoval (IBRG, pnum));
+	break;
+      case PKRG:
+	oprd.setoval (i, getoval (PKRG, pnum));
+	break;
+      case PMCR:
+	oprd.setoval (i, getoval (PMCR, pnum));
+	break;
+      case PMDR:
+	oprd.setoval (i, getoval (PMDR, pnum));
+	break;
+      case CPIDR:
+	oprd.setoval (i, getoval (CPIDR, pnum));
+	break;
+      case MSRG:
+	oprd.setoval (i, getoval (MSRG, pnum));
+	break;
+      case DTRG:
+	oprd.setoval (i, getoval (DTRG, pnum));
+	break;
+      case ITRG:
+	oprd.setoval (i, getoval (ITRG, pnum));
 	break;
       case IPRG:
 	oprd.setoval (i, getoval (IPRG, pnum));

@@ -74,6 +74,26 @@ namespace iato {
     long d_anum;
     /// number of control registers
     long d_cnum;
+    /// number of region registers
+    long d_rrnum;
+    /// number of data break registers
+    long d_dbrnum;
+    /// number of instruction break registers
+    long d_ibrnum;
+    /// number of protection key registers
+    long d_pkrnum;
+    /// number of performance monitor counters
+    long d_pmcnum;
+    /// number of performance monitor data registers
+    long d_pmdnum;
+    /// number of cpuid registers
+    long d_cpuidnum;
+    /// number of machine status registers
+    long d_msrnum;
+    /// number of data translation registers
+    long d_dtrnum;
+    /// number of instruction translation registers
+    long d_itrnum;
     /// the bank 0 GR
     t_octa* p_gbnk;
     /// the bank 0 nat
@@ -92,6 +112,26 @@ namespace iato {
     t_octa* p_areg;
     /// the CR bank
     t_octa* p_creg;
+    /// the RR bank
+    t_octa* p_rrrg;
+    /// the DBR bank
+    t_octa* p_dbrg;
+    /// the IBR bank
+    t_octa* p_ibrg;
+    /// the PKR bank
+    t_octa* p_pkrg;
+    /// the PMC bank
+    t_octa* p_pmcg;
+    /// the PMD bank
+    t_octa* p_pmdg;
+    /// the CPUID bank
+    t_octa* p_cpuid;
+    /// the MSR bank
+    t_octa* p_msrg;
+    /// the DTR bank
+    t_octa* p_dtrg;
+    /// the ITR bank
+    t_octa* p_itrg;
     /// the instruction pointer
     Ip  d_ip;
     /// the current frame marker

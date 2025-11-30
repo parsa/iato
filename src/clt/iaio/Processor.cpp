@@ -22,6 +22,9 @@
 #include "Abi.hpp"
 #include "Irt.hpp"
 #include "Eib.hpp"
+#include "Mrt.hpp"
+#include "Mta.hpp"
+#include "Exception.hpp"
 #include "IpgStg.hpp"
 #include "RotStg.hpp"
 #include "ExpStg.hpp"
@@ -47,6 +50,70 @@
 
 namespace iato {
   using namespace std;
+
+  namespace {
+    void write_fixture_registers (Register* rbk, const TestFixture& fixture,
+				  const FixtureContext& ctx) {
+      if ((!rbk) || fixture.regs ().empty ()) return;
+      for (const auto& entry : fixture.regs ()) {
+	t_octa value = entry.value->resolve (ctx);
+	switch (entry.type) {
+	case PREG:
+	  rbk->write (PREG, entry.index, (value & 0x1) != 0);
+	  break;
+	case FREG:
+	  throw Exception ("TEST-FIXTURE-FILE: floating-point register seeds "
+			   "are not supported");
+	default:
+	  rbk->write (entry.type, entry.index, value);
+	  break;
+	}
+      }
+    }
+
+    void write_fixture_memory (Mta* mta, const TestFixture& fixture,
+			       const FixtureContext& ctx) {
+      if (fixture.mems ().empty ()) return;
+      if (!mta) {
+	throw Exception (
+	    "TEST-FIXTURE-FILE contains memory data but no memory adapter "
+	    "is available for this client");
+      }
+      for (const auto& entry : fixture.mems ()) {
+	t_octa addr  = entry.address->resolve (ctx);
+	t_octa value = entry.value->resolve (ctx);
+	Mrt mrt;
+	switch (entry.size) {
+	case 1:
+	  mrt = Mrt (Mrt::REQ_ST1, addr);
+	  mrt.setbval (static_cast<t_byte> (value & 0xFFULL));
+	  break;
+	case 2:
+	  mrt = Mrt (Mrt::REQ_ST2, addr);
+	  mrt.setwval (static_cast<t_word> (value & 0xFFFFULL));
+	  break;
+	case 4:
+	  mrt = Mrt (Mrt::REQ_ST4, addr);
+	  mrt.setqval (static_cast<t_quad> (value & 0xFFFFFFFFULL));
+	  break;
+	case 8:
+	  mrt = Mrt (Mrt::REQ_ST8, addr);
+	  mrt.setoval (value);
+	  break;
+	default:
+	  throw Exception ("TEST-FIXTURE-FILE: unsupported store width");
+	}
+	mta->process (mrt);
+      }
+    }
+
+    void apply_fixture (Register* rbk, Mta* mta, const TestFixture& fixture,
+			const FixtureContext& ctx) {
+      if (fixture.empty ()) return;
+      write_fixture_registers (rbk, fixture, ctx);
+      write_fixture_memory (mta, fixture, ctx);
+    }
+  }
   
   // this procedure creates the processor environment from a context
   static Env* build_env (Stx* stx) {
@@ -196,6 +263,9 @@ namespace iato {
     d_argva = OCTA_0;
     d_tlsva = OCTA_0;
     d_gpva  = OCTA_0;
+    d_fixture_path   = stx->getstr ("TEST-FIXTURE-FILE");
+    d_fixture_loaded = false;
+    p_mta = nullptr;
   }
 
   // destroy this processor
@@ -223,6 +293,20 @@ namespace iato {
       }
       rbk->write (AREG, AR_BSP , d_bspva);
       rbk->write (AREG, AR_BSPS, d_bspva);
+    }
+    if (!d_fixture_path.empty ()) {
+      if (!d_fixture_loaded) {
+        d_fixture = TestFixture::load (d_fixture_path);
+        d_fixture_loaded = true;
+      }
+      FixtureContext ctx;
+      ctx.entry = d_entry;
+      ctx.stack = d_stkva;
+      ctx.bsp   = d_bspva;
+      ctx.arg   = d_argva;
+      ctx.tls   = d_tlsva;
+      ctx.gp    = d_gpva;
+      apply_fixture (rbk, p_mta, d_fixture, ctx);
     }
   }
 
@@ -292,7 +376,14 @@ namespace iato {
     p_env->add (p_wdog);
     // bind the memory architecture
     Hma* hma = sys->gethma ();
-    if (hma) p_env->add (hma->getmta ());
+    p_mta = nullptr;
+    if (hma) {
+      Mta* mta = hma->getmta ();
+      if (mta) {
+        p_env->add (mta);
+        p_mta = mta;
+      }
+    }
     // grab resource used for binding
     Irt*        irt = dynamic_cast <Irt*>        (p_env->get (RESOURCE_IRT));
     Iib*        iib = dynamic_cast <Iib*>        (p_env->get (RESOURCE_IIB));

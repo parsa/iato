@@ -49,25 +49,35 @@ namespace iato {
 
   /// base register types
   enum t_lreg {
-    GREG = 0x01, // general register
-    NREG = 0x02, // nat register
-    FREG = 0x03, // floating register
-    PREG = 0x04, // predicate register
-    BREG = 0x05, // branch register
-    AREG = 0x06, // application register
-    IPRG = 0x07, // instruction pointer register
-    CFMR = 0x08, // current frame marker register
-    PRRG = 0x09, // all predicate register
-    PROT = 0x0A, // all rotating predicate register.
-    UMRG = 0x0B, // user mask register
-    PSRG = 0x0C, // processor status register
-    CREG = 0x0D  // processor control register
+    GREG  = 0x01, // general register
+    NREG  = 0x02, // nat register
+    FREG  = 0x03, // floating register
+    PREG  = 0x04, // predicate register
+    BREG  = 0x05, // branch register
+    AREG  = 0x06, // application register
+    IPRG  = 0x07, // instruction pointer register
+    CFMR  = 0x08, // current frame marker register
+    PRRG  = 0x09, // all predicate register
+    PROT  = 0x0A, // all rotating predicate register.
+    UMRG  = 0x0B, // user mask register
+    PSRG  = 0x0C, // processor status register
+    CREG  = 0x0D, // processor control register
+    RRRG  = 0x0E, // region register
+    DBRG  = 0x0F, // data break register
+    IBRG  = 0x10, // instruction break register
+    PKRG  = 0x11, // protection key register
+    PMCR  = 0x12, // performance monitor counter
+    PMDR  = 0x13, // performance monitor data register
+    CPIDR = 0x14, // cpuid register
+    MSRG  = 0x15, // machine status register
+    DTRG  = 0x16, // data translation register
+    ITRG  = 0x17  // instruction translation register
   };
 
   /// no register encoding
   const t_byte LREG_NONE = 0x00;
   /// max register encoding
-  const t_byte LREG_RMAX = 0x0E;
+  const t_byte LREG_RMAX = 0x18;
 
   /// instruction unit types
   enum t_unit {

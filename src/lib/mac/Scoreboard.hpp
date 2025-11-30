@@ -74,6 +74,26 @@ namespace iato {
     long  d_anum;
     /// number of control registers
     long  d_cnum;
+    /// number of region registers
+    long  d_rrnum;
+    /// number of data break registers
+    long  d_dbrnum;
+    /// number of instruction break registers
+    long  d_ibrnum;
+    /// number of protection key registers
+    long  d_pkrnum;
+    /// number of performance monitor counters
+    long  d_pmcnum;
+    /// number of performance monitor data registers
+    long  d_pmdnum;
+    /// number of cpuid registers
+    long  d_cpuidnum;
+    /// number of machine status registers
+    long  d_msrnum;
+    /// number of data translation registers
+    long  d_dtrnum;
+    /// number of instruction translation registers
+    long  d_itrnum;
     /// gr busy lock
     bool* p_glok;
     /// fr busy lock
@@ -86,6 +106,26 @@ namespace iato {
     bool* p_alok;
     /// cr busy lock
     bool* p_clok;
+    /// rr busy lock
+    bool* p_rrlok;
+    /// dbr busy lock
+    bool* p_dbrlok;
+    /// ibr busy lock
+    bool* p_ibrlok;
+    /// pkr busy lock
+    bool* p_pkrlok;
+    /// pmc busy lock
+    bool* p_pmclok;
+    /// pmd busy lock
+    bool* p_pmdlok;
+    /// cpuid busy lock
+    bool* p_cpuidlok;
+    /// msr busy lock
+    bool* p_msrlok;
+    /// dtr busy lock
+    bool* p_dtrlok;
+    /// itr busy lock
+    bool* p_itrlok;
     /// the umrg busy lock
     bool  d_umrg;
     /// the psrg busy lock

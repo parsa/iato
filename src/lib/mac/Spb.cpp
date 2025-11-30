@@ -208,15 +208,26 @@ namespace iato {
       break;
     }
     // find free slot - with M unit we check for store and load slots
-    // in this approach, we force the store to be in the lower slots
+    // cmpxchg style operations assert both stb/ldb, so treat them as stores
+    if (unit == MUNIT) {
+      long begin = 0;
+      long end   = size;
+      if (stb == true) {
+	      end = d_stsn;
+      } else if (ldb == true) {
+	      begin = d_stsn;
+      }
+      for (long i = begin; i < end; i++) {
+        if (!sbuf[i]) continue;
+        if (sbuf[i]->isfree () == false) continue;
+        return i;
+      }
+      return -1;
+    }
     for (long i = 0; i < size; i++) {
       if (!sbuf[i]) continue;
-      if (sbuf[i]->isfree () == true) {
-	// check for store
-	if ((unit == MUNIT) && (stb == true) && (i >= d_stsn)) return -1;
-	if ((unit == MUNIT) && (ldb == true) && (i <  d_stsn)) continue;
-	return i;
-      }
+      if (sbuf[i]->isfree () == false) continue;
+      return i;
     }
     return -1;
   }

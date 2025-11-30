@@ -23,7 +23,7 @@ find_path(Elf_INCLUDE_DIR libelf.h
   PATHS
     /opt/homebrew/include
     /usr/local/include
-    /usr/include
+  /usr/include
     ${Elf_DIR}/include
 )
 
@@ -35,7 +35,7 @@ find_library(Elf_LIBRARY NAMES elf
     /opt/homebrew/lib
     /usr/lib
     /usr/local/lib
-    ${Elf_DIR}
+  ${Elf_DIR}
   PATH_SUFFIXES lib lib64
 )
 

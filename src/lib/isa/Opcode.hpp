@@ -478,10 +478,24 @@ namespace iato {
     M_PROBE_W_FAULT,           // M40 : probe.w.fault    r3, imm2
     M_ITC_D,                   // M41 : itc.d            r2
     M_ITC_I,                   // M41 : itc.i            r2
-    M_MOV_TO_IR,               // M42 : mov              ind[r3] = r2
+    M_MOV_TO_RR,               // M42 : mov              rr[r3] = r2
+    M_MOV_TO_DBR,              // M42 : mov              dbr[r3] = r2
+    M_MOV_TO_IBR,              // M42 : mov              ibr[r3] = r2
+    M_MOV_TO_PKR,              // M42 : mov              pkr[r3] = r2
+    M_MOV_TO_PMC,              // M42 : mov              pmc[r3] = r2
+    M_MOV_TO_PMD,              // M42 : mov              pmd[r3] = r2
+    M_MOV_TO_MSR,              // M42 : mov              msr[r3] = r2
+    M_MOV_TO_CPUID,            // M42 : mov              cpuid[r3] = r2 -- Read only?
     M_ITR_D,                   // M43 : itr.d            ind[r3] = r2
     M_ITR_C,                   // M43 : itr.i            ind[r3] = r2
-    M_MOV_FROM_IR,             // M43 : mov              r1 = ind[r3]
+    M_MOV_FROM_RR,             // M43 : mov              r1 = rr[r3]
+    M_MOV_FROM_DBR,            // M43 : mov              r1 = dbr[r3]
+    M_MOV_FROM_IBR,            // M43 : mov              r1 = ibr[r3]
+    M_MOV_FROM_PKR,            // M43 : mov              r1 = pkr[r3]
+    M_MOV_FROM_PMC,            // M43 : mov              r1 = pmc[r3]
+    M_MOV_FROM_PMD,            // M43 : mov              r1 = pmd[r3]
+    M_MOV_FROM_MSR,            // M43 : mov              r1 = msr[r3]
+    M_MOV_FROM_CPUID,          // M43 : mov              r1 = cpuid[r3]
     M_SUM,                     // M44 : sum              imm24
     M_RUM,                     // M44 : rum              imm24
     M_SSM,                     // M44 : ssm              imm24

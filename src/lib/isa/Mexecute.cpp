@@ -2608,7 +2608,7 @@ namespace iato {
   // - M16 instruction group                                                -
   // ------------------------------------------------------------------------
 
-  static Result exec_cmpxchg8 (const Instr& inst, const Operand& oprd) {
+  static Result exec_cmpxchg (const Instr& inst, const Operand& oprd, int size) {
     Result result = inst.getresl ();
     bool nat0 = oprd.getbval (0);
     bool nat1 = oprd.getbval (1);
@@ -2619,11 +2619,26 @@ namespace iato {
     t_octa cval = oprd.getoval (2);
     t_octa addr = oprd.getoval (1);
     t_octa wval = oprd.getoval (0);
+    
+    Result::t_rop rop = Result::ROP_NOP;
+    switch (size) {
+      case 1: rop = Result::REG_CX1; break;
+      case 2: rop = Result::REG_CX2; break;
+      case 4: rop = Result::REG_CX4; break;
+      case 8: rop = Result::REG_CX8; break;
+    }
+    // writeback slot index used for compare-exchange memory op
+    const long midx = 2;
+    
     // set result
-    result.setaddr (1, Result::REG_CX8, addr);
-    result.setimmv (1, wval);
+    result.setaddr (midx, rop, addr);
+    result.setimmv (midx, wval);
     result.setbval (0, false);
     result.setoval (0, cval);
+    // propagate the current compare value into ar.ccv (placeholder)
+    Rid ccv = inst.getdnum (1);
+    result.setbval (ccv, false);
+    result.setoval (ccv, cval);
     return result;
   }
 
@@ -2937,8 +2952,51 @@ namespace iato {
   // - M24 instruction group                                                -
   // ------------------------------------------------------------------------
 
+  // M_MOV_TO_IR
+  static Result exec_mov_to_ir (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool nat = oprd.getbval (0);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    t_octa rval = oprd.getoval (0);
+    result.setoval (0, rval);
+    return result;
+  }
+
+  // M_MOV_FROM_IR
+  static Result exec_mov_from_ir (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    t_octa rval = oprd.getoval (1);
+    result.setoval (0, rval);
+    result.setbval (0, false);
+    return result;
+  }
+  
+  // M_ITR
+  static Result exec_itr (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    bool nat = oprd.getbval (0);
+    if (nat == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
+    t_octa rval = oprd.getoval (0);
+    result.setoval (0, rval);
+    return result;
+  }
+
   // M_INVALA
   static Result exec_invala (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setoval (0, Result::ALT_INV, 0);
+    return result;
+  }
+
+  // M_INVALA_E (integer ALAT entry)
+  static Result exec_invala_e (const Instr& inst, const Operand& oprd) {
+    Result result = inst.getresl ();
+    result.setoval (0, Result::ALT_INV, 0);
+    return result;
+  }
+
+  // M_INVALA_E_F (floating ALAT entry)
+  static Result exec_invala_e_f (const Instr& inst, const Operand& oprd) {
     Result result = inst.getresl ();
     result.setoval (0, Result::ALT_INV, 0);
     return result;
@@ -3674,16 +3732,19 @@ namespace iato {
       // M16 instruction group
     case M_CMPXCHG1_REL:
     case M_CMPXCHG1_ACQ:
+      result = exec_cmpxchg (inst, oprd, 1);
       break;
     case M_CMPXCHG2_REL:
     case M_CMPXCHG2_ACQ:
+      result = exec_cmpxchg (inst, oprd, 2);
       break;
     case M_CMPXCHG4_REL:
     case M_CMPXCHG4_ACQ:
+      result = exec_cmpxchg (inst, oprd, 4);
       break;
     case M_CMPXCHG8_REL:
     case M_CMPXCHG8_ACQ:
-      result = exec_cmpxchg8(inst, oprd);
+      result = exec_cmpxchg (inst, oprd, 8);
       break;
     case M_XCHG1:
       result = exec_xchg(inst, oprd, 1);
@@ -3783,6 +3844,14 @@ namespace iato {
       result = exec_loadrs (inst, oprd);
       break;
 
+      // M26/M27 instruction group
+    case M_INVALA_E:
+      result = exec_invala_e (inst, oprd);
+      break;
+    case M_INVALA_E_F:
+      result = exec_invala_e_f (inst, oprd);
+      break;
+
       // M28 instruction group
     case M_FC:
       result = exec_fc (inst, oprd);
@@ -3864,6 +3933,37 @@ namespace iato {
     case M_ITC_D:
     case M_ITC_I:
       result = exec_itc (inst, oprd);
+      break;
+
+      // M42 - Indirection Registers
+    case M_MOV_TO_PMC:
+    case M_MOV_TO_PMD:
+    case M_MOV_TO_MSR:
+    case M_MOV_TO_RR:
+    case M_MOV_TO_DBR:
+    case M_MOV_TO_IBR:
+    case M_MOV_TO_PKR:
+    case M_MOV_TO_CPUID:
+      // Using shared helper for IR access (rr, dbr, pkr, cpuid are accessed via mov)
+      // We map these to a generic "mov_to_ir" / "mov_from_ir" if needed,
+      // or just stub them here.
+      result = exec_mov_to_ir(inst, oprd);
+      break;
+    case M_MOV_FROM_RR:
+    case M_MOV_FROM_DBR:
+    case M_MOV_FROM_IBR:
+    case M_MOV_FROM_PKR:
+    case M_MOV_FROM_PMC:
+    case M_MOV_FROM_PMD:
+    case M_MOV_FROM_CPUID:
+    case M_MOV_FROM_MSR:
+      result = exec_mov_from_ir(inst, oprd);
+      break;
+
+      // M43
+    case M_ITR_D:
+    case M_ITR_C:
+      result = exec_itr (inst, oprd);
       break;
 
       // M44 instruction group

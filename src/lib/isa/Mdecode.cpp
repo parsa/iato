@@ -106,6 +106,23 @@ namespace iato {
     if (x3 == 0x06) return M_ALLOC;
     // decode mov to ar register (M-unit)
     if ((x3 == 0x00) && (x6 == 0x2A)) return M_MOV_TO_AR_R;
+    // decode indirection register writes
+    if ((x3 == 0x00) && (x6 == 0x00)) return M_MOV_TO_RR;
+    if ((x3 == 0x00) && (x6 == 0x01)) return M_MOV_TO_DBR;
+    if ((x3 == 0x00) && (x6 == 0x02)) return M_MOV_TO_IBR;
+    if ((x3 == 0x00) && (x6 == 0x03)) return M_MOV_TO_PKR;
+    if ((x3 == 0x00) && (x6 == 0x04)) return M_MOV_TO_PMC;
+    if ((x3 == 0x00) && (x6 == 0x05)) return M_MOV_TO_PMD;
+    if ((x3 == 0x00) && (x6 == 0x06)) return M_MOV_TO_MSR;
+    if ((x3 == 0x00) && (x6 == 0x07)) return M_MOV_TO_CPUID;
+    if ((x3 == 0x00) && (x6 == 0x10)) return M_MOV_FROM_RR;
+    if ((x3 == 0x00) && (x6 == 0x11)) return M_MOV_FROM_DBR;
+    if ((x3 == 0x00) && (x6 == 0x12)) return M_MOV_FROM_IBR;
+    if ((x3 == 0x00) && (x6 == 0x13)) return M_MOV_FROM_PKR;
+    if ((x3 == 0x00) && (x6 == 0x14)) return M_MOV_FROM_PMC;
+    if ((x3 == 0x00) && (x6 == 0x15)) return M_MOV_FROM_PMD;
+    if ((x3 == 0x00) && (x6 == 0x16)) return M_MOV_FROM_MSR;
+    if ((x3 == 0x00) && (x6 == 0x17)) return M_MOV_FROM_CPUID;
     // decode for mov to ar register (M-unit)
     if ((x3 == 0x00) && (x6 == 0x22)) return M_MOV_FROM_AR;
     // decode mov to cr
@@ -138,6 +155,8 @@ namespace iato {
     // decode translation cache insert
     if ((x3 == 0x00) && (x6 == 0x2E)) return M_ITC_D;
     if ((x3 == 0x00) && (x6 == 0x2F)) return M_ITC_I;
+    if ((x3 == 0x00) && (x6 == 0x0E)) return M_ITR_D;
+    if ((x3 == 0x00) && (x6 == 0x0F)) return M_ITR_C;
     // decode translation purge
     if ((x3 == 0x00) && (x6 == 0x09)) return M_PTC_L; 
     if ((x3 == 0x00) && (x6 == 0x0A)) return M_PTC_G;
@@ -1014,9 +1033,15 @@ namespace iato {
     case M_CMPXCHG4_REL:
     case M_CMPXCHG8_REL:
       d_rprd.setlnum      (PREG, get_pred (d_inst));
-      d_rsrc[0].setlnum   (FREG, get_src0 (d_inst));
+      // cmpxchg: r1 = [r3], r2
+      // src0 = r2 (value to store)
+      // src1 = r3 (address)
+      // src2 = ar.ccv (compare value)
+      // dst0 = r1 (old value)
+      d_rsrc[0].setlnum   (GREG, get_src0 (d_inst)); // Was FREG which looks wrong for cmpxchg
       d_rsrc[1].setlnum   (GREG, get_src1 (d_inst));
       d_rdst[0].setlnum   (GREG, get_dst0 (d_inst));
+      d_rdst[1].setlnum   (AREG, AR_CCV);
       d_rsrc[2].setlnum   (AREG, AR_CCV);
       d_lhint = get_lhint (d_inst);
       d_ildb  = true;
@@ -1029,7 +1054,8 @@ namespace iato {
     case M_XCHG4:
     case M_XCHG8:
       d_rprd.setlnum      (PREG, get_pred (d_inst));
-      d_rsrc[0].setlnum   (FREG, get_src0 (d_inst));
+      // xchg: r1 = [r3], r2
+      d_rsrc[0].setlnum   (GREG, get_src0 (d_inst)); // Was FREG
       d_rsrc[1].setlnum   (GREG, get_src1 (d_inst));
       d_rdst[0].setlnum   (GREG, get_dst0 (d_inst));
       d_lhint = get_lhint (d_inst);
@@ -1319,6 +1345,104 @@ namespace iato {
       d_rsrc[0].setlnum (GREG, get_src0 (d_inst));
       d_rsrc[1].setlnum (PSRG, 0);
       d_group = "M41";
+      d_valid = true;
+      break;
+    case M_ITR_D:
+      d_rprd.setlnum    (PREG, get_pred (d_inst));
+      d_rsrc[0].setlnum (GREG, get_src0 (d_inst));
+      d_rdst[0].setlnum (DTRG, get_src1 (d_inst));
+      d_group = "M43";
+      d_valid = true;
+      break;
+    case M_ITR_C:
+      d_rprd.setlnum    (PREG, get_pred (d_inst));
+      d_rsrc[0].setlnum (GREG, get_src0 (d_inst));
+      d_rdst[0].setlnum (ITRG, get_src1 (d_inst));
+      d_group = "M43";
+      d_valid = true;
+      break;
+
+      // M42 / M43 instruction groups
+    case M_MOV_TO_RR:
+    case M_MOV_TO_DBR:
+    case M_MOV_TO_IBR:
+    case M_MOV_TO_PKR:
+    case M_MOV_TO_PMC:
+    case M_MOV_TO_PMD:
+    case M_MOV_TO_MSR:
+    case M_MOV_TO_CPUID:
+      d_rprd.setlnum    (PREG, get_pred (d_inst));
+      d_rsrc[0].setlnum (GREG, get_src0 (d_inst));
+      switch (d_opcd) {
+      case M_MOV_TO_RR:
+	d_rdst[0].setlnum (RRRG, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_DBR:
+	d_rdst[0].setlnum (DBRG, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_IBR:
+	d_rdst[0].setlnum (IBRG, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_PKR:
+	d_rdst[0].setlnum (PKRG, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_PMC:
+	d_rdst[0].setlnum (PMCR, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_PMD:
+	d_rdst[0].setlnum (PMDR, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_MSR:
+	d_rdst[0].setlnum (MSRG, get_src1 (d_inst));
+	break;
+      case M_MOV_TO_CPUID:
+	d_rdst[0].setlnum (CPIDR, get_src1 (d_inst));
+	break;
+      default:
+	break;
+      }
+      d_group = "M42";
+      d_valid = true;
+      break;
+    case M_MOV_FROM_RR:
+    case M_MOV_FROM_DBR:
+    case M_MOV_FROM_IBR:
+    case M_MOV_FROM_PKR:
+    case M_MOV_FROM_PMC:
+    case M_MOV_FROM_PMD:
+    case M_MOV_FROM_MSR:
+    case M_MOV_FROM_CPUID:
+      d_rprd.setlnum    (PREG, get_pred (d_inst));
+      d_rdst[0].setlnum (GREG, get_dst0 (d_inst));
+      switch (d_opcd) {
+      case M_MOV_FROM_RR:
+	d_rsrc[1].setlnum (RRRG, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_DBR:
+	d_rsrc[1].setlnum (DBRG, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_IBR:
+	d_rsrc[1].setlnum (IBRG, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_PKR:
+	d_rsrc[1].setlnum (PKRG, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_PMC:
+	d_rsrc[1].setlnum (PMCR, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_PMD:
+	d_rsrc[1].setlnum (PMDR, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_MSR:
+	d_rsrc[1].setlnum (MSRG, get_src1 (d_inst));
+	break;
+      case M_MOV_FROM_CPUID:
+	d_rsrc[1].setlnum (CPIDR, get_src1 (d_inst));
+	break;
+      default:
+	break;
+      }
+      d_group = "M43";
       d_valid = true;
       break;
      

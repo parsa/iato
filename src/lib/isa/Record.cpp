@@ -93,6 +93,38 @@ namespace iato {
     case CREG:
       result = "cr";
       break;
+    case RRRG:
+      result = "rr";
+      break;
+    case DBRG:
+      result = "dbr";
+      break;
+    case IBRG:
+      result = "ibr";
+      break;
+    case PKRG:
+      result = "pkr";
+      break;
+    case PMCR:
+      result = "pmc";
+      break;
+    case PMDR:
+      result = "pmd";
+      break;
+    case CPIDR:
+      result = "cpuid";
+      break;
+    case MSRG:
+      result = "msr";
+      break;
+    case DTRG:
+      result = "dtr";
+      break;
+    case ITRG:
+      result = "itr";
+      break;
+    default:
+      break;
     }
     return result;
   }
@@ -109,6 +141,16 @@ namespace iato {
     case PREG:
     case BREG:
     case AREG:
+    case RRRG:
+    case DBRG:
+    case IBRG:
+    case PKRG:
+    case PMCR:
+    case PMDR:
+    case CPIDR:
+    case MSRG:
+    case DTRG:
+    case ITRG:
       os << '[' << setw (3) << setfill ('0') << lnum << ']' << dec;
       os << '[' << setw (3) << setfill ('0') << pnum << ']' << dec;
       break;

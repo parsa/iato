@@ -62,6 +62,10 @@
 #include "ElfImage.hpp"
 #endif
 
+#ifndef  IATO_TESTFIXTURE_HPP
+#include "TestFixture.hpp"
+#endif
+
 namespace iato {
   using namespace std;
 
@@ -127,6 +131,12 @@ namespace iato {
     Tracer*  p_tracer;
     /// the emulator checker
     Checker* p_checker;
+    /// optional fixture file path
+    string d_fixture_path;
+    /// cached fixture data
+    TestFixture d_fixture;
+    /// true once the fixture file has been parsed
+    bool d_fixture_loaded;
 
   public:
     /// create a emulator with a context and a program

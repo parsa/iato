@@ -1941,6 +1941,7 @@ namespace iato {
        // We might use INTER_INT or just throw a generic one with reason.
        throw Interrupt (FAULT_IT_OPER_LEGAL, inst, "fchkf software assistance fault"); 
     }
+    result.setvalid (true);
     return result;
   }
 

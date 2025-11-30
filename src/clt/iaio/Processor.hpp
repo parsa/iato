@@ -37,6 +37,10 @@
 #include "Register.hpp"
 #endif
 
+#ifndef  IATO_TESTFIXTURE_HPP
+#include "TestFixture.hpp"
+#endif
+
 #ifndef  IATO_WATCHDOG_HPP
 #include "Watchdog.hpp"
 #endif
@@ -61,6 +65,8 @@ namespace iato {
   /// their resources and neighrbouring stage. A special case occurs for 
   /// input and output stages that communicates with system resources.
 
+  class Mta;
+
   class Processor : public Runnable {
   private:
     /// the processor environment
@@ -81,6 +87,14 @@ namespace iato {
     t_octa d_tlsva;
     /// initial global pointer value
     t_octa d_gpva;
+    /// optional fixture file path
+    string d_fixture_path;
+    /// cached fixture content
+    TestFixture d_fixture;
+    /// true once the fixture file has been parsed
+    bool d_fixture_loaded;
+    /// cached pointer to the memory adapter
+    Mta* p_mta;
     
   public:
     /// create a new processor by context

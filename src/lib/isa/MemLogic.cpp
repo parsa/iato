@@ -20,10 +20,19 @@
 // ---------------------------------------------------------------------------
 
 #include "Lrn.hpp"
+#include "Isa.hpp"
 #include "MemLogic.hpp"
 #include "Interrupt.hpp"
 
 namespace iato {
+
+  // helper that writes the compared value back to ar.ccv
+  static void update_ccv (Result& resl, const t_octa value) {
+    Rid ccv;
+    ccv.setlnum (AREG, AR_CCV);
+    resl.setbval (ccv, false);
+    resl.setoval (ccv, value);
+  }
 
   // create a default memory logic
 
@@ -273,12 +282,56 @@ namespace iato {
 	p_mem->writespill (resl.getaddr (i), resl.getrimv (i));
 	p_alat->memupd (resl.getaddr (i), 16);
 	break;
-      case Result::REG_CX8:
-	if (p_mem->readocta (resl.getaddr (i)) == resl.getoval (0)) {
+      case Result::REG_CX1: {
+	t_byte addrv = p_mem->readbyte (resl.getaddr (i));
+	t_byte oval  = static_cast<t_byte> (resl.getoval (0));
+	t_octa nval  = static_cast<t_octa> (addrv);
+	resl.updoval (0, nval);
+	update_ccv (resl, nval);
+	if (addrv == oval) {
+	  p_mem->writebyte (resl.getaddr (i),
+			    static_cast<t_byte> (resl.getimmv (i)));
+	  p_alat->memupd (resl.getaddr (i), 1);
+	}
+	break;
+      }
+      case Result::REG_CX2: {
+	t_word addrv = p_mem->readword (resl.getaddr (i));
+	t_word oval  = static_cast<t_word> (resl.getoval (0));
+	t_octa nval  = static_cast<t_octa> (addrv);
+	resl.updoval (0, nval);
+	update_ccv (resl, nval);
+	if (addrv == oval) {
+	  p_mem->writeword (resl.getaddr (i),
+			    static_cast<t_word> (resl.getimmv (i)));
+	  p_alat->memupd (resl.getaddr (i), 2);
+	}
+	break;
+      }
+      case Result::REG_CX4: {
+	t_quad addrv = p_mem->readquad (resl.getaddr (i));
+	t_quad oval  = static_cast<t_quad> (resl.getoval (0));
+	t_octa nval  = static_cast<t_octa> (addrv);
+	resl.updoval (0, nval);
+	update_ccv (resl, nval);
+	if (addrv == oval) {
+	  p_mem->writequad (resl.getaddr (i),
+			    static_cast<t_quad> (resl.getimmv (i)));
+	  p_alat->memupd (resl.getaddr (i), 4);
+	}
+	break;
+      }
+      case Result::REG_CX8: {
+	t_octa oval  = resl.getoval (0);
+	t_octa addrv = p_mem->readocta (resl.getaddr (i));
+	resl.updoval (0, addrv);
+	update_ccv (resl, addrv);
+	if (addrv == oval) {
 	  p_mem->writeocta (resl.getaddr (i), resl.getimmv (i));
 	  p_alat->memupd (resl.getaddr (i), 8);
-	} else resl.setinv (0);
+	}
 	break;
+      }
       case Result::ALT_INV:
 	p_alat->reset ();
 	resl.setinv (i);

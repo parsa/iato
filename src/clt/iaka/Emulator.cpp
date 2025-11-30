@@ -23,6 +23,7 @@
 #include "Bits.hpp"
 #include "KrnExit.hpp"
 #include "Syscall.hpp"
+#include "Exception.hpp"
 #include "Emulator.hpp"
 #include "Mexecute.hpp"
 #include "Iexecute.hpp"
@@ -30,6 +31,64 @@
 #include "Bexecute.hpp"
 
 namespace iato {
+
+  namespace {
+    void write_fixture_registers (Register* rbk, const TestFixture& fixture,
+				  const FixtureContext& ctx) {
+      if ((!rbk) || fixture.regs ().empty ()) return;
+      for (const auto& entry : fixture.regs ()) {
+	t_octa value = entry.value->resolve (ctx);
+	switch (entry.type) {
+	case PREG:
+	  rbk->write (PREG, entry.index, (value & 0x1) != 0);
+	  break;
+	case FREG:
+	  throw Exception ("TEST-FIXTURE-FILE: floating-point register seeds "
+			   "are not supported");
+	default:
+	  rbk->write (entry.type, entry.index, value);
+	  break;
+	}
+      }
+    }
+
+    void write_fixture_memory (ElfExec* mem, const TestFixture& fixture,
+			       const FixtureContext& ctx) {
+      if (fixture.mems ().empty ()) return;
+      if (!mem) {
+	throw Exception (
+	    "TEST-FIXTURE-FILE contains memory data but no memory image "
+	    "is available for this client");
+      }
+      for (const auto& entry : fixture.mems ()) {
+	t_octa addr  = entry.address->resolve (ctx);
+	t_octa value = entry.value->resolve (ctx);
+	switch (entry.size) {
+	case 1:
+	  mem->writebyte (addr, static_cast<t_byte> (value & 0xFFULL));
+	  break;
+	case 2:
+	  mem->writeword (addr, static_cast<t_word> (value & 0xFFFFULL));
+	  break;
+	case 4:
+	  mem->writequad (addr, static_cast<t_quad> (value & 0xFFFFFFFFULL));
+	  break;
+	case 8:
+	  mem->writeocta (addr, value);
+	  break;
+	default:
+	  throw Exception ("TEST-FIXTURE-FILE: unsupported store width");
+	}
+      }
+    }
+
+    void apply_fixture (Register* rbk, ElfExec* mem, const TestFixture& fixture,
+			const FixtureContext& ctx) {
+      if (fixture.empty ()) return;
+      write_fixture_registers (rbk, fixture, ctx);
+      write_fixture_memory (mem, fixture, ctx);
+    }
+  }
 
   // create a new emulator with a context and a program name
 
@@ -68,6 +127,8 @@ namespace iato {
     p_checker = d_cflag ? p_elf->getchecker () : 0;
     // install a stat collection if needed
     p_stat = d_sflag ? new Stat : 0;
+    d_fixture_path   = atx->getstr ("TEST-FIXTURE-FILE");
+    d_fixture_loaded = false;
     // reset everything
     reset ();
   }
@@ -110,6 +171,8 @@ namespace iato {
     p_checker = d_cflag ? p_elf->getchecker () : 0;
     // install a stat collection if needed
     p_stat = d_sflag ? new Stat : 0;
+    d_fixture_path   = atx->getstr ("TEST-FIXTURE-FILE");
+    d_fixture_loaded = false;
     // reset everything
     reset ();
   }
@@ -171,6 +234,20 @@ namespace iato {
     assert ((bsa->getbase () & 0x00000000000001FFULL) == OCTA_0);
     p_rbk->write (AREG, AR_BSP,  bsa->getbase ());
     p_rbk->write (AREG, AR_BSPS, bsa->getbase ());
+    if (!d_fixture_path.empty ()) {
+      if (!d_fixture_loaded) {
+	d_fixture = TestFixture::load (d_fixture_path);
+	d_fixture_loaded = true;
+      }
+      FixtureContext ctx;
+      ctx.entry = p_elf->getentry ();
+      ctx.stack = stk->getstkva ();
+      ctx.bsp   = bsa->getbase ();
+      ctx.arg   = argva;
+      ctx.tls   = tlsva;
+      ctx.gp    = gpva;
+      apply_fixture (p_rbk, p_mem, d_fixture, ctx);
+    }
   }
 
   // print some emulator stats

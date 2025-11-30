@@ -88,6 +88,10 @@ namespace iato {
       setreal (name, rval);
       return;
     }
+  if (type == "string") {
+    setstr (name, elem);
+    return;
+  }
     string emsg = "cannot parse ";
     throw Exception ("context-error",  emsg + s);
   }
@@ -146,6 +150,16 @@ namespace iato {
     d_lmap["LR-BR-SIZE"]               = BR_LRSZ;
     d_lmap["LR-AR-SIZE"]               = AR_LRSZ;
     d_lmap["LR-CR-SIZE"]               = CR_LRSZ;
+    d_lmap["LR-RR-SIZE"]               = RR_LRSZ;
+    d_lmap["LR-DBR-SIZE"]              = DBR_LRSZ;
+    d_lmap["LR-IBR-SIZE"]              = IBR_LRSZ;
+    d_lmap["LR-PKR-SIZE"]              = PKR_LRSZ;
+    d_lmap["LR-PMC-SIZE"]              = PMC_LRSZ;
+    d_lmap["LR-PMD-SIZE"]              = PMD_LRSZ;
+    d_lmap["LR-CPUID-SIZE"]            = CPUID_LRSZ;
+    d_lmap["LR-MSR-SIZE"]              = MSR_LRSZ;
+    d_lmap["LR-DTR-SIZE"]              = DTR_LRSZ;
+    d_lmap["LR-ITR-SIZE"]              = ITR_LRSZ;
 
     // set resource parameters
     d_lmap["ALAT-SIZE"]                = AL_SIZE;
