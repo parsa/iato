@@ -1,0 +1,1 @@
+/usr/bin/g++ -rdynamic CMakeFiles/t_rid.dir/t_rid.cpp.o -o ../../../bin/t_rid  ../../../lib/libiaisa.a -lElf::elf 

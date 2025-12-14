@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../../lib/libiaecu.a CMakeFiles/iaecu.dir/Utx.cpp.o CMakeFiles/iaecu.dir/Mapper.cpp.o CMakeFiles/iaecu.dir/Fetcher.cpp.o CMakeFiles/iaecu.dir/Renamer.cpp.o
+/usr/bin/ranlib ../../../lib/libiaecu.a

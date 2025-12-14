@@ -1,0 +1,1 @@
+/usr/bin/g++ -rdynamic CMakeFiles/t_alat.dir/t_alat.cpp.o -o ../../../bin/t_alat  ../../../lib/libiaisa.a -lElf::elf 

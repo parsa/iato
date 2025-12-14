@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../../lib/libiakrn.a CMakeFiles/iakrn.dir/KrnSig.cpp.o CMakeFiles/iakrn.dir/Syscall.cpp.o CMakeFiles/iakrn.dir/SysArgs.cpp.o CMakeFiles/iakrn.dir/KrnUser.cpp.o CMakeFiles/iakrn.dir/KrnProc.cpp.o CMakeFiles/iakrn.dir/KrnExit.cpp.o CMakeFiles/iakrn.dir/KrnMmap.cpp.o CMakeFiles/iakrn.dir/KrnTime.cpp.o CMakeFiles/iakrn.dir/KrnIoctl.cpp.o CMakeFiles/iakrn.dir/KrnFcntl.cpp.o CMakeFiles/iakrn.dir/KrnUname.cpp.o
+/usr/bin/ranlib ../../../lib/libiakrn.a

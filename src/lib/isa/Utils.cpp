@@ -63,7 +63,10 @@ namespace iato {
 
   void cpystr (t_byte* d, const t_byte* s) {
     if (!d) return;
-    if (!s) *d = '\0';
+    if (!s) {
+      *d = '\0';
+      return;
+    }
     strcpy ((char*) d, (const char*) s);
   }
 

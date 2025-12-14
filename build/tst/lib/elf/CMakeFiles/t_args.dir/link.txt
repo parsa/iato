@@ -1,0 +1,1 @@
+/usr/bin/g++ -rdynamic CMakeFiles/t_args.dir/t_args.cpp.o -o ../../../bin/t_args  ../../../lib/libiaelf.a -lElf::elf ../../../lib/libiaisa.a -lElf::elf 
