@@ -22,6 +22,8 @@
 #ifndef  IATO_ELFSTACK_HPP
 #define  IATO_ELFSTACK_HPP
 
+#include <string>
+
 #ifndef  IATO_SEGMENT_HPP
 #include "Segment.hpp"
 #endif
@@ -60,9 +62,17 @@ namespace iato {
     t_octa d_argvp;
     /// pointer to envp vector on the stack
     t_octa d_envpp;
+    /// pointer to synthesized boot param block
+    t_octa d_bootva;
+    /// pointer to synthesized command-line string
+    t_octa d_cmdva;
+    /// reserved space consumed by loader data
+    long   d_loader_off;
     
     /// reserve/zero the TLS region and adjust the initial SP
     void inittls (void);
+    /// reserve loader-only space near the stack base
+    t_octa allocloader (const long size, const long align);
 
   public:
     /// create a new default stack
@@ -104,6 +114,12 @@ namespace iato {
 
     /// @return the envp vector pointer
     t_octa getenvp (void) const;
+
+    /// ensure the ia64 boot param block exists and return its address
+    t_octa installbootparam (const std::string& cmdline);
+
+    /// @return the ia64 boot param block address
+    t_octa getbootparam (void) const;
 
     /// @return the kernel-provided initial stack address
     t_octa getinitva (void) const;

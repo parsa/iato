@@ -47,6 +47,7 @@ namespace iato {
   const long NR_GETUID         = 1046;
   const long NR_GETEUID        = 1047;
   const long NR_ACCESS         = 1049;
+  const long NR_GETTID         = 1105;
   const long NR_KILL	       = 1053;
   const long NR_RENAME         = 1054;
   const long NR_MKDIR          = 1055;
@@ -54,6 +55,7 @@ namespace iato {
   const long NR_DUP            = 1057;
   const long NR_PIPE           = 1058;
   const long NR_TIMES          = 1059;
+  const long NR_NANOSLEEP      = 1168;
   const long NR_BRK            = 1060;
   const long NR_SETGID         = 1061;
   const long NR_GETGID         = 1062;
@@ -80,11 +82,16 @@ namespace iato {
   const long NR_SYSCTL         = 1150;
   const long NR_MMAP           = 1151;
   const long NR_MUNMAP         = 1152;
+  const long NR_CLOCK_SETTIME  = 1253;
+  const long NR_CLOCK_GETTIME  = 1254;
+  const long NR_CLOCK_GETRES   = 1255;
+  const long NR_CLOCK_NANOSLEEP= 1256;
   const long NR_RT_SIGACTION   = 1177;
   const long NR_RT_SIGPROCMASK = 1179;
   const long NR_STAT           = 1210;
   const long NR_LSTAT          = 1211;
   const long NR_FSTAT          = 1212;
+  const long NR_NEWFSTATAT     = 1286;
   const long NR_EXIT_GROUP     = 1236;
 }
 

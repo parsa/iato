@@ -185,6 +185,9 @@ namespace iato {
     stk->setargc (argc);
     stk->setargva (cstk + VSTK_PPAD);
     assert ((cstk % ABI_VSTK_ALIGN) == OCTA_0);
+    if (stk) {
+      stk->installbootparam (args->getcmdline ());
+    }
   }
 
   // return true is the name is a valid interpreter name

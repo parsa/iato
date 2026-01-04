@@ -40,7 +40,7 @@ namespace iato {
   const long BN_IWSZ = 2;
 
   /// number of general registers, bank 1
-  const long GR_LRSZ = 128;
+  const long GR_LRSZ = 512;
   /// number of alternate general registers, bank 0
   const long GR_BKSZ = 16;
   /// base of alternate general register, bank 0

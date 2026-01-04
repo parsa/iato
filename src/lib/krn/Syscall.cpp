@@ -20,6 +20,9 @@
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
+#include <cstdlib>
+#include <iostream>
+
 #include "KrnSig.hpp"
 #include "Syscall.hpp"
 #include "Syscall.hxx"
@@ -34,6 +37,19 @@
 
 namespace iato {
   using namespace std;
+
+  namespace {
+    bool sys_trace_enabled (void) {
+      const char* flag = getenv ("IATO_TRACE_SYSCALLS");
+      return (flag != nullptr) && (flag[0] != '\0');
+    }
+
+    inline void trace_syscall_number (const long nr) {
+      static const bool enabled = sys_trace_enabled ();
+      if (!enabled) return;
+      cerr << "[syscall] nr=" << nr << endl;
+    }
+  }
 
   // the system call resource name
   const string SCR = "SCR";
@@ -87,6 +103,7 @@ namespace iato {
   void Syscall::apply (void) {
     // get the syscall number
     long nr = sys_args_getnr (p_rbk);
+    trace_syscall_number (nr);
     // dispatch system call
     switch (nr) {
     case NR_EXIT:
@@ -133,6 +150,9 @@ namespace iato {
       break;
     case NR_FSTAT:
       krn_fstat (p_rse, p_rbk, p_mem);
+      break;
+    case NR_NEWFSTATAT:
+      krn_newfstatat (p_rse, p_rbk, p_mem);
       break;
     case NR_UNAME:
       krn_uname (p_rse, p_rbk, p_mem);
@@ -182,11 +202,23 @@ namespace iato {
     case NR_TIMES:
       krn_times (p_rse, p_rbk, p_mem);
       break;
+    case NR_NANOSLEEP:
+      krn_nanosleep (p_rse, p_rbk, p_mem);
+      break;
+    case NR_CLOCK_GETTIME:
+      krn_clock_gettime (p_rse, p_rbk, p_mem);
+      break;
+    case NR_CLOCK_NANOSLEEP:
+      krn_clock_nanosleep (p_rse, p_rbk, p_mem);
+      break;
     case NR_GETPID:
       krn_getpid (p_rbk);
       break;
     case NR_GETPPID:
       krn_getppid (p_rbk);
+      break;
+    case NR_GETTID:
+      krn_gettid (p_rbk);
       break;
     default:
       {

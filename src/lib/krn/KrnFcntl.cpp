@@ -69,11 +69,12 @@ namespace iato {
       throw Exception ("syscall-error", "unimplemented fcntl function");
       break;
     }
-    // set syscall result
-    if (result == 0) {
-      sys_args_setretn (result, rbk);
+    // set syscall result - fcntl returns a non-negative value on success,
+    // -1 on error.
+    if (result != -1) {
+      sys_args_setretn (static_cast<t_octa> (result), rbk);
     } else {
-      sys_args_seterrn (result, errno, rbk);
+      sys_args_seterrn ((t_octa) -1, errno, rbk);
     }
   }
 
@@ -411,6 +412,29 @@ namespace iato {
     // copy structure, endianess is set before
     sys_args_setdata (sptr, bst, sizeof (kst), mem);
     // set syscall result
+    sys_args_setretn (OCTA_0, rbk);
+  }
+
+  void krn_newfstatat (Rse* rse, Register* rbk, ElfExec* mem) {
+    int dirfd = (int) sys_args_getoval (0, rse, rbk);
+    t_octa path_addr = sys_args_getoval (1, rse, rbk);
+    t_octa stat_addr = sys_args_getoval (2, rse, rbk);
+    int flags = (int) sys_args_getoval (3, rse, rbk);
+    t_byte* path = sys_args_getstr (path_addr, mem);
+    struct stat mst;
+    int status = fstatat (dirfd, (const char*) path, &mst, flags);
+    delete [] path;
+    if (status == -1) {
+      sys_args_seterrn (status, errno, rbk);
+      return;
+    }
+    union {
+      t_byte    bst[sizeof(krn_sstat)];
+      krn_sstat kst;
+    };
+    for (long i = 0; i < (long) sizeof(krn_sstat); i++) bst[i] = BYTE_0;
+    map_stat (kst, mst);
+    sys_args_setdata (stat_addr, bst, sizeof (kst), mem);
     sys_args_setretn (OCTA_0, rbk);
   }
 }

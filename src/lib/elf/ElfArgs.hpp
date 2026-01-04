@@ -62,6 +62,9 @@ namespace iato {
     /// @return the program name
     string getname (void) const;
 
+    /// @return argv joined with spaces (command line)
+    string getcmdline (void) const;
+
   private:
     // make the copy constructor private
     ElfArgs (const ElfArgs&);

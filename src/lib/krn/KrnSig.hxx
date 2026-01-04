@@ -34,6 +34,16 @@ namespace iato {
   const int KRN_SIG_BLOCK   = 0x00;
   const int KRN_SIG_UNBLOCK = 0x01;
   const int KRN_SIG_SETMASK = 0x02;
+
+  struct KrnSigAction {
+    t_octa d_handler;
+    t_octa d_flags;
+    t_octa d_restorer;
+    t_octa d_mask;
+    KrnSigAction (void) :
+      d_handler (0), d_flags (0),
+      d_restorer (0), d_mask (0) {}
+  };
 }
 
 // ---------------------------------------------------------------------------

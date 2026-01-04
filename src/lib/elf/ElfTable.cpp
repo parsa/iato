@@ -127,4 +127,8 @@ namespace iato {
     argv[argc] = OCTA_0;
     return argv;
   }
+
+  const vector<string>& ElfTable::getsvec (void) const {
+    return d_svec;
+  }
 }

@@ -38,8 +38,10 @@ namespace iato {
   void krn_getegid (Register* rbk);
   // getpid system call
   void krn_getpid  (Register* rbk);
-  // getpid system call
+  // getppid system call
   void krn_getppid (Register* rbk);
+  // gettid system call
+  void krn_gettid  (Register* rbk);
 }
 
 #endif

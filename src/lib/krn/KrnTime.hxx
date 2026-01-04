@@ -35,6 +35,12 @@ namespace iato {
     t_octa d_tv_usec;         // microseconds
   };
   
+  // the kernel timespec structure for clock_gettime/nanosleep
+  struct krn_timespec {
+    t_octa d_tv_sec;          // seconds
+    t_octa d_tv_nsec;         // nanoseconds
+  };
+  
   // the kernel tms structure for times
   struct krn_tms {
     t_octa d_tms_utime;      // user CPU time
@@ -52,6 +58,7 @@ namespace iato {
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/times.h>
+#include <time.h>
 #endif
 
 }

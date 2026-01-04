@@ -23,6 +23,182 @@
 #include "Mac.hpp"
 #include "Mta.hpp"
 #include "Interrupt.hpp"
+#include "Intcode.hpp"
+
+namespace {
+  using namespace iato;
+
+  static t_octa gather_integer (Memory* mem, const t_octa addr,
+				const long size) {
+    assert (mem != nullptr);
+    t_octa value = OCTA_0;
+    for (long i = 0; i < size; ++i) {
+      const t_byte byte = mem->readbyte (addr + i);
+      value |= static_cast<t_octa>(byte) << (i * 8);
+    }
+    return value;
+  }
+
+  static void scatter_integer (Memory* mem, const t_octa addr,
+			       const long size, const t_octa value) {
+    assert (mem != nullptr);
+    for (long i = 0; i < size; ++i) {
+      const t_byte byte = static_cast<t_byte>((value >> (i * 8)) & 0xFF);
+      mem->writebyte (addr + i, byte);
+    }
+  }
+
+  static void load_real (Memory* mem, const t_octa addr, const long size,
+			 t_real& dst,
+			 void (t_real::*loader)(const t_byte*)) {
+    assert (mem != nullptr);
+    assert (size <= t_real::TR_SFSZ);
+    t_byte buf[t_real::TR_SFSZ];
+    for (long i = 0; i < size; ++i) buf[i] = mem->readbyte (addr + i);
+    (dst.*loader) (buf);
+  }
+
+  static void store_real (Memory* mem, const t_octa addr, const long size,
+			  const t_real& src,
+			  void (t_real::*storer)(t_byte*) const) {
+    assert (mem != nullptr);
+    assert (size <= t_real::TR_SFSZ);
+    t_byte buf[t_real::TR_SFSZ];
+    (src.*storer) (buf);
+    for (long i = 0; i < size; ++i) mem->writebyte (addr + i, buf[i]);
+  }
+
+  static bool emulate_unaligned (Mrt& mrt, Memory* dmem, Memory* fmem) {
+    const t_octa addr = mrt.getaddr ();
+    switch (mrt.gettype ()) {
+    case Mrt::REQ_LD2: {
+      if (!dmem) return false;
+      t_word value = static_cast<t_word>(gather_integer (dmem, addr, 2));
+      mrt.setwval (value);
+      return true;
+    }
+    case Mrt::REQ_LD4: {
+      if (!dmem) return false;
+      t_quad value = static_cast<t_quad>(gather_integer (dmem, addr, 4));
+      mrt.setqval (value);
+      return true;
+    }
+    case Mrt::REQ_LD8: {
+      if (!dmem) return false;
+      t_octa value = gather_integer (dmem, addr, 8);
+      mrt.setoval (value);
+      return true;
+    }
+    case Mrt::REQ_ST2:
+      if (!dmem) return false;
+      scatter_integer (dmem, addr, 2,
+		       static_cast<t_octa>(mrt.getwval ()));
+      return true;
+    case Mrt::REQ_ST4:
+      if (!dmem) return false;
+      scatter_integer (dmem, addr, 4,
+		       static_cast<t_octa>(mrt.getqval ()));
+      return true;
+    case Mrt::REQ_ST8:
+      if (!dmem) return false;
+      scatter_integer (dmem, addr, 8, mrt.getoval ());
+      return true;
+    case Mrt::REQ_LDS: {
+      if (!fmem) return false;
+      t_real value;
+      load_real (fmem, addr, t_real::TR_SISZ, value, &t_real::singleld);
+      mrt.setlval (value);
+      return true;
+    }
+    case Mrt::REQ_LDD: {
+      if (!fmem) return false;
+      t_real value;
+      load_real (fmem, addr, t_real::TR_DOSZ, value, &t_real::doubleld);
+      mrt.setlval (value);
+      return true;
+    }
+    case Mrt::REQ_LDE: {
+      if (!fmem) return false;
+      t_real value;
+      load_real (fmem, addr, t_real::TR_DESZ, value, &t_real::extendedld);
+      mrt.setlval (value);
+      return true;
+    }
+    case Mrt::REQ_LDI: {
+      if (!fmem) return false;
+      t_real value;
+      load_real (fmem, addr, sizeof (t_octa), value, &t_real::integerld);
+      mrt.setlval (value);
+      return true;
+    }
+    case Mrt::REQ_LDF: {
+      if (!fmem) return false;
+      t_real value;
+      load_real (fmem, addr, t_real::TR_SFSZ, value, &t_real::fill);
+      mrt.setlval (value);
+      return true;
+    }
+    case Mrt::REQ_LPS: {
+      if (!fmem) return false;
+      t_real lval;
+      t_real hval;
+      load_real (fmem, addr, t_real::TR_SISZ, lval, &t_real::singleld);
+      load_real (fmem, addr + 4, t_real::TR_SISZ, hval, &t_real::singleld);
+      mrt.setlval (lval);
+      mrt.sethval (hval);
+      return true;
+    }
+    case Mrt::REQ_LPD: {
+      if (!fmem) return false;
+      t_real lval;
+      t_real hval;
+      load_real (fmem, addr, t_real::TR_DOSZ, lval, &t_real::doubleld);
+      load_real (fmem, addr + 8, t_real::TR_DOSZ, hval, &t_real::doubleld);
+      mrt.setlval (lval);
+      mrt.sethval (hval);
+      return true;
+    }
+    case Mrt::REQ_LPI: {
+      if (!fmem) return false;
+      t_real lval;
+      t_real hval;
+      load_real (fmem, addr, sizeof (t_octa), lval, &t_real::integerld);
+      load_real (fmem, addr + 8, sizeof (t_octa), hval, &t_real::integerld);
+      mrt.setlval (lval);
+      mrt.sethval (hval);
+      return true;
+    }
+    case Mrt::REQ_STS:
+      if (!fmem) return false;
+      store_real (fmem, addr, t_real::TR_SISZ, mrt.getlval (),
+		  &t_real::singlest);
+      return true;
+    case Mrt::REQ_STD:
+      if (!fmem) return false;
+      store_real (fmem, addr, t_real::TR_DOSZ, mrt.getlval (),
+		  &t_real::doublest);
+      return true;
+    case Mrt::REQ_STE:
+      if (!fmem) return false;
+      store_real (fmem, addr, t_real::TR_DESZ, mrt.getlval (),
+		  &t_real::extendedst);
+      return true;
+    case Mrt::REQ_STI:
+      if (!fmem) return false;
+      store_real (fmem, addr, sizeof (t_octa), mrt.getlval (),
+		  &t_real::integerst);
+      return true;
+    case Mrt::REQ_STF:
+      if (!fmem) return false;
+      store_real (fmem, addr, t_real::TR_SFSZ, mrt.getlval (),
+		  &t_real::spill);
+      return true;
+    default:
+      break;
+    }
+    return false;
+  }
+}
 
 namespace iato {
 
@@ -191,6 +367,10 @@ namespace iato {
 	break;
       }
     } catch (const Interrupt& vi) {
+      if ((vi.getcode () == FAULT_IT_DATA_ALIGN) &&
+	  emulate_unaligned (mrt, p_dmem, p_fmem)) {
+	return;
+      }
       if (mrt.issbit () == true) {
 	mrt.setnval (true);
       } else {

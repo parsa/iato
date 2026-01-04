@@ -74,6 +74,10 @@ namespace iato {
     /// @param addr the base address to relocate
     virtual t_octa* getargv (const t_octa addr) const;
 
+  protected:
+    /// expose the underlying string vector for derived helpers
+    const std::vector<std::string>& getsvec (void) const;
+
   private:
     // make the copy constructor private
     ElfTable (const ElfTable&);

@@ -58,4 +58,15 @@ namespace iato {
   string ElfArgs::getname (void) const {
     return d_name;
   }
+
+  string ElfArgs::getcmdline (void) const {
+    const vector<string>& args = getsvec ();
+    if (args.empty ()) return "";
+    string out;
+    for (size_t i = 0; i < args.size (); ++i) {
+      if (i != 0) out.push_back (' ');
+      out += args[i];
+    }
+    return out;
+  }
 }

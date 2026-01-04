@@ -386,9 +386,16 @@ namespace iato {
     d_entrygp = OCTA_0;
     if (isvalid () == false) return d_entrygp;
     const bool msb = ismsb ();
+    // try canonical GP symbols first (_gp, __gp)
+    static const char* GP_SYMBOLS[] = {"_gp", "__gp"};
+    for (const char* sym : GP_SYMBOLS) {
+      if (sym == nullptr) continue;
+      d_entrygp = getsymaddr (sym);
+      if (d_entrygp != OCTA_0) break;
+    }
     const t_octa entryip = getentry ();
-    // first try to locate a matching function descriptor in .opd
-    if (entryip != OCTA_0) {
+    // fall back to locating a matching function descriptor in .opd
+    if ((d_entrygp == OCTA_0) && (entryip != OCTA_0)) {
       Elf_Scn* scn = get_section (".opd", p_elf, p_hdr);
       if (scn != NULL) {
 	Elf_Data* data = elf_getdata (scn, NULL);

@@ -225,7 +225,7 @@ namespace iato {
       case Result::REG_ST1:
 	p_mem->writebyte (resl.getaddr (i), resl.getimmv (i));
 	p_alat->memupd (resl.getaddr (i), 1);
-	// add a memory write access record
+	// add a memory write record
 	if (p_tracer) {
 	  Record rcd (d_name);
 	  rcd.setwmem (resl.getaddr (i), resl.getimmv (i), 0x01);

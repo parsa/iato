@@ -46,6 +46,8 @@ namespace iato {
   void krn_lstat  (Rse* rse, Register* rbk, ElfExec* mem);
   /// fstat system call
   void krn_fstat  (Rse* rse, Register* rbk, ElfExec* mem);
+  /// newfstatat system call
+  void krn_newfstatat (Rse* rse, Register* rbk, ElfExec* mem);
   /// unlink system call
   void krn_unlink (Rse* rse, Register* rbk, ElfExec* mem);
   /// link system call

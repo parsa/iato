@@ -33,5 +33,14 @@ namespace iato {
 
   /// times system call
   void krn_times (Rse* rse, Register* rbk, ElfExec* mem);
+
+  /// clock_gettime system call
+  void krn_clock_gettime (Rse* rse, Register* rbk, ElfExec* mem);
+
+  /// nanosleep system call
+  void krn_nanosleep (Rse* rse, Register* rbk, ElfExec* mem);
+
+  /// clock_nanosleep system call
+  void krn_clock_nanosleep (Rse* rse, Register* rbk, ElfExec* mem);
 }
 #endif

@@ -34,8 +34,8 @@ namespace iato {
   // exit_group system call
 
   void krn_exit_group (Rse* rse, Register* rbk) {
-    // set syscall result
-    sys_args_setretn (OCTA_0, rbk);
+    t_octa status = sys_args_getoval (0, rse, rbk);
+    throw KrnExit (status);
   }
 
   // brk system call

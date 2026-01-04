@@ -60,4 +60,12 @@ namespace iato {
     sys_args_setretn (getppid (), rbk); 
   }
 
+  // gettid system call
+
+  void krn_gettid (Register* rbk) {
+    // macOS does not expose gettid, but for single-threaded targets we can
+    // safely reuse the process id as a stable thread id.
+    sys_args_setretn (getpid (), rbk);
+  }
+
 }
