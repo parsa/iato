@@ -34,6 +34,12 @@ namespace iato {
   // t_real's host<->IA conversion for core arithmetic results, which is not
   // guaranteed to round the way IA expects.
   static t_real to_ia_real (const long double value, const t_byte rc) {
+    // IA64 FP register format parameters (significand is 64-bit with implicit
+    // integer bit at bit 63; exponent is 17-bit with bias 0xFFFF).
+    constexpr long long IA_N_BIAS  = 0x0000FFFFLL;
+    constexpr long long IA_EXP_MAX = 0x0001FFFFLL;
+    constexpr t_octa    IA_SGF_BOR = 0x8000000000000000ULL;
+
     t_real fr;
     // NaN / infinities
     if (std::isnan (value)) {
@@ -61,7 +67,7 @@ namespace iato {
     m *= 2.0L;
     e2 -= 1;
 
-    long long bexp = (long long) N_BIAS + (long long) e2;
+    long long bexp = IA_N_BIAS + (long long) e2;
     if (bexp <= 0) {
       // underflow: flush to signed zero
       fr.setexp  (QUAD_0);
@@ -69,7 +75,7 @@ namespace iato {
       fr.setsign (sign);
       return fr;
     }
-    if (bexp >= (long long) EXP_MAX) {
+    if (bexp >= IA_EXP_MAX) {
       // overflow: map to infinity
       if (sign) fr.setninf ();
       else fr.setpinf ();
@@ -90,7 +96,7 @@ namespace iato {
         sgfd++;
         if (sgfd == 0) {
           // carry into exponent (2^64 rounded up)
-          sgfd = SGF_BOR;
+          sgfd = IA_SGF_BOR;
           bexp++;
         }
       }
@@ -99,12 +105,12 @@ namespace iato {
         sgfd++;
         if (sgfd == 0) {
           // carry into exponent (2^64 rounded up)
-          sgfd = SGF_BOR;
+          sgfd = IA_SGF_BOR;
           bexp++;
         }
       }
     }
-    if (bexp >= (long long) EXP_MAX) {
+    if (bexp >= IA_EXP_MAX) {
       if (sign) fr.setninf ();
       else fr.setpinf ();
       return fr;
