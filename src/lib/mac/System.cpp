@@ -160,62 +160,6 @@ namespace iato {
     if (argc >= 0) write_quad ("__libc_argc", static_cast<t_quad> (argc));
     ElfBrk* brk = p_mem->getbrkm ();
     if (brk) write_quad ("__libc_pagesize", static_cast<t_quad> (brk->getpgsz ()));
-
-    // seed the gp-relative slots consumed by __libc_start_main
-    t_octa gp = getgpva ();
-    const t_octa bootva = stk->getbootparam ();
-    const bool dump_gp_slots = (getenv ("IATO_DEBUG_GP_SLOTS") != nullptr);
-    auto write_slot = [&](const t_octa offset, const t_octa value) {
-      if (value == OCTA_0) return;
-      t_octa addr = gp + offset;
-      assert (p_mem->isvalid (addr));
-      p_mem->writeocta (addr, value);
-      assert (p_mem->readocta (addr) == value);
-    };
-    auto dump_slot = [&](const t_octa offset, const char* label) {
-      if (dump_gp_slots == false) return;
-      const t_octa addr = gp + offset;
-      if (p_mem->isvalid (addr) == false) return;
-      const t_octa val = p_mem->readocta (addr);
-      cerr << "[gp] slot " << label << " @gp+0x"
-           << hex << offset << " = 0x" << val << dec << endl;
-    };
-    write_slot (696, bootva);
-    dump_slot (696, "bootparam");
-    // main/init/fini descriptors live in .opd; store their addresses
-    write_slot (688, p_elf->getopdaddr ("main"));
-    dump_slot (688, "main.opd");
-    write_slot (400, p_elf->getopdaddr ("_init"));
-    dump_slot (400, "_init.opd");
-    write_slot (800, p_elf->getopdaddr ("_fini"));
-    dump_slot (800, "_fini.opd");
-    // stack_end pointer slot expects the address of the global itself
-    write_slot (1064, p_elf->getsymaddr ("__libc_stack_end"));
-    dump_slot (1064, "__libc_stack_end");
-    // GOT slot 792 (gp+792) is _dl_starting_up; glibc expects it to be non-null (or null?)
-    // For static binaries, it might expect 0 or 1. Let's see if it helps to seed it.
-    // Actually, 792 = 0x318. The instruction `addl r15=792,r1` computes this address.
-    write_slot (792, p_elf->getsymaddr ("_dl_starting_up"));
-    dump_slot (792, "_dl_starting_up");
-    // GOT slot 48 (gp+48) is __libc_multiple_libcs
-    write_slot (48, p_elf->getsymaddr ("__libc_multiple_libcs"));
-    dump_slot (48, "__libc_multiple_libcs");
-    // GOT slot 104 (gp+104) is also __libc_stack_end
-    write_slot (104, p_elf->getsymaddr ("__libc_stack_end"));
-    dump_slot (104, "__libc_stack_end (alt)");
-    // Inspect the gp+408 slot which feeds the ctor/brk trampolines.
-    dump_slot (408, "gp+408");
-    // Patch the ia64 boot parameter entry descriptor so _start can call libc.
-    // Some static binaries omit the __libc_start_main entry in .opd, so fall
-    // back to the raw symbol address paired with the module GP.
-    if (bootva != OCTA_0) {
-      const t_octa entry = p_elf->getsymaddr ("__libc_start_main");
-      const t_octa gpval = gp;
-      if ((entry != OCTA_0) && (gpval != OCTA_0)) {
-	p_mem->writeocta (bootva, entry);
-	p_mem->writeocta (bootva + ABI_ADDR_ALIGN, gpval);
-      }
-    }
   }
 
   // return the backing store base

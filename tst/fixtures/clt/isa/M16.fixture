@@ -1,0 +1,8 @@
+reg GREG r3 stack-0x100
+reg GREG r2 0x2000
+reg AREG ar.ccv stack-0x100
+mem stack-0x100 stack-0x100 8
+reg GREG r15 stack-0x200
+reg GREG r16 0x1122334455667788
+mem stack-0x200 0xaabbccddeeff0011 8
+

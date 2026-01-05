@@ -288,7 +288,12 @@ namespace iato {
       if (d_argva != OCTA_0) rbk->write (GREG, ABI_ARG, d_argva);
       if (d_tlsva != OCTA_0) rbk->write (GREG, ABI_TP,  d_tlsva);
       if (d_gpva  != OCTA_0) {
-	rbk->write (GREG, ABI_GP, d_gpva);
+        // Linux/IA64 crt1.o expects r1 to hold an IP-relative GP delta, and
+        // then computes the actual GP with `mov r9=ip; sub r1=r9,r1`.
+        // Seed r1 with (entry_ip + 0x20) - gp so the prologue reconstructs gp.
+        const t_octa ip_for_gp = d_entry + 0x20;
+        const t_octa gp_seed   = ip_for_gp - d_gpva;
+	rbk->write (GREG, ABI_GP, gp_seed);
 	rbk->write (GREG, ABI_GP_ALIAS, d_gpva);
       }
       rbk->write (AREG, AR_BSP , d_bspva);
