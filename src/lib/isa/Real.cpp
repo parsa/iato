@@ -22,6 +22,7 @@
 #include "Real.hpp"
 #include "Bits.hpp"
 #include "Limits.hxx"
+#include <cmath>
 
 namespace iato {
 
@@ -325,43 +326,43 @@ namespace iato {
 	sign = true;
 	val  = -val;
       }
-      // first compute the exponent - non biased - the algorithm operates
-      // by searching the exponent in reference to numbers above 1.0 or less
-      // than 1.0.
-      t_quad exp = QUAD_0;
-      if (val >= 1.0L) {
-	while (exp < EXP_BOR) {
-	  if (pow (2.0L, (int) exp+1) > val) break;
-	  exp++;
-	}
-      } else {
-	while (exp < EXP_MAX) {
-	  if (val / pow (2.0L, (int) -exp) >= 1.0L) break;
-	  exp++;
-	}
+      // Convert using frexp decomposition rather than pow-based searching:
+      // pow() is not guaranteed to be exact, and small rounding errors can
+      // flip mantissa-bit decisions (e.g. 12.0L, 0.75L) on some platforms.
+      int e2 = 0;
+      long double m = frexpl (val, &e2);  // val = m * 2^e2, with 0.5 <= m < 1
+      // shift into [1,2) so we can build a 64-bit significand with implicit 1
+      m  *= 2.0L;
+      e2 -= 1;
+
+      // biased exponent (17-bit)
+      long long bexp = (long long) N_BIAS + (long long) e2;
+      if (bexp <= 0) {
+        // underflow: treat as signed zero (denormals are not modeled here)
+        copy_ia_buffer (buf, IA_ZERO);
+        if (sign == true) buf[t_real::TR_IASZ-1] = 0x02;
+        return;
       }
-      // readjust the value to compute the significand
-      if (val >= 1.0L) {
-	// readjust value
-	val /= pow (2.0L, (int) exp);
-	// adjust exponent
-	exp += N_BIAS;
-      } else {
-	val /= pow (2.0L, (int) -exp);
-	// adjust exponent
-	exp = N_BIAS - exp;
+      if (bexp >= (long long) EXP_MAX) {
+        // overflow: map to infinity
+        copy_ia_buffer (buf, sign ? IA_NINF : IA_PINF);
+        return;
       }
-      // compute the significand - adjust msb bit if we are above 1.0
-      t_octa sgfd = (val >= 1.0L) ? 0x8000000000000000ULL : OCTA_0;
-      if (val >= 1.0L) 	val -= 1.0L;
-      long double sv = 0.0L;
+
+      t_quad exp = (t_quad) bexp;
+
+      // compute the 64-bit significand: bit63 is the implicit 1, bits[62:0]
+      // are the fractional bits of (m - 1.0) in base-2.
+      t_octa sgfd = SGF_BOR;
+      long double frac = m - 1.0L;
       for (int i = 0; i < 63; i++) {
-	long double ev = sv + pow (2.0L, -i-1);
-	if (ev <= val) {
-	  sv = ev;
-	  sgfd = bsetocta (sgfd, 63-i-1, true);
-	}
+        frac *= 2.0L;
+        if (frac >= 1.0L) {
+          sgfd = bsetocta (sgfd, 62 - i, true);
+          frac -= 1.0L;
+        }
       }
+
       // initialize ia buffer
       init_ia_buffer (buf, sign, exp, sgfd);
     }
