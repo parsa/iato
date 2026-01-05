@@ -2648,19 +2648,20 @@ namespace iato {
     if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     t_octa addr = oprd.getoval (1);
     t_octa wval = oprd.getoval (0);
-    
-    Result::t_rop ld_op = Result::ROP_NOP;
-    Result::t_rop st_op = Result::ROP_NOP;
-    switch(size) {
-      case 1: ld_op = Result::REG_LD1; st_op = Result::REG_ST1; break;
-      case 2: ld_op = Result::REG_LD2; st_op = Result::REG_ST2; break;
-      case 4: ld_op = Result::REG_LD4; st_op = Result::REG_ST4; break;
-      case 8: ld_op = Result::REG_LD8; st_op = Result::REG_ST8; break;
+
+    // xchg is an atomic read-modify-write: represent it as a single memory op
+    // (like cmpxchg) so Result::getmrt() is not asked to build two requests.
+    Result::t_rop rop = Result::ROP_NOP;
+    switch (size) {
+    case 1: rop = Result::REG_XCH1; break;
+    case 2: rop = Result::REG_XCH2; break;
+    case 4: rop = Result::REG_XCH4; break;
+    case 8: rop = Result::REG_XCH8; break;
+    default: break;
     }
-    
-    result.setaddr (0, ld_op, addr);
-    result.setaddr (1, st_op, addr);
-    result.setimmv (1, wval);
+    // use destination slot 0 (the xchg destination register) for the memory op
+    result.setaddr (0, rop, addr);
+    result.setimmv (0, wval);
     return result;
   }
 
@@ -2669,16 +2670,18 @@ namespace iato {
     bool nat1 = oprd.getbval (1);
     if (nat1 == true) throw Interrupt (FAULT_IT_RNAT_CONS, inst);
     t_octa addr = oprd.getoval (1);
-    
-    Result::t_rop ld_op = Result::ROP_NOP;
-    Result::t_rop st_op = Result::ROP_NOP;
-    switch(size) {
-      case 4: ld_op = Result::REG_LD4; st_op = Result::REG_ST4; break;
-      case 8: ld_op = Result::REG_LD8; st_op = Result::REG_ST8; break;
+
+    // fetchadd is an atomic read-modify-write. Represent it as a single
+    // memory op so Result::getmrt() isn't asked to build two requests.
+    Result::t_rop rop = Result::ROP_NOP;
+    switch (size) {
+    case 4: rop = Result::REG_FAD4; break;
+    case 8: rop = Result::REG_FAD8; break;
+    default: break;
     }
-    
-    result.setaddr (0, ld_op, addr);
-    result.setaddr (1, st_op, addr);
+    // use destination slot 0 for the memory op; store the addend in immv
+    result.setaddr (0, rop, addr);
+    result.setimmv (0, inst.getimmv (0));
     return result;
   }
 

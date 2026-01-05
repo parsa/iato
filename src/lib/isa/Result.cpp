@@ -195,6 +195,12 @@ namespace iato {
     case REG_CX2:
     case REG_CX4:
     case REG_CX8:
+    case REG_XCH1:
+    case REG_XCH2:
+    case REG_XCH4:
+    case REG_XCH8:
+    case REG_FAD4:
+    case REG_FAD8:
       d_drop[index] = rop;
       d_addr[index] = addr;
       d_valid       = true;
@@ -225,6 +231,12 @@ namespace iato {
     case REG_CX2:
     case REG_CX4:
     case REG_CX8:
+    case REG_XCH1:
+    case REG_XCH2:
+    case REG_XCH4:
+    case REG_XCH8:
+    case REG_FAD4:
+    case REG_FAD8:
       d_bval[index] = true;
       d_oval[index] = value;
       break;
@@ -267,6 +279,12 @@ namespace iato {
     case REG_CX2:
     case REG_CX4:
     case REG_CX8:
+    case REG_XCH1:
+    case REG_XCH2:
+    case REG_XCH4:
+    case REG_XCH8:
+    case REG_FAD4:
+    case REG_FAD8:
       assert (d_bval[index] == true);
       result = d_oval[index];
       break;
@@ -653,6 +671,16 @@ namespace iato {
       case REG_CX4:
       case REG_CX8:
 	// handled directly by MemLogic, no explicit mrt
+	break;
+      case REG_XCH1:
+      case REG_XCH2:
+      case REG_XCH4:
+      case REG_XCH8:
+	// handled directly by memory logic (atomic exchange), no explicit mrt
+	break;
+      case REG_FAD4:
+      case REG_FAD8:
+	// handled directly by memory logic (atomic fetchadd), no explicit mrt
 	break;
       default:
 	break;

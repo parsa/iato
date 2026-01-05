@@ -27,9 +27,9 @@ namespace iato {
   // return the load hint
   static t_ldhint get_lhint (const t_octa inst) {
     t_byte lh = ((t_byte) (inst >> 28)) & 0x03;
-    assert (lh != 0x02);
     if (lh == 0x00) return LDNONE;
     if (lh == 0x01) return LDNT1;
+    if (lh == 0x02) return LDNT2;
     return LDNTA;
   }
 
@@ -1075,6 +1075,8 @@ namespace iato {
       d_rsrc[1].setlnum     (GREG, get_src1 (d_inst));
       d_immv[0] = get_inc3  (d_inst);
       d_lhint   = get_lhint (d_inst);
+      d_ildb    = true;
+      d_istb    = true;
       d_group   = "M17";
       d_valid   = true;
       break;

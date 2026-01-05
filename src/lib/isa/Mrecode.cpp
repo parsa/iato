@@ -30,6 +30,7 @@ namespace iato {
     string result;
     if (lh == LDNONE) result += "";
     if (lh == LDNT1)  result += ".nt1";
+    if (lh == LDNT2)  result += ".nt2";
     if (lh == LDNTA)  result += ".nta";
     return result;
   }

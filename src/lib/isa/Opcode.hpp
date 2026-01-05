@@ -719,7 +719,9 @@ namespace iato {
   /// ip-relative predict hint
   enum t_bphint  {BPSPTK, BPLOOP, BPDPTK, BPEXIT};
   /// load hints
-  enum t_ldhint  {LDNONE, LDNT1, LDNTA};
+  // Load hint encodings use the same 2-bit space as line-prefetch hints:
+  //  00: none, 01: nt1, 10: nt2, 11: nta
+  enum t_ldhint  {LDNONE = 0, LDNT1 = 1, LDNT2 = 2, LDNTA = 3};
   /// store hints
   enum t_sthint  {STNONE, STNTA};
   /// branch prefetch hint 

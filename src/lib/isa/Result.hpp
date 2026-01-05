@@ -79,6 +79,12 @@ namespace iato {
       REG_CX2, // register compare and exchange 2 bytes
       REG_CX4, // register compare and exchange 4 bytes
       REG_CX8, // register compare and exchange 8 bytes
+      REG_XCH1, // register exchange 1 byte
+      REG_XCH2, // register exchange 2 bytes
+      REG_XCH4, // register exchange 4 bytes
+      REG_XCH8, // register exchange 8 bytes
+      REG_FAD4, // register fetch-and-add 4 bytes
+      REG_FAD8, // register fetch-and-add 8 bytes
       RSE_ALC, // rse alloc update
       RSE_CAL, // rse call update
       RSE_RRB, // rse clrrrb update

@@ -107,10 +107,14 @@ namespace iato {
   // return the mov to br hint
   static t_mhint get_mhint (const t_octa inst) {
     t_byte mh = ((t_byte) (inst >> 20)) & 0x03;
-    assert (mh != 0x03);
+    // The encoding uses 2 bits. Historical decoder asserted on 0b11 (0x03)
+    // because it's reserved/undefined in the ISA. Since this is a performance
+    // hint and not architectural state, we treat reserved encodings as "no hint"
+    // instead of aborting the whole simulator.
     if (mh == 0x00) return MSPTK;
     if (mh == 0x01) return MNONE;
-    return MDPTK;
+    if (mh == 0x02) return MDPTK;
+    return MNONE; // reserved (0x03)
   }
 
   // return the mov to br important hint

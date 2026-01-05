@@ -1,0 +1,13 @@
+reg GREG r3 stack-0x100
+mem stack-0x100 0x11223344 4
+
+reg GREG r4 stack-0x110
+mem stack-0x110 0x0102030405060708 8
+
+reg GREG r5 stack-0x120
+mem stack-0x120 0xaabbccdd 4
+
+reg GREG r6 stack-0x130
+mem stack-0x130 0x1111111111111111 8
+
+
