@@ -25,6 +25,7 @@
 #include "Fexecute.hpp"
 #include "Exception.hpp"
 #include "Interrupt.hpp"
+#include <cmath>
 
 namespace iato {
 
@@ -105,9 +106,15 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // compute value
-    if (oprd.getrid (0). getlnum () != 0) fr = (f1 * f2) + f0;
-    else fr = f1 * f2;
+    // compute value (fused multiply-add)
+    if (oprd.getrid (0). getlnum () != 0) {
+      const long double r = fmal ((long double) f1, (long double) f2,
+                                 (long double) f0);
+      fr = r;
+    } else {
+      const long double r = fmal ((long double) f1, (long double) f2, 0.0L);
+      fr = r;
+    }
     Fpsr fpsr = oprd.getoval (3);
     fpsr.convert (NONEPC, tofpcomp (inst.getfpcomp ()), fr);
     result.setrval (0, fr);
@@ -129,8 +136,8 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // compute value
-    fr = (f1 * f2) + f0;
+    // compute value (fused multiply-add)
+    fr = fmal ((long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
     fpsr.convert (S, tofpcomp (inst.getfpcomp ()), fr);
     result.setrval (0, fr);
@@ -152,8 +159,8 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // compute value
-    fr = (f1 * f2) + f0;
+    // compute value (fused multiply-add)
+    fr = fmal ((long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
     fpsr.convert (D, tofpcomp (inst.getfpcomp ()), fr);
     result.setrval (0, fr);
@@ -175,8 +182,8 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // compute value
-    fr = f0 - (f1 * f2);
+    // compute value (fused negative multiply-add): f0 - (f1 * f2)
+    fr = fmal (-(long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
     fpsr.convert (NONEPC, tofpcomp (inst.getfpcomp ()), fr);
     result.setrval (0, fr);
@@ -198,8 +205,8 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // compute value
-    fr = f0 - (f1 * f2);
+    // compute value (fused negative multiply-add): f0 - (f1 * f2)
+    fr = fmal (-(long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
     fpsr.convert (S, tofpcomp (inst.getfpcomp ()), fr);
     result.setrval (0, fr);
@@ -221,8 +228,8 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // compute value
-    fr = f0 - (f1 * f2);
+    // compute value (fused negative multiply-add): f0 - (f1 * f2)
+    fr = fmal (-(long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
     fpsr.convert (D, tofpcomp (inst.getfpcomp ()), fr);
     result.setrval (0, fr);
