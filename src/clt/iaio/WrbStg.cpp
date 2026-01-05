@@ -122,7 +122,7 @@ namespace iato {
     // check for valid instruction
     if (d_inst.isvalid () == false) {
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // unset the serialize condition
@@ -183,7 +183,7 @@ namespace iato {
       }
       // clean and process pending flush
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // check for interrupted instruction
@@ -208,7 +208,7 @@ namespace iato {
       }
       // clean and process pending flush
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // check for cancelled interrupted instruction
@@ -227,7 +227,7 @@ namespace iato {
       }
       // clean and process pending flush
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // check for memory ordering violation
@@ -240,7 +240,7 @@ namespace iato {
       if (p_wdg) p_wdg->reset ();
       // clean and process pending flush
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // check for pipe flush by speculation
@@ -274,7 +274,7 @@ namespace iato {
       }
       // clean and process pending flush
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // check for pipe flush by taken branch
@@ -297,12 +297,12 @@ namespace iato {
       }
       // clean and process pending flush
       clean ();
-      if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+      if (d_ref == true) p_pfr->process ();
       return;
     }
     // if we are here, we simply clean the stage and eventually process
     clean ();
-    if ((d_ref == true) || (p_pfr->ispending () == true)) p_pfr->process ();
+    if (d_ref == true) p_pfr->process ();
   }
 
   // report some stage information

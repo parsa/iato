@@ -63,6 +63,8 @@ namespace iato {
   
   void Resteer::clean (void) {
     d_pend = false;
+    d_kbpn = false;
+    d_wait = 0;
     d_rioi = -1;
     d_intr.reset ();
   }
@@ -74,6 +76,12 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
+      // default flush is used by IAIO on taken branches/calls; keep bypass
+      // networks so older results remain visible across the restart boundary.
+      d_kbpn = true;
+      // also delay the destructive flush/reset so older instructions can
+      // complete writeback before we restart at the new ip (see pgm/p_0010).
+      d_wait = 4;
       Restart::pfdef ();
       d_rioi = rioi;
     }
@@ -86,6 +94,7 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
+      d_kbpn = false;
       Restart::pflcl ();
       d_rioi = rioi;
     }
@@ -98,6 +107,7 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
+      d_kbpn = false;
       Restart::pfstd (ip, slot);
       d_rioi = rioi;
     }
@@ -110,6 +120,7 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
+      d_kbpn = false;
       Restart::pfsrl (ip, slot);
       d_rioi = rioi;
     }
@@ -121,6 +132,7 @@ namespace iato {
     // preserve restart index
     long rioi = d_rioi;
     if (d_pend == false) {
+      d_kbpn = false;
       Restart::pfnxt (ip, slot);
       d_rioi = rioi;
     }
@@ -186,6 +198,13 @@ namespace iato {
   
   void Resteer::process (void) {
     if (d_pend == true) {
+      // If a default flush was requested (typically for a taken branch/call),
+      // give older in-flight instructions time to reach writeback while
+      // younger instructions are nullified by the restart index.
+      if (d_wait > 0) {
+	d_wait--;
+	return;
+      }
       // check for an interrupt first
       if (d_intr.isvalid () == true) {
 	p_irt->route (d_intr);
@@ -195,8 +214,10 @@ namespace iato {
       p_pipe->flush ();
       // reset all resources
       p_iib->reset  ();
-      p_ebn->reset  ();
-      p_lbn->reset  ();
+      if (d_kbpn == false) {
+	p_ebn->reset  ();
+	p_lbn->reset  ();
+      }
       p_psb->reset  ();
       p_rse->flush  ();
       // clean locally

@@ -37,6 +37,10 @@
 #include "Iib.hpp"
 #endif
 
+#ifndef  IATO_RESTEER_HPP
+#include "Resteer.hpp"
+#endif
+
 #ifndef  IATO_MSI_HPP
 #include "Msi.hpp"
 #endif
@@ -83,6 +87,8 @@ namespace iato {
     Executable* p_exe;
     /// the scoreboard
     Scoreboard* p_psb;
+    /// the restart engine
+    Resteer*    p_pfr;
 
   public:
     /// create a new executable stage by context and type

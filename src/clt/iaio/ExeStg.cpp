@@ -43,6 +43,7 @@ namespace iato {
     p_msi = 0;
     p_exe = 0;
     p_psb = 0;
+    p_pfr = 0;
     // set the execution unit
     if (unit == MUNIT) p_exe = new Mexecute;
     if (unit == IUNIT) p_exe = new Iexecute;
@@ -71,6 +72,7 @@ namespace iato {
     p_msi = 0;
     p_exe = 0;
     p_psb = 0;
+    p_pfr = 0;
     // set the execution unit
     if (unit == MUNIT) p_exe = new Mexecute;
     if (unit == IUNIT) p_exe = new Iexecute;
@@ -99,6 +101,7 @@ namespace iato {
     p_msi = 0;
     p_exe = 0;
     p_psb = 0;
+    p_pfr = 0;
     // set the execution unit
     if (unit == MUNIT) p_exe = new Mexecute;
     if (unit == IUNIT) p_exe = new Iexecute;
@@ -151,6 +154,20 @@ namespace iato {
     // check for valid instruction and clean if needed
     if (d_inst.isvalid () == false) {
       clean ();
+      return;
+    }
+    // cancel younger instructions after a restart index has been set; they
+    // must not execute and raise faults before writeback nullification.
+    if (p_pfr && (p_pfr->chkrii (d_inst.getrix ()) == true)) {
+      d_inst.setcnlf (true);
+      d_resl.reset ();
+      // unlock the resources
+      p_psb->unlock (d_inst);
+      // update tracer and return
+      if (p_tracer) {
+	Record rcd (d_name, d_inst);
+	p_tracer->add (rcd);
+      }
       return;
     }
     // if the instruction has been interrupted, do nothing
@@ -304,6 +321,12 @@ namespace iato {
     p_psb = dynamic_cast <Scoreboard*> (env->get (RESOURCE_PSB));
     if (!p_psb) {
       string msg = "cannot bind scoreboard within stage ";
+      throw Exception ("bind-error", msg + d_name);
+    }
+    // bind the restart engine
+    p_pfr = dynamic_cast <Resteer*> (env->get (RESOURCE_PFR));
+    if (!p_pfr) {
+      string msg = "cannot bind restart engine within stage ";
       throw Exception ("bind-error", msg + d_name);
     }
   }

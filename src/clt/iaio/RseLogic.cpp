@@ -121,6 +121,55 @@ namespace iato {
   void RseLogic::aftset (const Instr& inst) {
     // check for valid instruction
     if (inst.isvalid () == false) return;
+    t_iopc iopc = inst.getiopc ();
+    // check for call
+    if ((iopc == B_CALL) || (iopc == B_CALL_IP)) {
+      assert (inst.isbr () == true);
+      if (inst.getsfl () == true) {
+	// push the call state
+	p_rstk->push (d_spste);
+	// compute speculative call cfm
+	Cfm ocfm = d_spste.getcfm ();
+	Cfm ncfm = OCTA_0;
+	ncfm.call (ocfm);
+	// reset speculative state
+	d_spste.call (ncfm);
+      }
+    }
+    // check for return
+    if (iopc == B_RET) {
+      assert (inst.isbr () == true);
+      if (inst.getsfl () == true) {
+	if (p_rstk->isempty () == false) {
+	  d_spste = p_rstk->pop ();
+	} else {
+	  Cfm cfm = d_spste.getcfm ();
+	  d_spste.retn (cfm);
+	}
+      }
+    }
+    // check for loop
+    if ((iopc == B_CTOP_IP) || (iopc == B_CEXIT_IP) ||
+	(iopc == B_WTOP_IP) || (iopc == B_WEXIT_IP)) {
+      assert (inst.isbr () == true);
+      // rotate the cfm if the branch is taken
+      if (inst.getsfl () == true) {
+	Cfm cfm = d_spste.getcfm ();
+	d_spste.loop (cfm.rotate ());
+      }
+    }
+    // check for clrrrb
+    if (iopc == B_CLRRRB) {
+      Cfm cfm = d_spste.getcfm ();
+      cfm.clrrrb ();
+      d_spste.setcfm (cfm);
+    }
+    // check for clrrb.pr 
+    if (iopc == B_CLRRRB_PR) {
+      Cfm cfm = d_spste.getcfm ();
+      cfm.setfld (Cfm::RPR, 0);
+      d_spste.setcfm (cfm);
+    }
   }
 
   // update the rse state with a result

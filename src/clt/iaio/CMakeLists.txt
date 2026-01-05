@@ -17,6 +17,7 @@ set(SOURCES
   Fp4Stg.cpp
   BobStg.cpp
   BedStg.cpp
+  RdlStg.cpp
   WrbStg.cpp
   FwbStg.cpp
   Resteer.cpp
@@ -42,6 +43,7 @@ set(HEADERS
   Fp4Stg.hpp
   BobStg.hpp
   BedStg.hpp
+  RdlStg.hpp
   WrbStg.hpp
   FwbStg.hpp
   Resteer.hpp
