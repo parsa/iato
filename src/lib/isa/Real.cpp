@@ -290,19 +290,14 @@ namespace iato {
     else if (ia_isnzero (buffer) == true) result = -0.0L;
     else if (ia_isint  (buffer) == true)  result = ia_get_sgfd (buffer);
     else {
-      // init result with significand msb
-      t_octa sgfd = ia_get_sgfd (buffer);
-      result = bsetget (sgfd, 63) ? 1.0L : 0.0L;
-      // loop with other bits
-      for (int i = 0; i < 63; i++) {
-	if (bsetget (sgfd, 63-i-1) == true) result += pow (2.0L, -i-1);
-      }
-      // adjust with exponent
-      t_quad exp = ia_get_exp (buffer);
-      if (exp == QUAD_0) 
-	result = result * pow (2.0L, (int) -Z_BIAS);
-      else 
-	result = result * pow (2.0L, (int) (exp - N_BIAS));
+      // Build the significand as sgfd / 2^63 (bit 63 is the integer bit),
+      // then apply the exponent via ldexp. This avoids pow()-based summation
+      // which can lose low bits for large exponents (breaks udiv helper code).
+      const t_octa sgfd = ia_get_sgfd (buffer);
+      const long double sig = ldexpl ((long double) sgfd, -63);
+      const t_quad exp = ia_get_exp (buffer);
+      const int scale = (exp == QUAD_0) ? (int) -Z_BIAS : (int) (exp - N_BIAS);
+      result = ldexpl (sig, scale);
       if (ia_get_sign (buffer) == true) result = -result;
     }
     return result;
