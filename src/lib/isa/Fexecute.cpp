@@ -29,6 +29,93 @@
 
 namespace iato {
 
+  // Convert a host long double into an IA register-format real (64-bit
+  // significand, 17-bit exponent) using basic rounding. This avoids relying on
+  // t_real's host<->IA conversion for core arithmetic results, which is not
+  // guaranteed to round the way IA expects.
+  static t_real to_ia_real (const long double value, const t_byte rc) {
+    t_real fr;
+    // NaN / infinities
+    if (std::isnan (value)) {
+      fr.setnanindefinite ();
+      return fr;
+    }
+    if (std::isinf (value)) {
+      if (std::signbit (value)) fr.setninf ();
+      else fr.setpinf ();
+      return fr;
+    }
+    // signed zero
+    if (value == 0.0L) {
+      fr.setexp  (QUAD_0);
+      fr.setsgfd (OCTA_0);
+      fr.setsign (std::signbit (value));
+      return fr;
+    }
+
+    // normalize to m in [1,2) and unbiased exponent e2
+    const bool sign = std::signbit (value);
+    const long double v = sign ? -value : value;
+    int e2 = 0;
+    long double m = frexpl (v, &e2);   // 0.5 <= m < 1, v = m * 2^e2
+    m *= 2.0L;
+    e2 -= 1;
+
+    long long bexp = (long long) N_BIAS + (long long) e2;
+    if (bexp <= 0) {
+      // underflow: flush to signed zero
+      fr.setexp  (QUAD_0);
+      fr.setsgfd (OCTA_0);
+      fr.setsign (sign);
+      return fr;
+    }
+    if (bexp >= (long long) EXP_MAX) {
+      // overflow: map to infinity
+      if (sign) fr.setninf ();
+      else fr.setpinf ();
+      return fr;
+    }
+
+    // scale mantissa to 64-bit significand space and round
+    // scaled is in [2^63, 2^64)
+    long double scaled = ldexpl (m, 63);
+    long double fl = floorl (scaled);
+    t_octa sgfd = (t_octa) fl;
+    long double frac = scaled - fl;
+
+    // rounding control: implement RC=0 (round-to-nearest-even) and RC=2 (up).
+    // Others fall back to truncation.
+    if (rc == 0x00) {
+      if ((frac > 0.5L) || ((frac == 0.5L) && ((sgfd & 0x1ULL) != 0))) {
+        sgfd++;
+        if (sgfd == 0) {
+          // carry into exponent (2^64 rounded up)
+          sgfd = SGF_BOR;
+          bexp++;
+        }
+      }
+    } else if (rc == 0x02) {
+      if (frac > 0.0L) {
+        sgfd++;
+        if (sgfd == 0) {
+          // carry into exponent (2^64 rounded up)
+          sgfd = SGF_BOR;
+          bexp++;
+        }
+      }
+    }
+    if (bexp >= (long long) EXP_MAX) {
+      if (sign) fr.setninf ();
+      else fr.setpinf ();
+      return fr;
+    }
+
+    fr.setexp  ((t_quad) bexp);
+    fr.setsgfd (sgfd);
+    fr.setsign (sign);
+    return fr;
+  }
+
   static inline bool fclass_ispos (const t_octa value) {
     return ((value & 0x0000000000000001ULL) == 0x0000000000000001ULL);
   }
@@ -107,16 +194,18 @@ namespace iato {
       return result;
     }
     // compute value (fused multiply-add)
+    Fpsr fpsr = oprd.getoval (3);
+    const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
+    const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
     if (oprd.getrid (0). getlnum () != 0) {
       const long double r = fmal ((long double) f1, (long double) f2,
                                  (long double) f0);
-      fr = r;
+      fr = to_ia_real (r, rc);
     } else {
       const long double r = fmal ((long double) f1, (long double) f2, 0.0L);
-      fr = r;
+      fr = to_ia_real (r, rc);
     }
-    Fpsr fpsr = oprd.getoval (3);
-    fpsr.convert (NONEPC, tofpcomp (inst.getfpcomp ()), fr);
+    fpsr.convert (NONEPC, sf, fr);
     result.setrval (0, fr);
     return result;
   }
@@ -137,9 +226,11 @@ namespace iato {
       return result;
     }
     // compute value (fused multiply-add)
-    fr = fmal ((long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
-    fpsr.convert (S, tofpcomp (inst.getfpcomp ()), fr);
+    const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
+    const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
+    fr = to_ia_real (fmal ((long double) f1, (long double) f2, (long double) f0), rc);
+    fpsr.convert (S, sf, fr);
     result.setrval (0, fr);
     return result;
   }
@@ -160,9 +251,11 @@ namespace iato {
       return result;
     }
     // compute value (fused multiply-add)
-    fr = fmal ((long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
-    fpsr.convert (D, tofpcomp (inst.getfpcomp ()), fr);
+    const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
+    const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
+    fr = to_ia_real (fmal ((long double) f1, (long double) f2, (long double) f0), rc);
+    fpsr.convert (D, sf, fr);
     result.setrval (0, fr);
     return result;
   }
@@ -183,9 +276,11 @@ namespace iato {
       return result;
     }
     // compute value (fused negative multiply-add): f0 - (f1 * f2)
-    fr = fmal (-(long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
-    fpsr.convert (NONEPC, tofpcomp (inst.getfpcomp ()), fr);
+    const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
+    const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
+    fr = to_ia_real (fmal (-(long double) f1, (long double) f2, (long double) f0), rc);
+    fpsr.convert (NONEPC, sf, fr);
     result.setrval (0, fr);
     return result;
   }
@@ -206,9 +301,11 @@ namespace iato {
       return result;
     }
     // compute value (fused negative multiply-add): f0 - (f1 * f2)
-    fr = fmal (-(long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
-    fpsr.convert (S, tofpcomp (inst.getfpcomp ()), fr);
+    const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
+    const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
+    fr = to_ia_real (fmal (-(long double) f1, (long double) f2, (long double) f0), rc);
+    fpsr.convert (S, sf, fr);
     result.setrval (0, fr);
     return result;
   }
@@ -229,9 +326,11 @@ namespace iato {
       return result;
     }
     // compute value (fused negative multiply-add): f0 - (f1 * f2)
-    fr = fmal (-(long double) f1, (long double) f2, (long double) f0);
     Fpsr fpsr = oprd.getoval (3);
-    fpsr.convert (D, tofpcomp (inst.getfpcomp ()), fr);
+    const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
+    const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
+    fr = to_ia_real (fmal (-(long double) f1, (long double) f2, (long double) f0), rc);
+    fpsr.convert (D, sf, fr);
     result.setrval (0, fr);
     return result;
   }
