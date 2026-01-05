@@ -122,6 +122,51 @@ namespace iato {
     return fr;
   }
 
+  // Convert an IA64 register-format real into an unsigned 64-bit integer,
+  // truncating toward zero (i.e., floor for non-negative values).
+  //
+  // This must not rely on host floating point: on some platforms (notably
+  // arm64 macOS), `long double` is only 64-bit and loses low bits for values
+  // around 2^60, which breaks `__udivdi3`-style helpers (pgm.p_0010).
+  static inline bool fcvt_fxu_trunc_u64 (const t_real& f0, t_octa& rval) {
+    // reject negative values
+    if (f0.getsign () == true) return false;
+    // reject NaN / NAT / infinities
+    if (f0.isnan () == true) return false;
+    if (f0.isnat () == true) return false;
+    if (f0.isinf () == true) return false;
+    // integer-encoded value (from prior conversions)
+    if (f0.isint () == true) {
+      rval = f0.getsgfd ();
+      return true;
+    }
+    // zeros / subnormals -> 0 (we do not model denormals precisely here)
+    const t_quad exp = f0.getexp ();
+    if (exp == QUAD_0) {
+      rval = OCTA_0;
+      return true;
+    }
+    // unbiased exponent (base-2)
+    const long long e = (long long) exp - 0x0000FFFFLL;
+    if (e < 0) {
+      rval = OCTA_0;
+      return true;
+    }
+    // value = sgfd * 2^(e - 63)
+    const t_octa sgfd = f0.getsgfd ();
+    if (e <= 63) {
+      const int sh = (int) (63 - e);
+      rval = (sh >= 64) ? OCTA_0 : (sgfd >> sh);
+      return true;
+    }
+    const int sh = (int) (e - 63);
+    if (sh >= 64) return false;
+    const __uint128_t v = ((__uint128_t) sgfd) << sh;
+    if (v > (__uint128_t) 0xFFFFFFFFFFFFFFFFULL) return false;
+    rval = (t_octa) v;
+    return true;
+  }
+
   static inline bool fclass_ispos (const t_octa value) {
     return ((value & 0x0000000000000001ULL) == 0x0000000000000001ULL);
   }
@@ -1954,15 +1999,13 @@ namespace iato {
       result.setrval (0, fr);
       return result;
     }
-    // convert to integer
-    t_octa lmax = 0xFFFFFFFFFFFFFFFFULL;
-    long double fmax = (long double) lmax;
-    if (((long double) f0 < 0.0L) || ((long double) f0 > fmax)) {
+    // convert to integer (host-FP-independent)
+    t_octa rval = OCTA_0;
+    if (fcvt_fxu_trunc_u64 (f0, rval) == false) {
       fr.setinteger (0x8000000000000000ULL);
       result.setrval (0, fr);
       return result;
     }
-    t_octa rval = (t_octa) ((long double) f0);
     fr.setinteger (rval);
     // set result
     result.setrval (0, fr);
