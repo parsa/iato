@@ -225,6 +225,186 @@ namespace iato {
     return result;
   }
 
+
+
+  // Double-double helpers (hi+lo) to emulate IA64 FP with more than 53 bits of
+  // precision on platforms where `long double` is only 64-bit.
+  struct dd_t {
+    double hi;
+    double lo;
+  };
+
+  static inline dd_t dd_two_sum (const double a, const double b) {
+    const double s  = a + b;
+    const double bb = s - a;
+    const double e  = (a - (s - bb)) + (b - bb);
+    return {s, e};
+  }
+
+  static inline dd_t dd_two_prod (const double a, const double b) {
+    const double p = a * b;
+    const double e = std::fma (a, b, -p);
+    return {p, e};
+  }
+
+  static inline dd_t dd_add (const dd_t x, const dd_t y) {
+    const dd_t s = dd_two_sum (x.hi, y.hi);
+    const double e = x.lo + y.lo + s.lo;
+    return dd_two_sum (s.hi, e);
+  }
+
+  static inline dd_t dd_sub (const dd_t x, const dd_t y) {
+    return dd_add (x, {-y.hi, -y.lo});
+  }
+
+  static inline dd_t dd_mul (const dd_t x, const dd_t y) {
+    const dd_t p = dd_two_prod (x.hi, y.hi);
+    // Cross terms + product error
+    const double e = (x.hi * y.lo) + (x.lo * y.hi) + p.lo;
+    dd_t r = dd_two_sum (p.hi, e);
+    // lowest term
+    r.lo += x.lo * y.lo;
+    return dd_two_sum (r.hi, r.lo);
+  }
+
+  static inline dd_t dd_scalbn (const dd_t x, const int n) {
+    return {std::scalbn (x.hi, n), std::scalbn (x.lo, n)};
+  }
+
+  static inline dd_t dd_from_u64 (const t_octa u) {
+    const double hi = (double) u;
+    const t_octa uhi = (t_octa) hi;
+    const __int128 diff = (__int128) u - (__int128) uhi;
+    const double lo = (double) ((long long) diff);
+    return {hi, lo};
+  }
+
+  static inline dd_t dd_from_real (const t_real& f0) {
+    // specials
+    if (f0.isnan () == true) return {NAN, 0.0};
+    if (f0.isnat () == true) return {NAN, 0.0};
+    if (f0.isinf () == true) {
+      const double v = f0.getsign () ? -INFINITY : INFINITY;
+      return {v, 0.0};
+    }
+    if (f0.ispsz () == true) return {0.0, 0.0};
+    if (f0.isint () == true) {
+      dd_t x = dd_from_u64 (f0.getsgfd ());
+      if (f0.getsign () == true) return {-x.hi, -x.lo};
+      return x;
+    }
+
+    const t_quad exp = f0.getexp ();
+    if (exp == QUAD_0) {
+      // treat subnormals as zero for now
+      return {f0.getsign () ? -0.0 : 0.0, 0.0};
+    }
+
+    // value = sgfd * 2^(exp - bias - 63)
+    const long long sh = (long long) exp - 0x0000FFFFLL - 63LL;
+    dd_t x = dd_from_u64 (f0.getsgfd ());
+    x = dd_scalbn (x, (int) sh);
+    if (f0.getsign () == true) return {-x.hi, -x.lo};
+    return x;
+  }
+
+  static inline t_real to_ia_real_dd (dd_t x, const t_byte rc) {
+    // IA64 FP register format parameters (significand is 64-bit with implicit
+    // integer bit at bit 63; exponent is 17-bit with bias 0xFFFF).
+    constexpr long long IA_N_BIAS  = 0x0000FFFFLL;
+    constexpr long long IA_EXP_MAX = 0x0001FFFFLL;
+    constexpr t_octa    IA_SGF_BOR = 0x8000000000000000ULL;
+
+    t_real fr;
+
+    // Handle NaN / infinities
+    if (std::isnan (x.hi) || std::isnan (x.lo)) {
+      fr.setnanindefinite ();
+      return fr;
+    }
+    if (std::isinf (x.hi)) {
+      if (std::signbit (x.hi)) fr.setninf (); else fr.setpinf ();
+      return fr;
+    }
+
+    // normalize -0/0
+    const bool z = (x.hi == 0.0) && (x.lo == 0.0);
+    const bool sign = std::signbit (x.hi) || (x.hi == 0.0 && std::signbit (x.lo));
+    if (z == true) {
+      fr.setexp  (QUAD_0);
+      fr.setsgfd (OCTA_0);
+      fr.setsign (sign);
+      return fr;
+    }
+
+    if (sign) {
+      x.hi = -x.hi;
+      x.lo = -x.lo;
+    }
+    if (x.hi == 0.0) {
+      x.hi = x.lo;
+      x.lo = 0.0;
+    }
+
+    int e2 = 0;
+    (void) std::frexp (x.hi, &e2); // x ~= m * 2^e2, 0.5 <= m < 1
+
+    // scale into [1,2)
+    dd_t s = dd_scalbn (x, 1 - e2);
+    // then scale to [2^63, 2^64)
+    dd_t t = dd_scalbn (s, 63);
+
+    // At magnitudes around 2^63, a double can only represent multiples of
+    // 2^11 (=2048). The low component carries the missing low bits (and any
+    // fractional remainder). We must incorporate its integer part before
+    // applying the final rounding step.
+    t_octa sgfd = (t_octa) t.hi;
+    const double lo_int_d = std::trunc (t.lo);
+    const long long lo_int = (long long) lo_int_d;
+    double rem = t.lo - lo_int_d;
+    {
+      const __int128 acc = (__int128) sgfd + (__int128) lo_int;
+      sgfd = (t_octa) acc;
+    }
+
+    // round-to-nearest-even (rc=0) and round-up (rc=2)
+    if (rc == 0x00) {
+      if ((rem > 0.5) || ((rem == 0.5) && ((sgfd & 0x1ULL) != 0))) sgfd++;
+      if ((rem < -0.5) || ((rem == -0.5) && ((sgfd & 0x1ULL) != 0))) sgfd--;
+    } else if (rc == 0x02) {
+      if (rem > 0.0) sgfd++;
+    } else if (rc == 0x01) {
+      if (rem < 0.0) sgfd--;
+    }
+
+    // carry into exponent
+    if (sgfd == 0) {
+      sgfd = IA_SGF_BOR;
+      e2 += 1;
+    }
+    // renormalize if needed
+    if (sgfd < IA_SGF_BOR) {
+      sgfd <<= 1;
+      e2 -= 1;
+    }
+
+    long long bexp = IA_N_BIAS + (long long) (e2 - 1);
+    if (bexp <= 0) {
+      fr.setexp  (QUAD_0);
+      fr.setsgfd (OCTA_0);
+      fr.setsign (sign);
+      return fr;
+    }
+    if (bexp >= IA_EXP_MAX) {
+      if (sign) fr.setninf (); else fr.setpinf ();
+      return fr;
+    }
+
+    fr.setexp  ((t_quad) bexp);
+    fr.setsgfd (sgfd);
+    fr.setsign (sign);
+    return fr;
+  }
   // ------------------------------------------------------------------------
   // - F01 instruction group                                                 -
   // ------------------------------------------------------------------------
@@ -248,14 +428,15 @@ namespace iato {
     Fpsr fpsr = oprd.getoval (3);
     const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
     const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
+    const dd_t d1 = dd_from_real (f1);
+    const dd_t d2 = dd_from_real (f2);
+    const dd_t prod = dd_mul (d1, d2);
+    dd_t sum = prod;
     if (oprd.getrid (0). getlnum () != 0) {
-      const long double r = fmal ((long double) f1, (long double) f2,
-                                 (long double) f0);
-      fr = to_ia_real (r, rc);
-    } else {
-      const long double r = fmal ((long double) f1, (long double) f2, 0.0L);
-      fr = to_ia_real (r, rc);
+      const dd_t d0 = dd_from_real (f0);
+      sum = dd_add (prod, d0);
     }
+    fr = to_ia_real_dd (sum, rc);
     fpsr.convert (NONEPC, sf, fr);
     result.setrval (0, fr);
     return result;
@@ -280,7 +461,10 @@ namespace iato {
     Fpsr fpsr = oprd.getoval (3);
     const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
     const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
-    fr = to_ia_real (fmal ((long double) f1, (long double) f2, (long double) f0), rc);
+    const dd_t d0 = dd_from_real (f0);
+    const dd_t d1 = dd_from_real (f1);
+    const dd_t d2 = dd_from_real (f2);
+    fr = to_ia_real_dd (dd_add (dd_mul (d1, d2), d0), rc);
     fpsr.convert (S, sf, fr);
     result.setrval (0, fr);
     return result;
@@ -305,7 +489,10 @@ namespace iato {
     Fpsr fpsr = oprd.getoval (3);
     const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
     const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
-    fr = to_ia_real (fmal ((long double) f1, (long double) f2, (long double) f0), rc);
+    const dd_t d0 = dd_from_real (f0);
+    const dd_t d1 = dd_from_real (f1);
+    const dd_t d2 = dd_from_real (f2);
+    fr = to_ia_real_dd (dd_add (dd_mul (d1, d2), d0), rc);
     fpsr.convert (D, sf, fr);
     result.setrval (0, fr);
     return result;
@@ -330,7 +517,10 @@ namespace iato {
     Fpsr fpsr = oprd.getoval (3);
     const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
     const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
-    fr = to_ia_real (fmal (-(long double) f1, (long double) f2, (long double) f0), rc);
+    const dd_t d0 = dd_from_real (f0);
+    const dd_t d1 = dd_from_real (f1);
+    const dd_t d2 = dd_from_real (f2);
+    fr = to_ia_real_dd (dd_sub (d0, dd_mul (d1, d2)), rc);
     fpsr.convert (NONEPC, sf, fr);
     result.setrval (0, fr);
     return result;
@@ -355,7 +545,10 @@ namespace iato {
     Fpsr fpsr = oprd.getoval (3);
     const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
     const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
-    fr = to_ia_real (fmal (-(long double) f1, (long double) f2, (long double) f0), rc);
+    const dd_t d0 = dd_from_real (f0);
+    const dd_t d1 = dd_from_real (f1);
+    const dd_t d2 = dd_from_real (f2);
+    fr = to_ia_real_dd (dd_sub (d0, dd_mul (d1, d2)), rc);
     fpsr.convert (S, sf, fr);
     result.setrval (0, fr);
     return result;
@@ -380,7 +573,10 @@ namespace iato {
     Fpsr fpsr = oprd.getoval (3);
     const Fpsr::t_mfield sf = tofpcomp (inst.getfpcomp ());
     const t_byte rc = fpsr.getbsfld (sf, Fpsr::RC);
-    fr = to_ia_real (fmal (-(long double) f1, (long double) f2, (long double) f0), rc);
+    const dd_t d0 = dd_from_real (f0);
+    const dd_t d1 = dd_from_real (f1);
+    const dd_t d2 = dd_from_real (f2);
+    fr = to_ia_real_dd (dd_sub (d0, dd_mul (d1, d2)), rc);
     fpsr.convert (D, sf, fr);
     result.setrval (0, fr);
     return result;

@@ -171,10 +171,17 @@ function(iato_add_client_test client category abs_path rel_path slug label expec
       --match "${expected_pattern}" -- ${cmd})
   endif()
 
+  # Default: run tests from the repo root; some tests override this by passing
+  # an extra argument (ARGV8) with a per-test working directory.
+  set(workdir "${PROJECT_SOURCE_DIR}")
+  if(ARGC GREATER 8)
+    list(GET ARGV 8 workdir)
+  endif()
+
   set(formatted_name "${client}.ia64.${label}")
   add_test(NAME "${formatted_name}" COMMAND ${cmd})
   set_tests_properties("${formatted_name}"
-    PROPERTIES WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    PROPERTIES WORKING_DIRECTORY "${workdir}")
   if(client STREQUAL "iata")
     set(dep_test "iaka.ia64.${label}")
     set_tests_properties("${formatted_name}" PROPERTIES DEPENDS "${dep_test}")
@@ -220,7 +227,23 @@ foreach(entry ${IATO_IA64_ENTRIES})
   if(entry_rel_path STREQUAL "isa/M17")
     set(entry_fixture "${PROJECT_SOURCE_DIR}/tst/fixtures/clt/isa/M17.fixture")
   endif()
+
+  # p_0013 is a filesystem/syscall smoke test that expects `p_0013.c` and
+  # `p_0013` to exist in the current working directory (it uses stat/access
+  # with relative paths). Provide a tiny run directory with symlinks.
+  set(entry_workdir "${PROJECT_SOURCE_DIR}")
+  if(entry_rel_path STREQUAL "pgm/p_0013")
+    set(entry_workdir "${PROJECT_BINARY_DIR}/ia64_run/${entry_slug}")
+    file(MAKE_DIRECTORY "${entry_workdir}")
+    if(NOT EXISTS "${entry_workdir}/p_0013")
+      file(CREATE_LINK "${entry_abs_path}" "${entry_workdir}/p_0013" SYMBOLIC)
+    endif()
+    if(NOT EXISTS "${entry_workdir}/p_0013.c")
+      file(CREATE_LINK "${PROJECT_SOURCE_DIR}/tst/clt/pgm/p_0013.c" "${entry_workdir}/p_0013.c" SYMBOLIC)
+    endif()
+  endif()
+
   foreach(client ${IATO_CLIENTS})
-    iato_add_client_test("${client}" "${entry_category}" "${entry_abs_path}" "${entry_rel_path}" "${entry_slug}" "${test_label}" "${entry_expected_pattern}" "${entry_fixture}")
+    iato_add_client_test("${client}" "${entry_category}" "${entry_abs_path}" "${entry_rel_path}" "${entry_slug}" "${test_label}" "${entry_expected_pattern}" "${entry_fixture}" "${entry_workdir}")
   endforeach()
 endforeach()
