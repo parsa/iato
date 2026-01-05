@@ -89,6 +89,16 @@ namespace iato {
     init_rat_trb (BREG, p_rat, p_trb);
     init_rat_trb (AREG, p_rat, p_trb);
     init_rat_trb (CREG, p_rat, p_trb);
+    init_rat_trb (RRRG, p_rat, p_trb);
+    init_rat_trb (DBRG, p_rat, p_trb);
+    init_rat_trb (IBRG, p_rat, p_trb);
+    init_rat_trb (PKRG, p_rat, p_trb);
+    init_rat_trb (PMCR, p_rat, p_trb);
+    init_rat_trb (PMDR, p_rat, p_trb);
+    init_rat_trb (CPIDR, p_rat, p_trb);
+    init_rat_trb (MSRG, p_rat, p_trb);
+    init_rat_trb (DTRG, p_rat, p_trb);
+    init_rat_trb (ITRG, p_rat, p_trb);
   }
 
   // report this resource

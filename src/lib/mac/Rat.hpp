@@ -57,6 +57,26 @@ namespace iato {
     long d_anum;
     /// number of control registers
     long d_cnum;
+    /// number of region registers
+    long d_rrnum;
+    /// number of data break registers
+    long d_dbrnum;
+    /// number of instruction break registers
+    long d_ibrnum;
+    /// number of protection key registers
+    long d_pkrnum;
+    /// number of performance monitor counters
+    long d_pmcnum;
+    /// number of performance monitor data registers
+    long d_pmdnum;
+    /// number of cpuid registers
+    long d_cpidnum;
+    /// number of machine status registers
+    long d_msrnum;
+    /// number of data translation registers
+    long d_dtrnum;
+    /// number of instruction translation registers
+    long d_itrnum;
     /// gr rat array
     long* p_grat;
     /// fr rat array
@@ -69,6 +89,26 @@ namespace iato {
     long* p_arat;
     /// cr rat array
     long* p_crat;
+    /// rr rat array
+    long* p_rrat;
+    /// dbr rat array
+    long* p_dbrat;
+    /// ibr rat array
+    long* p_ibrat;
+    /// pkr rat array
+    long* p_pkrat;
+    /// pmc rat array
+    long* p_pmcat;
+    /// pmd rat array
+    long* p_pmdat;
+    /// cpid rat array
+    long* p_cpidat;
+    /// msr rat array
+    long* p_msrat;
+    /// dtr rat array
+    long* p_dtrat;
+    /// itr rat array
+    long* p_itrat;
 
   public:
     /// create a default rat

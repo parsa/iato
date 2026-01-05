@@ -70,11 +70,11 @@ namespace iato {
   /// number of control registers
   const long CR_LRSZ = 128;
   /// number of region registers
-  const long RR_LRSZ = 8;
+  const long RR_LRSZ = 16;
   /// number of data break registers
-  const long DBR_LRSZ = 8;
+  const long DBR_LRSZ = 16;
   /// number of instruction break registers
-  const long IBR_LRSZ = 8;
+  const long IBR_LRSZ = 16;
   /// number of protection key registers
   const long PKR_LRSZ = 16;
   /// number of performance monitor counters
@@ -82,13 +82,13 @@ namespace iato {
   /// number of performance monitor data registers
   const long PMD_LRSZ = 16;
   /// number of cpuid registers
-  const long CPUID_LRSZ = 5;
+  const long CPUID_LRSZ = 16;
   /// number of machine status registers
-  const long MSR_LRSZ = 1;
+  const long MSR_LRSZ = 16;
   /// number of data translation registers
-  const long DTR_LRSZ = 8;
+  const long DTR_LRSZ = 16;
   /// number of instruction translation registers
-  const long ITR_LRSZ = 8;
+  const long ITR_LRSZ = 16;
 
   /// index of rsc register (register stack configuration)
   const long AR_RSC  = 16;

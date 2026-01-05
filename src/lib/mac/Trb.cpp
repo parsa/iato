@@ -42,6 +42,16 @@ namespace iato {
 	result += mtx->getlong ("LR-BR-SIZE");
 	result += mtx->getlong ("LR-AR-SIZE");
 	result += mtx->getlong ("LR-CR-SIZE");
+	result += mtx->getlong ("LR-RR-SIZE");
+	result += mtx->getlong ("LR-DBR-SIZE");
+	result += mtx->getlong ("LR-IBR-SIZE");
+	result += mtx->getlong ("LR-PKR-SIZE");
+	result += mtx->getlong ("LR-PMC-SIZE");
+	result += mtx->getlong ("LR-PMD-SIZE");
+	result += mtx->getlong ("LR-CPUID-SIZE");
+	result += mtx->getlong ("LR-MSR-SIZE");
+	result += mtx->getlong ("LR-DTR-SIZE");
+	result += mtx->getlong ("LR-ITR-SIZE");
 	result += mtx->getlong ("PR-UR-SIZE");
 	// get queue size and number of units
 	result += mtx->getlong ("EIQ-SIZE") * mtx->gettusz ();
@@ -53,6 +63,16 @@ namespace iato {
       result += BR_LRSZ;
       result += AR_LRSZ;
       result += CR_LRSZ;
+      result += RR_LRSZ;
+      result += DBR_LRSZ;
+      result += IBR_LRSZ;
+      result += PKR_LRSZ;
+      result += PMC_LRSZ;
+      result += PMD_LRSZ;
+      result += CPUID_LRSZ;
+      result += MSR_LRSZ;
+      result += DTR_LRSZ;
+      result += ITR_LRSZ;
       result += UR_PRSZ;
       // get queue size and unit defaults
       result += IQ_SIZE * (MK_MUSZ + MK_IUSZ + MK_FUSZ + MK_BUSZ);
