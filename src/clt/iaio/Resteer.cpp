@@ -20,9 +20,52 @@
 
 #include "Srn.hpp"
 #include "Env.hpp"
+#include "Pipeline.hpp"
+#include "Pipelane.hpp"
+#include "RenStg.hpp"
+#include "DlyStg.hpp"
+#include "ResStg.hpp"
 #include "Resteer.hpp"
 
 namespace iato {
+
+  static bool isolder (const long rix, const long rii) {
+    if (rix == -1) return false;
+    if (rii == -1) return false;
+    return (rix < rii);
+  }
+
+  static bool hasolder (Runnable* pipe, const long rii) {
+    if (rii == -1) return false;
+    Pipeline* ppl = dynamic_cast <Pipeline*> (pipe);
+    assert (ppl);
+    Stage* stg = ppl->get (RESOURCE_PLN);
+    Pipelane* pln = dynamic_cast <Pipelane*> (stg);
+    assert (pln);
+    long pnum = pln->depth ();
+    for (long pi = 0; pi < pnum; pi++) {
+      Pipeline* mp = pln->getpipe (pi);
+      if (!mp) continue;
+      long snum = mp->depth ();
+      for (long si = 0; si < snum; si++) {
+	Stage* s = mp->getstg (si);
+	if (!s) continue;
+	Ssi inst;
+	if (RenStg* ren = dynamic_cast <RenStg*> (s)) {
+	  inst = ren->getinst ();
+	} else if (ResStg* res = dynamic_cast <ResStg*> (s)) {
+	  inst = res->getinst ();
+	} else if (DlyStg* dly = dynamic_cast <DlyStg*> (s)) {
+	  inst = dly->getinst ();
+	} else {
+	  continue;
+	}
+	if (inst.isvalid () == false) continue;
+	if (isolder (inst.getrix (), rii) == true) return true;
+      }
+    }
+    return false;
+  }
 
   // create a default resteer resource
   
@@ -63,8 +106,7 @@ namespace iato {
   
   void Resteer::clean (void) {
     d_pend = false;
-    d_kbpn = false;
-    d_wait = 0;
+    d_df   = false;
     d_rioi = -1;
     d_intr.reset ();
   }
@@ -76,12 +118,10 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
-      // default flush is used by IAIO on taken branches/calls; keep bypass
-      // networks so older results remain visible across the restart boundary.
-      d_kbpn = true;
-      // also delay the destructive flush/reset so older instructions can
-      // complete writeback before we restart at the new ip (see pgm/p_0010).
-      d_wait = 4;
+      // default flush is used by IAIO on taken branches/calls; it must not
+      // flush/reset the machine until all older in-flight instructions have
+      // completed writeback (see pgm/p_0010).
+      d_df = true;
       Restart::pfdef ();
       d_rioi = rioi;
     }
@@ -94,7 +134,7 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
-      d_kbpn = false;
+      d_df = false;
       Restart::pflcl ();
       d_rioi = rioi;
     }
@@ -107,7 +147,7 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
-      d_kbpn = false;
+      d_df = false;
       Restart::pfstd (ip, slot);
       d_rioi = rioi;
     }
@@ -120,7 +160,7 @@ namespace iato {
     long rioi = d_rioi;
     // set pipe flush data
     if (d_pend == false) {
-      d_kbpn = false;
+      d_df = false;
       Restart::pfsrl (ip, slot);
       d_rioi = rioi;
     }
@@ -132,7 +172,7 @@ namespace iato {
     // preserve restart index
     long rioi = d_rioi;
     if (d_pend == false) {
-      d_kbpn = false;
+      d_df = false;
       Restart::pfnxt (ip, slot);
       d_rioi = rioi;
     }
@@ -198,26 +238,24 @@ namespace iato {
   
   void Resteer::process (void) {
     if (d_pend == true) {
-      // If a default flush was requested (typically for a taken branch/call),
-      // give older in-flight instructions time to reach writeback while
-      // younger instructions are nullified by the restart index.
-      if (d_wait > 0) {
-	d_wait--;
-	return;
-      }
+      // For a default flush (taken branch/call), we must not destructively
+      // flush/reset the machine until all older in-flight instructions have
+      // completed writeback; younger instructions are nullified by the
+      // restart index (see pgm/p_0010).
+      if ((d_df == true) && (hasolder (p_pipe, d_rioi) == true)) return;
       // check for an interrupt first
       if (d_intr.isvalid () == true) {
 	p_irt->route (d_intr);
 	d_intr.reset ();
       }
+      // safety check - never flush while older instructions are still in flight
+      if (d_df == true) assert (hasolder (p_pipe, d_rioi) == false);
       // flush the pipeline
       p_pipe->flush ();
       // reset all resources
       p_iib->reset  ();
-      if (d_kbpn == false) {
-	p_ebn->reset  ();
-	p_lbn->reset  ();
-      }
+      p_ebn->reset  ();
+      p_lbn->reset  ();
       p_psb->reset  ();
       p_rse->flush  ();
       // clean locally

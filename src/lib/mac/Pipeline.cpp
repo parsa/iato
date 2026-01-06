@@ -162,6 +162,14 @@ namespace iato {
     return 0;
   }
 
+  // get a pipeline stage by index
+
+  Stage* Pipeline::getstg (const long index) const {
+    long size = d_pipe.size ();
+    if ((index < 0) || (index >= size)) return 0;
+    return d_pipe[index];
+  }
+
   // bind this pipeline with an environment and the enclosing stages
   
   void Pipeline::bind (Env* env, Stage* pstg, Stage* nstg) {

@@ -186,6 +186,14 @@ namespace iato {
     return d_lane.size ();
   }
 
+  // get a micro pipeline by index
+
+  Pipeline* Pipelane::getpipe (const long index) const {
+    long size = d_lane.size ();
+    if ((index < 0) || (index >= size)) return 0;
+    return d_lane[index];
+  }
+
   // add a new pipeline in this pipelane
   
   void Pipelane::add (Pipeline* pipe) {

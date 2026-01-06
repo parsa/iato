@@ -61,10 +61,9 @@ namespace iato {
   private:
     /// the pending flag
     bool d_pend;
-    /// keep bypass networks across a default flush
-    bool d_kbpn;
-    /// delay counter for default flush processing
-    long d_wait;
+    /// true if the pending flush is a default flush (taken branch/call)
+    /// which must drain older in-flight instructions before flushing.
+    bool d_df;
     /// the restart instruction order index
     long d_rioi;
     /// the interrupt to process

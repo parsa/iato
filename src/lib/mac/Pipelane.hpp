@@ -105,6 +105,9 @@ namespace iato {
     /// @return the pipelane maximum depth
     virtual long depth (void) const;
 
+    /// @return a micro pipeline by index (or nullptr if out of range)
+    virtual Pipeline* getpipe (const long index) const;
+
     /// add a new pipeline in this pipelane
     /// @param pipe the pipeline to add
     virtual void add (Pipeline* pipe);

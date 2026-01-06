@@ -101,6 +101,9 @@ namespace iato {
     /// @return a pipeline stage by name
     virtual Stage* get (const string& name) const;
 
+    /// @return a pipeline stage by index (or nullptr if out of range)
+    virtual Stage* getstg (const long index) const;
+
     /// bind this pipeline with an environment and the enclosing stages
     /// @param env the execution environment
     /// @param pstg the previous stage
