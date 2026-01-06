@@ -41,6 +41,10 @@
 namespace iato {
   using namespace std;
 
+  // forward declarations
+  class Memory;
+  class Register;
+
   /// The Rse class is a complete Register Stack Engine class that is
   /// responsible to manage register renaming as well as spilling and filling
   /// of the stacked registers. Since the RSE is affected both by instructions
@@ -56,6 +60,10 @@ namespace iato {
     /// the rse state
     class State {
     private:
+      /// the register bank
+      Register* p_rbk;
+      /// the backing store memory image
+      Memory*   p_mem;
       /// number of general registers
       long d_ngr;
       /// the size of frame
@@ -91,6 +99,11 @@ namespace iato {
       /// @param ngr the number of logical register
       /// @param cfm the cfm used to set the state
       State (const long ngr, const Cfm& cfm);
+
+      /// bind the state with a register bank and a backing store memory
+      /// @param mem the backing store memory image
+      /// @param rbk the register bank
+      void bind (Memory* mem, Register* rbk);
 
       /// reset this rse state
       void reset (void);
@@ -188,6 +201,11 @@ namespace iato {
 
     /// flush this rse
     virtual void flush (void);
+
+    /// bind a backing store memory and a register bank for spill/fill
+    /// @param mem the backing store memory image
+    /// @param rbk the register bank
+    virtual void bind (Memory* mem, Register* rbk);
 
     /// set the rse state by state
     /// @param state the state to set

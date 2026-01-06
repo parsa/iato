@@ -396,6 +396,11 @@ namespace iato {
     Detect*   dtl = dynamic_cast <Detect*>   (p_env->get (RESOURCE_DTL));
     Restart*  pfr = dynamic_cast <Restart*>  (p_env->get (RESOURCE_PFR));
     Register* rbk = dynamic_cast <Register*> (p_env->get (RESOURCE_RBK));
+    // bind backing store spill/fill support for the rse (requires memory + rbk)
+    if (hma && rse && rbk) {
+      Memory* mem = hma->getmem ();
+      if (mem) rse->bind (mem, rbk);
+    }
     // bind the pipeline
     p_pipe->bind (p_env, 0, 0);
     // bind the detection logic

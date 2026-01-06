@@ -84,4 +84,10 @@ namespace iato {
   Mta* Hma::getmta (void) const {
     return p_mta;
   }
+
+  // get the bound memory image
+
+  Memory* Hma::getmem (void) const {
+    return p_mem;
+  }
 }

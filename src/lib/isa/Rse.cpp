@@ -23,8 +23,45 @@
 #include "Rse.hpp"
 #include "Lrn.hpp"
 #include "Interrupt.hpp"
+#include "Memory.hpp"
+#include "Register.hpp"
 
 namespace iato {
+
+  static const t_octa BSP_MASK = 0x00000000000001F8ULL;
+
+  static inline long nxtgr (const long reg, const long ngr) {
+    assert (reg >= GR_STBS);
+    assert (reg < ngr);
+    long result = reg + 1;
+    return (result >= ngr) ? GR_STBS : result;
+  }
+
+  static inline long prvgr (const long reg, const long ngr) {
+    assert (reg >= GR_STBS);
+    assert (reg < ngr);
+    long result = reg - 1;
+    return (result < GR_STBS) ? (ngr - 1) : result;
+  }
+
+  static inline long dstgr (const long from, const long to, const long ngr) {
+    assert (from >= GR_STBS);
+    assert (from < ngr);
+    assert (to   >= GR_STBS);
+    assert (to   < ngr);
+    if (from <= to) return to - from;
+    return (ngr - from) + (to - GR_STBS);
+  }
+
+  static inline t_octa bsp_add (const t_octa bsp, const t_octa nreg) {
+    const t_octa slot = (bsp & BSP_MASK) >> 3;
+    return ((bsp >> 3) + nreg + ((slot + nreg) / 63)) << 3;
+  }
+
+  static inline t_octa bsp_sub (const t_octa bsp, const t_octa nreg) {
+    const t_octa slot = (bsp & BSP_MASK) >> 3;
+    return ((bsp >> 3) - nreg - ((62 - slot + nreg) / 63)) << 3;
+  }
 
 
   // -------------------------------------------------------------------------
@@ -34,20 +71,33 @@ namespace iato {
   // create a default rse state
 
   Rse::State::State (void) {
+    p_rbk = 0;
+    p_mem = 0;
     setngr (GR_LRSZ);
   }
 
   // create a rse state a register size
 
   Rse::State::State (const long ngr) {
+    p_rbk = 0;
+    p_mem = 0;
     setngr (ngr);
   }
 
   // create a rse state a register size and a cfm
 
   Rse::State::State (const long ngr, const Cfm& cfm) {
+    p_rbk = 0;
+    p_mem = 0;
     setngr (ngr);
     setcfm (cfm);
+  }
+
+  // bind the rse state with a register bank and a backing store memory
+
+  void Rse::State::bind (Memory* mem, Register* rbk) {
+    p_mem = mem;
+    p_rbk = rbk;
   }
 
   // reset this rse state
@@ -263,13 +313,103 @@ namespace iato {
   // check if the rse needs to spill registers
 
   void Rse::State::spill (void) {
-    // spilling is checked as a condition
-    assert ((d_bof + d_sof) <= d_ngr);
+    // no backing store binding -> legacy behavior (best-effort check)
+    if ((p_mem == 0) || (p_rbk == 0)) {
+      assert ((d_bof + d_sof) <= d_ngr);
+      return;
+    }
+    // compute stacked register file size and spill capacity
+    const long psz = d_ngr - GR_STBS;
+    assert (d_sof >= 0);
+    assert (d_sof <= psz);
+    long cap = psz - d_sof;
+    if (cap < 0) cap = 0;
+    // compute desired number of dirty registers kept in the physical file
+    long want = d_dty;
+    if (want > cap) want = cap;
+    // current number of dirty registers in the physical file
+    long cur = dstgr (d_ldr, d_bof, d_ngr);
+    // spill oldest dirty registers until we meet the target
+    while (cur > want) {
+      // get the spill address (bspstore) and rnat
+      t_octa bsps = p_rbk->getoval (AREG, AR_BSPS);
+      t_octa rnat = p_rbk->getoval (AREG, AR_RNAT);
+      // if we ever land on an rnat slot, flush it and move on
+      t_octa slot = (bsps & BSP_MASK) >> 3;
+      if (slot == 63) {
+	p_mem->writeocta (bsps, rnat);
+	rnat = OCTA_0;
+	bsps = bsps + 8;
+	slot = (bsps & BSP_MASK) >> 3;
+      }
+      assert (slot < 63);
+      // spill the physical register at d_ldr to backing store memory
+      const t_octa oval = p_rbk->getoval (GREG, d_ldr);
+      const bool   nval = p_rbk->getbval (NREG, d_ldr);
+      p_mem->writeocta (bsps, oval);
+      // update rnat bit for this slot
+      const t_octa bit = static_cast<t_octa>(1ULL) << slot;
+      rnat = nval ? (rnat | bit) : (rnat & ~bit);
+      // if this was the last slot in the group, store the rnat slot too
+      if (slot == 62) {
+	p_mem->writeocta (bsps + 8, rnat);
+	rnat = OCTA_0;
+      }
+      // advance the bspstore and save rnat
+      bsps = bsp_add (bsps, 1);
+      p_rbk->write (AREG, AR_BSPS, bsps);
+      p_rbk->write (AREG, AR_RNAT, rnat);
+      // advance the load/store register pointer
+      d_ldr = nxtgr (d_ldr, d_ngr);
+      d_str = d_ldr;
+      cur--;
+    }
   }
 
   // check if the rse needs to fill registers
 
   void Rse::State::fill (void) {
+    // no backing store binding -> nothing to do
+    if ((p_mem == 0) || (p_rbk == 0)) return;
+    // compute stacked register file size and fill capacity
+    const long psz = d_ngr - GR_STBS;
+    assert (d_sof >= 0);
+    assert (d_sof <= psz);
+    long cap = psz - d_sof;
+    if (cap < 0) cap = 0;
+    // desired number of dirty registers kept in the physical file
+    long want = d_dty;
+    if (want > cap) want = cap;
+    // current number of dirty registers in the physical file
+    long cur = dstgr (d_ldr, d_bof, d_ngr);
+    // fill oldest spilled registers until we meet the target
+    while (cur < want) {
+      // extend the in-register dirty region
+      d_ldr = prvgr (d_ldr, d_ngr);
+      d_str = d_ldr;
+      // get the bspstore and rnat
+      t_octa bsps = p_rbk->getoval (AREG, AR_BSPS);
+      t_octa rnat = p_rbk->getoval (AREG, AR_RNAT);
+      const t_octa slot = (bsps & BSP_MASK) >> 3;
+      // if we cross a group boundary, load the rnat slot for the previous group
+      if (slot == 0) {
+	const t_octa rnaddr = bsps - 8;
+	rnat = p_mem->readocta (rnaddr);
+	p_rbk->write (AREG, AR_RNAT, rnat);
+      }
+      // move bspstore back by one register slot (skipping rnat slots)
+      bsps = bsp_sub (bsps, 1);
+      const t_octa nslot = (bsps & BSP_MASK) >> 3;
+      assert (nslot < 63);
+      // load register value from backing store
+      const t_octa oval = p_mem->readocta (bsps);
+      const bool   nval = ((rnat >> nslot) & 0x1ULL) != 0;
+      p_rbk->write (GREG, d_ldr, oval);
+      p_rbk->write (NREG, d_ldr, nval);
+      // update bspstore
+      p_rbk->write (AREG, AR_BSPS, bsps);
+      cur++;
+    }
   }
 
   // dump the rse state (for debug)
@@ -320,6 +460,12 @@ namespace iato {
   // flush this rse
 
   void Rse::flush (void) {
+  }
+
+  // bind the backing store memory and register bank for spill/fill
+
+  void Rse::bind (Memory* mem, Register* rbk) {
+    d_state.bind (mem, rbk);
   }
 
   // set the rse state by state

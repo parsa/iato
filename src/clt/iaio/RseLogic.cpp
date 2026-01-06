@@ -189,10 +189,12 @@ namespace iato {
       case Result::RSE_CAL:
 	cfm = resl.getoval (i);
 	d_state.call (cfm);
+	d_state.spill ();
 	break;
       case Result::RSE_RET:
 	cfm = resl.getoval (i);
 	d_state.retn (cfm);
+	d_state.fill ();
 	break;
       case Result::RSE_LOP:
 	cfm = resl.getoval (i);

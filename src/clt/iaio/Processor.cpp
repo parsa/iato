@@ -400,6 +400,11 @@ namespace iato {
     Disperse*   dis = dynamic_cast <Disperse*>   (p_env->get (RESOURCE_BDS));
     Register*   rbk = dynamic_cast <Register*>   (p_env->get (RESOURCE_RBK));
     Scoreboard* psb = dynamic_cast <Scoreboard*> (p_env->get (RESOURCE_PSB));
+    // bind backing store spill/fill support for the rse (requires memory + rbk)
+    if (hma && rse && rbk) {
+      Memory* mem = hma->getmem ();
+      if (mem) rse->bind (mem, rbk);
+    }
     // bind the pipeline
     p_pipe->bind (p_env, 0, 0);
     // bind the restart resource

@@ -2,6 +2,7 @@ set(TEST_CASES
   t_ip.cpp
   t_rid.cpp
   t_cfm.cpp
+  t_rse_spillfill.cpp
   t_uvr.cpp
   t_umr.cpp
   t_psr.cpp

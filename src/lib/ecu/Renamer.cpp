@@ -41,6 +41,8 @@ namespace iato {
   void Renamer::bind (Memory* mem, Register* rbk) {
     p_mem = mem;
     p_rbk = rbk;
+    // also bind the base rse state so State::spill/fill can access it
+    Rse::bind (mem, rbk);
   }
 
   // preset the renamer with an instruction
@@ -87,6 +89,7 @@ namespace iato {
       case Result::RSE_CAL:
 	cfm = resl.getoval (i);
 	d_state.call (cfm);
+	d_state.spill ();
 	break;
       case Result::RSE_RET:
 	cfm = resl.getoval (i);

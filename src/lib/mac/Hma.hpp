@@ -76,6 +76,9 @@ namespace iato {
     /// @return the memory adapter
     Mta* getmta (void) const;
 
+    /// @return the bound memory image (instruction/data/fp/backing-store)
+    Memory* getmem (void) const;
+
   private:
     // make the copy constructor private
     Hma (const Hma&);
